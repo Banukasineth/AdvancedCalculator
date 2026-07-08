@@ -1,31 +1,25 @@
 package com.banukasineth.advancedcalculator.app;
 
 import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 public class CalculatorApplication extends Application {
 
     @Override
-    public void start(Stage stage) {
+    public void start(Stage stage) throws Exception {
 
-        // Create a label
-        Label label = new Label("Welcome to Advanced Calculator!");
+        FXMLLoader loader = new FXMLLoader(
+                getClass().getResource("/Main.fxml")
+        );
 
-        // Create a layout and add the label
-        StackPane root = new StackPane();
-        root.getChildren().add(label);
+        Scene scene = new Scene(loader.load());
 
-        // Create a scene
-        Scene scene = new Scene(root, 600, 400);
-
-        // Configure the window (Stage)
         stage.setTitle("Advanced Calculator");
+
         stage.setScene(scene);
 
-        // Display the window
         stage.show();
     }
 }
