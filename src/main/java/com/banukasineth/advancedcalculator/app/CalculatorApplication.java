@@ -17,9 +17,9 @@ public class CalculatorApplication extends Application {
         Scene scene = new Scene(loader.load());
 
         stage.setTitle("Advanced Calculator");
-
         stage.setScene(scene);
-
         stage.show();
+
+        scene.getRoot().requestFocus();
     }
 }
