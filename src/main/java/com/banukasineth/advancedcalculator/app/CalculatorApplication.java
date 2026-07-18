@@ -16,6 +16,10 @@ public class CalculatorApplication extends Application {
 
         Scene scene = new Scene(loader.load());
 
+        scene.getStylesheets().add(
+                getClass().getResource("/style.css").toExternalForm()
+        );
+
         stage.setTitle("Advanced Calculator");
         stage.setScene(scene);
         stage.show();

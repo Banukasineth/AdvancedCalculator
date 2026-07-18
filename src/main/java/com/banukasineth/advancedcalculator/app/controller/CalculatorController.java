@@ -1,13 +1,18 @@
 package com.banukasineth.advancedcalculator.app.controller;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 
 public class CalculatorController {
+
+    @FXML
+    private BorderPane rootPane;
 
     @FXML
     private TextField display;
@@ -43,6 +48,13 @@ public class CalculatorController {
         }
     }
 
+    private void selectOperator(String operator) {
+
+        firstNumber = Double.parseDouble(display.getText());
+        this.operator = operator;
+        startNewNumber = true;
+    }
+
     // =========================
     // Button Events
     // =========================
@@ -52,6 +64,13 @@ public class CalculatorController {
 
         Button button = (Button) event.getSource();
         inputNumber(button.getText());
+    }
+
+    @FXML
+    private void operatorClicked(ActionEvent event) {
+
+        Button button = (Button) event.getSource();
+        selectOperator(button.getText());
     }
 
     @FXML
@@ -69,59 +88,16 @@ public class CalculatorController {
 
         String text = display.getText();
 
+        if (text.equals("Error")) {
+            clearDisplay();
+            return;
+        }
+
         if (text.length() > 1) {
             display.setText(text.substring(0, text.length() - 1));
         } else {
             display.setText("0");
         }
-    }
-
-    private void selectOperator(String operator) {
-
-        firstNumber = Double.parseDouble(display.getText());
-
-        this.operator = operator;
-
-        startNewNumber = true;
-    }
-
-    @FXML
-    private void operatorClicked(ActionEvent event) {
-
-        Button button = (Button) event.getSource();
-
-        selectOperator(button.getText());
-    }
-
-    @FXML
-    private void equalsClicked() {
-
-        double secondNumber = Double.parseDouble(display.getText());
-
-        double result = 0;
-
-        switch (operator) {
-
-            case "+":
-                result = firstNumber + secondNumber;
-                break;
-
-            case "-":
-                result = firstNumber - secondNumber;
-                break;
-
-            case "×":
-                result = firstNumber * secondNumber;
-                break;
-
-            case "÷":
-                result = firstNumber / secondNumber;
-                break;
-        }
-
-        updateDisplay(result);
-
-        startNewNumber = true;
     }
 
     @FXML
@@ -140,10 +116,55 @@ public class CalculatorController {
 
         double number = Double.parseDouble(display.getText());
 
-        number = number / 100;
+        if (operator.equals("+") || operator.equals("-")) {
+            number = firstNumber * number / 100;
+        } else {
+            number = number / 100;
+        }
 
         updateDisplay(number);
+    }
 
+    @FXML
+    private void equalsClicked() {
+
+        if (operator.isEmpty()) {
+            return;
+        }
+
+        double secondNumber = Double.parseDouble(display.getText());
+        double result = 0;
+
+        switch (operator) {
+
+            case "+":
+                result = firstNumber + secondNumber;
+                break;
+
+            case "-":
+                result = firstNumber - secondNumber;
+                break;
+
+            case "×":
+                result = firstNumber * secondNumber;
+                break;
+
+            case "÷":
+
+                if (secondNumber == 0) {
+                    display.setText("Error");
+                    operator = "";
+                    startNewNumber = true;
+                    return;
+                }
+
+                result = firstNumber / secondNumber;
+                break;
+        }
+
+        updateDisplay(result);
+
+        operator = "";
         startNewNumber = true;
     }
 
@@ -156,6 +177,7 @@ public class CalculatorController {
 
         switch (event.getCode()) {
 
+            // Numbers
             case DIGIT0:
             case NUMPAD0:
                 inputNumber("0");
@@ -182,6 +204,15 @@ public class CalculatorController {
                 break;
 
             case DIGIT5:
+
+                if (event.isShiftDown()) {
+                    percentClicked();
+                } else {
+                    inputNumber("5");
+                }
+
+                break;
+
             case NUMPAD5:
                 inputNumber("5");
                 break;
@@ -206,6 +237,7 @@ public class CalculatorController {
                 inputNumber("9");
                 break;
 
+            // Operators (Numeric Keypad)
             case ADD:
                 selectOperator("+");
                 break;
@@ -222,14 +254,29 @@ public class CalculatorController {
                 selectOperator("÷");
                 break;
 
+            // Main Keyboard "=" key
+            case EQUALS:
+
+                if (event.isShiftDown()) {
+                    selectOperator("+");
+                } else {
+                    equalsClicked();
+                }
+
+                break;
+
+            // Enter
             case ENTER:
                 equalsClicked();
                 break;
 
+            // Decimal
             case DECIMAL:
+            case PERIOD:
                 decimalClicked();
                 break;
 
+            // Editing
             case BACK_SPACE:
                 backspace();
                 break;
@@ -241,17 +288,19 @@ public class CalculatorController {
             default:
                 break;
         }
+
+        event.consume();
     }
 
-    @FXML
-    private BorderPane rootPane;
+    // =========================
+    // Initialize
+    // =========================
 
     @FXML
     public void initialize() {
 
         rootPane.setFocusTraversable(true);
 
-        javafx.application.Platform.runLater(() -> rootPane.requestFocus());
+        Platform.runLater(() -> rootPane.requestFocus());
     }
-
 }
