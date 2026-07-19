@@ -175,6 +175,11 @@ public class CalculatorController {
     @FXML
     private void handleKeyPressed(KeyEvent event) {
 
+        if (event.getCode() == KeyCode.DIGIT8 && event.isShiftDown()) {
+            selectOperator("×");
+            return;
+        }
+
         switch (event.getCode()) {
 
             // Numbers
@@ -243,6 +248,7 @@ public class CalculatorController {
                 break;
 
             case SUBTRACT:
+            case MINUS:
                 selectOperator("-");
                 break;
 
@@ -251,6 +257,7 @@ public class CalculatorController {
                 break;
 
             case DIVIDE:
+            case SLASH:
                 selectOperator("÷");
                 break;
 

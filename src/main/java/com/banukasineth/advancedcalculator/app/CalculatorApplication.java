@@ -22,6 +22,17 @@ public class CalculatorApplication extends Application {
 
         stage.setTitle("Advanced Calculator");
         stage.setScene(scene);
+
+        // -----------------------------
+        // Window size limits
+        // -----------------------------
+        stage.setMinWidth(320);
+        stage.setMinHeight(650);
+
+        // Optional maximum size
+        // stage.setMaxWidth(900);
+        // stage.setMaxHeight(1000);
+
         stage.show();
 
         scene.getRoot().requestFocus();
