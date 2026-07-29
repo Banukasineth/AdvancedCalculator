@@ -61,21 +61,31 @@ public class CalculatorController {
             double second,
             double result) {
 
-        Label label = new Label(
+        // Card container
+        VBox card = new VBox();
+        card.getStyleClass().add("working-card");
 
+        // Expression
+        Label expression = new Label(
                 formatNumber(first)
                         + " "
                         + operator
                         + " "
                         + formatNumber(second)
-                        + " = "
-                        + formatNumber(result)
-
         );
+        expression.getStyleClass().add("working-expression");
 
-        label.getStyleClass().add("working-item");
+        // Result
+        Label answer = new Label(
+                "= " + formatNumber(result)
+        );
+        answer.getStyleClass().add("working-result");
 
-        workingContainer.getChildren().add(label);
+        // Add labels to the card
+        card.getChildren().addAll(expression, answer);
+
+        // Add the card to the Working panel
+        workingContainer.getChildren().add(card);
     }
 
     private String formatNumber(double value) {
