@@ -27,6 +27,8 @@ public class CalculatorController {
     private double firstNumber = 0;
     private String operator = "";
     private boolean startNewNumber = true;
+    private double lastSecondNumber = 0;
+    private String lastOperator = "";
 
     // =========================
     // Helper Methods
@@ -88,6 +90,36 @@ public class CalculatorController {
         workingContainer.getChildren().add(card);
     }
 
+    private void addToHistory(
+            double first,
+            String operator,
+            double second,
+            double result) {
+
+        VBox card = new VBox();
+        card.getStyleClass().add("history-card");
+
+        Label expression = new Label(
+                formatNumber(first)
+                        + " "
+                        + operator
+                        + " "
+                        + formatNumber(second)
+        );
+
+        expression.getStyleClass().add("history-expression");
+
+        Label answer = new Label(
+                "= " + formatNumber(result)
+        );
+
+        answer.getStyleClass().add("history-result");
+
+        card.getChildren().addAll(expression, answer);
+
+        historyContainer.getChildren().add(card);
+    }
+
     private String formatNumber(double value) {
 
         if (value == (int) value) {
@@ -97,16 +129,81 @@ public class CalculatorController {
         return String.valueOf(value);
     }
 
-    private void selectOperator(String operator) {
+    private void selectOperator(String newOperator) {
 
-        firstNumber = Double.parseDouble(display.getText());
+        double currentNumber = Double.parseDouble(display.getText());
 
-        this.operator = operator;
+        // If an operator is already selected and the user
+        // hasn't typed the next number yet, just replace it.
+        if (!operator.isEmpty() && startNewNumber) {
 
-        // Show the first number and operator
-        expressionLabel.setText(display.getText() + " " + operator);
+            operator = newOperator;
+
+            expressionLabel.setText(
+                    formatNumber(firstNumber) + " " + operator
+            );
+
+            return;
+        }
+
+        // Chain calculations
+        if (!operator.isEmpty()) {
+
+            try {
+
+                double result = calculate(firstNumber, currentNumber, operator);
+
+                updateDisplay(result);
+
+                firstNumber = result;
+
+            } catch (ArithmeticException ex) {
+
+                display.setText("Error");
+                operator = "";
+                startNewNumber = true;
+                return;
+            }
+
+        } else {
+
+            firstNumber = currentNumber;
+
+        }
+
+        operator = newOperator;
+
+        expressionLabel.setText(
+                formatNumber(firstNumber) + " " + operator
+        );
 
         startNewNumber = true;
+    }
+
+    private double calculate(double first, double second, String operator) {
+
+        switch (operator) {
+
+            case "+":
+                return first + second;
+
+            case "-":
+                return first - second;
+
+            case "×":
+                return first * second;
+
+            case "÷":
+
+                if (second == 0) {
+                    throw new ArithmeticException("Cannot divide by zero");
+                }
+
+                return first / second;
+
+            default:
+                return second;
+        }
     }
 
     // =========================
@@ -184,63 +281,80 @@ public class CalculatorController {
     @FXML
     private void equalsClicked() {
 
-        if (operator.isEmpty()) {
-            return;
-        }
+        try {
 
-        double secondNumber = Double.parseDouble(display.getText());
-        double result = 0;
+            double secondNumber;
 
-        switch (operator) {
+            // If '=' is pressed repeatedly
+            if (operator.isEmpty()) {
 
-            case "+":
-                result = firstNumber + secondNumber;
-                break;
-
-            case "-":
-                result = firstNumber - secondNumber;
-                break;
-
-            case "×":
-                result = firstNumber * secondNumber;
-                break;
-
-            case "÷":
-
-                if (secondNumber == 0) {
-                    display.setText("Error");
-                    operator = "";
-                    startNewNumber = true;
+                if (lastOperator.isEmpty()) {
                     return;
                 }
 
-                result = firstNumber / secondNumber;
-                break;
+                secondNumber = lastSecondNumber;
+
+                double result = calculate(firstNumber, secondNumber, lastOperator);
+
+                addToWorkingArea(
+                        firstNumber,
+                        lastOperator,
+                        secondNumber,
+                        result
+                );
+
+                addToHistory(
+                        firstNumber,
+                        lastOperator,
+                        secondNumber,
+                        result
+                );
+
+                updateDisplay(result);
+
+                firstNumber = result;
+
+                return;
+            }
+
+            // First '=' press
+            secondNumber = Double.parseDouble(display.getText());
+
+            double result = calculate(firstNumber, secondNumber, operator);
+
+            addToWorkingArea(
+                    firstNumber,
+                    operator,
+                    secondNumber,
+                    result
+            );
+
+            addToHistory(
+                    firstNumber,
+                    operator,
+                    secondNumber,
+                    result
+            );
+
+            updateDisplay(result);
+
+            // Save last operation
+            lastSecondNumber = secondNumber;
+            lastOperator = operator;
+
+            firstNumber = result;
+            operator = "";
+            expressionLabel.setText("");
+            startNewNumber = true;
+
+        } catch (ArithmeticException ex) {
+
+            display.setText("Error");
+
+            operator = "";
+            lastOperator = "";
+            startNewNumber = true;
         }
-
-        // Show the complete calculation
-        expressionLabel.setText(
-                firstNumber + " " + operator + " " + secondNumber + " ="
-        );
-
-        String second = display.getText();
-
-        expressionLabel.setText(
-                formatNumber(firstNumber) + " " + operator + " " + second + " ="
-        );
-
-        updateDisplay(result);
-
-        addToWorkingArea(
-                firstNumber,
-                operator,
-                secondNumber,
-                result
-        );
-
-        operator = "";
-        expressionLabel.setText("");
-        startNewNumber = true;
     }
 
     // =========================
@@ -388,4 +502,7 @@ public class CalculatorController {
 
     @FXML
     private VBox workingContainer;
+
+    @FXML
+    private VBox historyContainer;
 }

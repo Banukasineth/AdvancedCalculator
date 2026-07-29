@@ -143,3 +143,70 @@
     -fx-font-size: 24px;
     -fx-font-weight: bold;
 }
+
+/* =========================
+   History Panel
+   ========================= */
+
+.history-panel {
+    -fx-background-color: #252525;
+    -fx-background-radius: 12;
+    -fx-padding: 15;
+}
+
+.history-title {
+    -fx-text-fill: white;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
+
+.history-container {
+    -fx-padding: 5;
+    -fx-spacing: 10;
+}
+
+.history-item {
+    -fx-text-fill: #DDDDDD;
+    -fx-font-size: 15px;
+}
+
+/* =========================
+   History ScrollPane
+   ========================= */
+
+.history-scroll {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.history-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.history-scroll .scroll-bar:vertical {
+    -fx-background-color: transparent;
+}
+
+.history-scroll .thumb {
+    -fx-background-color: #555555;
+    -fx-background-radius: 10;
+}
+
+.history-card {
+    -fx-background-color: #2B2B2B;
+    -fx-background-radius: 10;
+    -fx-padding: 10;
+    -fx-spacing: 5;
+}
+
+.history-expression {
+    -fx-text-fill: #AAAAAA;
+    -fx-font-size: 14px;
+}
+
+.history-result {
+    -fx-text-fill: white;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
