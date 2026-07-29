@@ -4,15 +4,22 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.control.Label;
 
 public class CalculatorController {
 
     @FXML
     private BorderPane rootPane;
+
+    @FXML
+    private Label expressionLabel;
 
     @FXML
     private TextField display;
@@ -48,10 +55,47 @@ public class CalculatorController {
         }
     }
 
+    private void addToWorkingArea(
+            double first,
+            String operator,
+            double second,
+            double result) {
+
+        Label label = new Label(
+
+                formatNumber(first)
+                        + " "
+                        + operator
+                        + " "
+                        + formatNumber(second)
+                        + " = "
+                        + formatNumber(result)
+
+        );
+
+        label.getStyleClass().add("working-item");
+
+        workingContainer.getChildren().add(label);
+    }
+
+    private String formatNumber(double value) {
+
+        if (value == (int) value) {
+            return String.valueOf((int) value);
+        }
+
+        return String.valueOf(value);
+    }
+
     private void selectOperator(String operator) {
 
         firstNumber = Double.parseDouble(display.getText());
+
         this.operator = operator;
+
+        // Show the first number and operator
+        expressionLabel.setText(display.getText() + " " + operator);
+
         startNewNumber = true;
     }
 
@@ -77,6 +121,7 @@ public class CalculatorController {
     private void clearDisplay() {
 
         display.setText("0");
+        expressionLabel.setText("");
 
         firstNumber = 0;
         operator = "";
@@ -123,6 +168,7 @@ public class CalculatorController {
         }
 
         updateDisplay(number);
+        expressionLabel.setText(number + "%");
     }
 
     @FXML
@@ -162,9 +208,28 @@ public class CalculatorController {
                 break;
         }
 
+        // Show the complete calculation
+        expressionLabel.setText(
+                firstNumber + " " + operator + " " + secondNumber + " ="
+        );
+
+        String second = display.getText();
+
+        expressionLabel.setText(
+                formatNumber(firstNumber) + " " + operator + " " + second + " ="
+        );
+
         updateDisplay(result);
 
+        addToWorkingArea(
+                firstNumber,
+                operator,
+                secondNumber,
+                result
+        );
+
         operator = "";
+        expressionLabel.setText("");
         startNewNumber = true;
     }
 
@@ -310,4 +375,7 @@ public class CalculatorController {
 
         Platform.runLater(() -> rootPane.requestFocus());
     }
+
+    @FXML
+    private VBox workingContainer;
 }

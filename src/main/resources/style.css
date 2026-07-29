@@ -69,7 +69,7 @@
 .nav-button {
     -fx-background-color: transparent;
     -fx-text-fill: #CFCFCF;
-    -fx-font-size: 16px;
+    -fx-font-size: 15px;
     -fx-background-radius: 8;
     -fx-padding: 8 14;
 }
@@ -84,4 +84,60 @@
     -fx-font-size: 42px;
     -fx-padding: 20;
     -fx-border-width: 0;
+}
+
+.display-container {
+    -fx-background-color: #1E1E1E;
+    -fx-padding: 0 20 0 20;
+}
+
+.expression-label {
+    -fx-text-fill: #A0A0A0;
+    -fx-font-size: 18px;
+    -fx-alignment: CENTER_RIGHT;
+}
+
+.result-display {
+    -fx-text-fill: white;
+    -fx-font-size: 46px;
+    -fx-font-weight: bold;
+}
+
+.section-title {
+    -fx-text-fill: #AAAAAA;
+    -fx-font-size: 14px;
+    -fx-padding: 5 0 0 10;
+}
+
+.working-area {
+    -fx-control-inner-background: #252525;
+    -fx-background-color: #252525;
+    -fx-text-fill: white;
+    -fx-font-size: 18px;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: #333333;
+}
+
+.section-title{
+    -fx-font-size:13px;
+    -fx-text-fill:#8E8E8E;
+}
+
+.working-scroll {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+    -fx-border-color: #333333;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+}
+
+.working-container {
+    -fx-padding: 10;
+    -fx-spacing: 10;
+}
+
+.working-item {
+    -fx-text-fill: white;
+    -fx-font-size: 18px;
 }

@@ -32,11 +32,44 @@
          </HBox>
 
          <!-- Calculator Display -->
-         <TextField fx:id="display"
-                    editable="false"
-                    text="0"
-                    alignment="CENTER_RIGHT"
-                    styleClass="display"/>
+         <VBox alignment="CENTER_RIGHT"
+               spacing="5"
+               styleClass="display-container">
+
+            <Label fx:id="expressionLabel"
+                   text=""
+                   alignment="CENTER_RIGHT"
+                   maxWidth="Infinity"
+                   styleClass="expression-label"/>
+
+            <TextField fx:id="display"
+                       editable="false"
+                       text="0"
+                       alignment="CENTER_RIGHT"
+                       styleClass="display"/>
+
+            <Label text="Working"
+                   styleClass="section-title"/>
+
+            <ScrollPane
+                    fitToWidth="true"
+                    prefHeight="120"
+                    hbarPolicy="NEVER"
+                    vbarPolicy="AS_NEEDED"
+                    styleClass="working-scroll">
+
+               <content>
+
+                  <VBox
+                          fx:id="workingContainer"
+                          spacing="10"
+                          styleClass="working-container"/>
+
+               </content>
+
+            </ScrollPane>
+
+         </VBox>
 
       </VBox>
    </top>
