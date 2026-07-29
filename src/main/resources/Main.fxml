@@ -18,6 +18,7 @@
 
          <!-- LEFT SIDE -->
          <VBox spacing="15"
+               fillWidth="true"
                HBox.hgrow="ALWAYS">
 
             <!-- Navigation Bar -->
@@ -58,7 +59,9 @@
 
                <ScrollPane
                        fitToWidth="true"
+                       minHeight="120"
                        prefHeight="120"
+                       maxHeight="120"
                        hbarPolicy="NEVER"
                        vbarPolicy="AS_NEEDED"
                        styleClass="working-scroll">
@@ -77,11 +80,12 @@
             </VBox>
 
             <!-- Calculator Buttons -->
-            <GridPane fx:id="buttonGrid"
-                      alignment="CENTER"
-                      hgap="10"
-                      vgap="10"
-                      HBox.hgrow="ALWAYS">
+            <GridPane
+                    fx:id="buttonGrid"
+                    hgap="10"
+                    vgap="10"
+                    styleClass="button-grid"
+                    VBox.vgrow="ALWAYS">
 
                <columnConstraints>
                   <ColumnConstraints hgrow="ALWAYS" percentWidth="25" />

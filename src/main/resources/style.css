@@ -29,6 +29,11 @@
     -fx-background-color: #5A5A5A;
 }
 
+.button-grid{
+    -fx-padding:15;
+    -fx-hgap:10;
+    -fx-vgap:10;
+}
 .equals-button {
     -fx-background-color: #2563EB;
     -fx-text-fill: white;
