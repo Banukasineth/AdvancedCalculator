@@ -71,6 +71,18 @@
     -fx-font-size: 28px;
 }
 
+.menu-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-size: 24px;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+
+.menu-button:hover {
+    -fx-background-color: #353535;
+}
+
 .nav-button {
     -fx-background-color: transparent;
     -fx-text-fill: #CFCFCF;

@@ -11,7 +11,15 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.control.Label;
+import javafx.scene.layout.StackPane;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import java.io.IOException;
+
 
 public class CalculatorController {
 
@@ -24,11 +32,27 @@ public class CalculatorController {
     @FXML
     private TextField display;
 
+    @FXML
+    private VBox drawer;
+
+    @FXML
+    private void toggleDrawer() {
+
+        drawerOpen = !drawerOpen;
+
+        drawerContainer.setVisible(drawerOpen);
+    }
+
+    @FXML
+    private Pane drawerContainer;
+
     private double firstNumber = 0;
     private String operator = "";
     private boolean startNewNumber = true;
     private double lastSecondNumber = 0;
     private String lastOperator = "";
+    private Parent drawerContent;
+    private boolean drawerOpen = false;
 
     // =========================
     // Helper Methods
@@ -498,6 +522,20 @@ public class CalculatorController {
         rootPane.setFocusTraversable(true);
 
         Platform.runLater(() -> rootPane.requestFocus());
+
+        try {
+
+            drawerContent = FXMLLoader.load(
+                    getClass().getResource("/fxml/NavigationDrawer.fxml")
+            );
+
+            drawerContainer.getChildren().add(drawerContent);
+
+            drawerContainer.setVisible(false);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -505,4 +543,39 @@ public class CalculatorController {
 
     @FXML
     private VBox historyContainer;
+
+    @FXML
+    private StackPane keypadContainer;
+
+    @FXML
+    private GridPane buttonGrid;
+
+    @FXML
+    private Button standardButton;
+
+    @FXML
+    private Button scientificButton;
+
+    @FXML
+    private void showScientificMode() {
+
+        try {
+
+            Parent scientificKeypad = FXMLLoader.load(
+                    getClass().getResource("/layouts/ScientificKeypad.fxml")
+            );
+
+            keypadContainer.getChildren().setAll(scientificKeypad);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void showStandardMode() {
+
+        keypadContainer.getChildren().setAll(buttonGrid);
+    }
+
 }

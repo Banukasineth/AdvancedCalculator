@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+
+<GridPane xmlns:fx="http://javafx.com/fxml"
+          hgap="10"
+          vgap="10"
+          styleClass="button-grid">
+
+    <columnConstraints>
+        <ColumnConstraints percentWidth="25" hgrow="ALWAYS"/>
+        <ColumnConstraints percentWidth="25" hgrow="ALWAYS"/>
+        <ColumnConstraints percentWidth="25" hgrow="ALWAYS"/>
+        <ColumnConstraints percentWidth="25" hgrow="ALWAYS"/>
+    </columnConstraints>
+
+    <rowConstraints>
+        <RowConstraints percentHeight="25" vgrow="ALWAYS"/>
+        <RowConstraints percentHeight="25" vgrow="ALWAYS"/>
+        <RowConstraints percentHeight="25" vgrow="ALWAYS"/>
+        <RowConstraints percentHeight="25" vgrow="ALWAYS"/>
+    </rowConstraints>
+
+    <!-- Row 1 -->
+    <Button text="sin" GridPane.rowIndex="0" GridPane.columnIndex="0"
+            maxWidth="Infinity" maxHeight="Infinity"/>
+
+    <Button text="cos" GridPane.rowIndex="0" GridPane.columnIndex="1"
+            maxWidth="Infinity" maxHeight="Infinity"/>
+
+    <Button text="tan" GridPane.rowIndex="0" GridPane.columnIndex="2"
+            maxWidth="Infinity" maxHeight="Infinity"/>
+
+    <Button text="π" GridPane.rowIndex="0" GridPane.columnIndex="3"
+            maxWidth="Infinity" maxHeight="Infinity"/>
+
+    <!-- Row 2 -->
+    <Button text="log" GridPane.rowIndex="1" GridPane.columnIndex="0"
+            maxWidth="Infinity" maxHeight="Infinity"/>
+
+    <Button text="ln" GridPane.rowIndex="1" GridPane.columnIndex="1"
+            maxWidth="Infinity" maxHeight="Infinity"/>
+
+    <Button text="√" GridPane.rowIndex="1" GridPane.columnIndex="2"
+            maxWidth="Infinity" maxHeight="Infinity"/>
+
+    <Button text="x²" GridPane.rowIndex="1" GridPane.columnIndex="3"
+            maxWidth="Infinity" maxHeight="Infinity"/>
+
+</GridPane>

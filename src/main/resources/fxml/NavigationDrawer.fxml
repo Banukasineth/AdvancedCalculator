@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/17.0.12"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:id="drawer"
+      prefWidth="250"
+      spacing="8"
+      styleClass="drawer">
+
+    <Button text="🧮 Standard"
+            styleClass="drawer-button"/>
+
+    <Button text="🔬 Scientific"
+            styleClass="drawer-button"/>
+
+    <Button text="📈 Graph"
+            styleClass="drawer-button"/>
+
+    <Button text="💻 Programmer"
+            styleClass="drawer-button"/>
+
+    <Button text="🔄 Converter"
+            styleClass="drawer-button"/>
+
+    <Button text="🤖 AI Assistant"
+            styleClass="drawer-button"/>
+
+    <Button text="📚 Formula Library"
+            styleClass="drawer-button"/>
+
+    <Button text="⚙ Settings"
+            styleClass="drawer-button"/>
+
+</VBox>

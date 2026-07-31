@@ -11,13 +11,13 @@ public class CalculatorApplication extends Application {
     public void start(Stage stage) throws Exception {
 
         FXMLLoader loader = new FXMLLoader(
-                getClass().getResource("/Main.fxml")
+                getClass().getResource("/fxml/Main.fxml")
         );
 
         Scene scene = new Scene(loader.load());
 
         scene.getStylesheets().add(
-                getClass().getResource("/style.css").toExternalForm()
+                getClass().getResource("/css/style.css").toExternalForm()
         );
 
         stage.setTitle("Advanced Calculator");
