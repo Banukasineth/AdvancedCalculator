@@ -11,23 +11,21 @@ public class CalculatorApplication extends Application {
     public void start(Stage stage) throws Exception {
 
         FXMLLoader loader = new FXMLLoader(
-                getClass().getResource("/fxml/Main.fxml")
-        );
+                getClass().getResource("/fxml/Main.fxml"));
 
-        Scene scene = new Scene(loader.load());
+        Scene scene = new Scene(loader.load(), 760, 520);
 
         scene.getStylesheets().add(
-                getClass().getResource("/css/style.css").toExternalForm()
-        );
+                getClass().getResource("/css/style.css").toExternalForm());
 
         stage.setTitle("Advanced Calculator");
         stage.setScene(scene);
 
         // -----------------------------
-        // Window size limits
+        // Window size limits (Initial size = minimum limit)
         // -----------------------------
-        stage.setMinWidth(320);
-        stage.setMinHeight(650);
+        stage.setMinWidth(760);
+        stage.setMinHeight(660);
 
         // Optional maximum size
         // stage.setMaxWidth(900);

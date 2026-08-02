@@ -4,6 +4,7 @@
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.text.Font?>
 
 <GridPane xmlns:fx="http://javafx.com/fxml"
           hgap="10"
@@ -11,43 +12,92 @@
           styleClass="button-grid">
 
     <columnConstraints>
-        <ColumnConstraints percentWidth="25" hgrow="ALWAYS"/>
-        <ColumnConstraints percentWidth="25" hgrow="ALWAYS"/>
-        <ColumnConstraints percentWidth="25" hgrow="ALWAYS"/>
-        <ColumnConstraints percentWidth="25" hgrow="ALWAYS"/>
+        <ColumnConstraints percentWidth="20" hgrow="ALWAYS"/>
+        <ColumnConstraints percentWidth="20" hgrow="ALWAYS"/>
+        <ColumnConstraints percentWidth="20" hgrow="ALWAYS"/>
+        <ColumnConstraints percentWidth="20" hgrow="ALWAYS"/>
+        <ColumnConstraints percentWidth="20" hgrow="ALWAYS"/>
     </columnConstraints>
 
     <rowConstraints>
-        <RowConstraints percentHeight="25" vgrow="ALWAYS"/>
-        <RowConstraints percentHeight="25" vgrow="ALWAYS"/>
-        <RowConstraints percentHeight="25" vgrow="ALWAYS"/>
-        <RowConstraints percentHeight="25" vgrow="ALWAYS"/>
+        <RowConstraints percentHeight="16.66" vgrow="ALWAYS"/>
+        <RowConstraints percentHeight="16.66" vgrow="ALWAYS"/>
+        <RowConstraints percentHeight="16.66" vgrow="ALWAYS"/>
+        <RowConstraints percentHeight="16.66" vgrow="ALWAYS"/>
+        <RowConstraints percentHeight="16.66" vgrow="ALWAYS"/>
+        <RowConstraints percentHeight="16.66" vgrow="ALWAYS"/>
     </rowConstraints>
 
+    <!-- Row 0 -->
+    <Button text="sin" onAction="#scientificUnaryClicked" styleClass="scientific-button"
+            GridPane.rowIndex="0" GridPane.columnIndex="0" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
+    <Button text="cos" onAction="#scientificUnaryClicked" styleClass="scientific-button"
+            GridPane.rowIndex="0" GridPane.columnIndex="1" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
+    <Button text="tan" onAction="#scientificUnaryClicked" styleClass="scientific-button"
+            GridPane.rowIndex="0" GridPane.columnIndex="2" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
+    <Button text="AC" onAction="#clearDisplay"
+            GridPane.rowIndex="0" GridPane.columnIndex="3" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
+    <Button text="⌫" onAction="#backspace"
+            GridPane.rowIndex="0" GridPane.columnIndex="4" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
+
     <!-- Row 1 -->
-    <Button text="sin" GridPane.rowIndex="0" GridPane.columnIndex="0"
-            maxWidth="Infinity" maxHeight="Infinity"/>
-
-    <Button text="cos" GridPane.rowIndex="0" GridPane.columnIndex="1"
-            maxWidth="Infinity" maxHeight="Infinity"/>
-
-    <Button text="tan" GridPane.rowIndex="0" GridPane.columnIndex="2"
-            maxWidth="Infinity" maxHeight="Infinity"/>
-
-    <Button text="π" GridPane.rowIndex="0" GridPane.columnIndex="3"
-            maxWidth="Infinity" maxHeight="Infinity"/>
+    <Button text="log" onAction="#scientificUnaryClicked" styleClass="scientific-button"
+            GridPane.rowIndex="1" GridPane.columnIndex="0" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
+    <Button text="ln" onAction="#scientificUnaryClicked" styleClass="scientific-button"
+            GridPane.rowIndex="1" GridPane.columnIndex="1" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
+    <Button text="√" onAction="#scientificUnaryClicked" styleClass="scientific-button"
+            GridPane.rowIndex="1" GridPane.columnIndex="2" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
+    <Button text="\%" onAction="#percentClicked"
+            GridPane.rowIndex="1" GridPane.columnIndex="3" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
+    <Button text="÷" onAction="#operatorClicked" styleClass="operator-button"
+            GridPane.rowIndex="1" GridPane.columnIndex="4" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
 
     <!-- Row 2 -->
-    <Button text="log" GridPane.rowIndex="1" GridPane.columnIndex="0"
-            maxWidth="Infinity" maxHeight="Infinity"/>
+    <Button text="x²" onAction="#scientificUnaryClicked" styleClass="scientific-button"
+            GridPane.rowIndex="2" GridPane.columnIndex="0" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
+    <Button text="7" onAction="#numberClicked"
+            GridPane.rowIndex="2" GridPane.columnIndex="1" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
+    <Button text="8" onAction="#numberClicked"
+            GridPane.rowIndex="2" GridPane.columnIndex="2" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
+    <Button text="9" onAction="#numberClicked"
+            GridPane.rowIndex="2" GridPane.columnIndex="3" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
+    <Button text="×" onAction="#operatorClicked" styleClass="operator-button"
+            GridPane.rowIndex="2" GridPane.columnIndex="4" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
 
-    <Button text="ln" GridPane.rowIndex="1" GridPane.columnIndex="1"
-            maxWidth="Infinity" maxHeight="Infinity"/>
+    <!-- Row 3 -->
+    <Button text="x³" onAction="#scientificUnaryClicked" styleClass="scientific-button"
+            GridPane.rowIndex="3" GridPane.columnIndex="0" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
+    <Button text="4" onAction="#numberClicked"
+            GridPane.rowIndex="3" GridPane.columnIndex="1" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
+    <Button text="5" onAction="#numberClicked"
+            GridPane.rowIndex="3" GridPane.columnIndex="2" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
+    <Button text="6" onAction="#numberClicked"
+            GridPane.rowIndex="3" GridPane.columnIndex="3" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
+    <Button text="-" onAction="#operatorClicked" styleClass="operator-button"
+            GridPane.rowIndex="3" GridPane.columnIndex="4" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
 
-    <Button text="√" GridPane.rowIndex="1" GridPane.columnIndex="2"
-            maxWidth="Infinity" maxHeight="Infinity"/>
+    <!-- Row 4 -->
+    <Button text="1/x" onAction="#scientificUnaryClicked" styleClass="scientific-button"
+            GridPane.rowIndex="4" GridPane.columnIndex="0" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
+    <Button text="1" onAction="#numberClicked"
+            GridPane.rowIndex="4" GridPane.columnIndex="1" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
+    <Button text="2" onAction="#numberClicked"
+            GridPane.rowIndex="4" GridPane.columnIndex="2" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
+    <Button text="3" onAction="#numberClicked"
+            GridPane.rowIndex="4" GridPane.columnIndex="3" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
+    <Button text="+" onAction="#operatorClicked" styleClass="operator-button"
+            GridPane.rowIndex="4" GridPane.columnIndex="4" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
 
-    <Button text="x²" GridPane.rowIndex="1" GridPane.columnIndex="3"
-            maxWidth="Infinity" maxHeight="Infinity"/>
+    <!-- Row 5 -->
+    <Button text="π" onAction="#constantClicked" styleClass="scientific-button"
+            GridPane.rowIndex="5" GridPane.columnIndex="0" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
+    <Button text="e" onAction="#constantClicked" styleClass="scientific-button"
+            GridPane.rowIndex="5" GridPane.columnIndex="1" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
+    <Button text="0" onAction="#numberClicked"
+            GridPane.rowIndex="5" GridPane.columnIndex="2" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
+    <Button text="." onAction="#decimalClicked"
+            GridPane.rowIndex="5" GridPane.columnIndex="3" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
+    <Button text="=" onAction="#equalsClicked" styleClass="equals-button"
+            GridPane.rowIndex="5" GridPane.columnIndex="4" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
 
 </GridPane>

@@ -9,386 +9,415 @@
         xmlns:fx="http://javafx.com/fxml/1"
         fx:controller="com.banukasineth.advancedcalculator.app.controller.CalculatorController">
 
-   <BorderPane
-           fx:id="rootPane"
-           focusTraversable="true"
-           onKeyPressed="#handleKeyPressed">
+        <BorderPane
+                fx:id="rootPane"
+                focusTraversable="true"
+                onKeyPressed="#handleKeyPressed">
 
-      <!-- EVERYTHING THAT IS ALREADY INSIDE YOUR BORDERPANE STAYS EXACTLY THE SAME -->
-      <center>
+                <!-- EVERYTHING THAT IS ALREADY INSIDE YOUR BORDERPANE STAYS EXACTLY THE SAME -->
+                <center>
 
-         <HBox spacing="15">
+                        <HBox spacing="15">
 
-            <!-- LEFT SIDE -->
-            <VBox spacing="15"
-                  fillWidth="true"
-                  HBox.hgrow="ALWAYS">
+                                <!-- LEFT SIDE -->
+                                <VBox spacing="15"
+                                        fillWidth="true"
+                                        HBox.hgrow="ALWAYS">
 
-               <!-- Navigation Bar -->
-               <HBox alignment="CENTER_LEFT"
-                     spacing="15"
-                     styleClass="top-bar"
-                     prefHeight="55">
+                                        <!-- Navigation Bar -->
+                                        <HBox alignment="CENTER_LEFT"
+                                                spacing="15"
+                                                styleClass="top-bar"
+                                                prefHeight="55">
 
-                  <Button fx:id="menuButton"
-                          text="☰"
-                          styleClass="menu-button"
-                          onAction="#toggleDrawer"/>
+                                                <Button fx:id="menuButton"
+                                                        text="☰"
+                                                        styleClass="menu-button"
+                                                        onAction="#toggleDrawer" />
 
-                  <Label text="NovaCalc"
-                         styleClass="app-title"/>
+                                                <Label fx:id="appTitleLabel"
+                                                        text="NovaCalc"
+                                                        styleClass="app-title" />
 
-               </HBox>
+                                        </HBox>
 
-               <!-- Calculator Display -->
-               <VBox alignment="CENTER_RIGHT"
-                     spacing="5"
-                     styleClass="display-container">
 
-                  <Label fx:id="expressionLabel"
-                         text=""
-                         alignment="CENTER_RIGHT"
-                         maxWidth="Infinity"
-                         styleClass="expression-label"/>
+                                                        <!-- Calculator Display -->
+                                        <VBox alignment="CENTER_RIGHT"
+                                                spacing="5"
+                                                styleClass="display-container">
 
-                  <TextField fx:id="display"
-                             editable="false"
-                             text="0"
-                             alignment="CENTER_RIGHT"
-                             styleClass="display"/>
+                                                <Label fx:id="expressionLabel"
+                                                        text=""
+                                                        alignment="CENTER_RIGHT"
+                                                        maxWidth="Infinity"
+                                                        styleClass="expression-label" />
 
-                  <Label text="Working"
-                         styleClass="section-title"/>
+                                                <TextField fx:id="display"
+                                                        editable="false"
+                                                        text="0"
+                                                        alignment="CENTER_RIGHT"
+                                                        styleClass="display" />
 
-                  <ScrollPane
-                          fitToWidth="true"
-                          minHeight="120"
-                          prefHeight="120"
-                          maxHeight="120"
-                          hbarPolicy="NEVER"
-                          vbarPolicy="AS_NEEDED"
-                          styleClass="working-scroll">
+                                                <Label text="Working"
+                                                        styleClass="section-title" />
 
-                     <content>
+                                                <ScrollPane
+                                                        fitToWidth="true"
+                                                        minHeight="70"
+                                                        prefHeight="85"
+                                                        maxHeight="100"
+                                                        hbarPolicy="NEVER"
+                                                        vbarPolicy="AS_NEEDED"
+                                                        styleClass="working-scroll">
 
-                        <VBox
-                                fx:id="workingContainer"
-                                spacing="10"
-                                styleClass="working-container"/>
+                                                        <content>
 
-                     </content>
+                                                                <VBox
+                                                                        fx:id="workingContainer"
+                                                                        spacing="10"
+                                                                        styleClass="working-container" />
 
-                  </ScrollPane>
+                                                        </content>
 
-               </VBox>
+                                                </ScrollPane>
 
-               <!-- Calculator Buttons -->
-               <StackPane fx:id="keypadContainer"
-                          VBox.vgrow="ALWAYS">
+                                        </VBox>
 
-                  <GridPane
-                          fx:id="buttonGrid"
-                          hgap="10"
-                          vgap="10"
-                          styleClass="button-grid"
-                          VBox.vgrow="ALWAYS">
+                                        <!-- Calculator Buttons -->
+                                        <StackPane fx:id="keypadContainer"
+                                                VBox.vgrow="ALWAYS">
 
-                     <columnConstraints>
-                        <ColumnConstraints hgrow="ALWAYS" percentWidth="25" />
-                        <ColumnConstraints hgrow="ALWAYS" percentWidth="25" />
-                        <ColumnConstraints hgrow="ALWAYS" percentWidth="25" />
-                        <ColumnConstraints hgrow="ALWAYS" percentWidth="25" />
-                     </columnConstraints>
+                                                <GridPane
+                                                        fx:id="buttonGrid"
+                                                        hgap="10"
+                                                        vgap="10"
+                                                        styleClass="button-grid"
+                                                        VBox.vgrow="ALWAYS">
 
-                     <rowConstraints>
-                        <RowConstraints percentHeight="20" vgrow="ALWAYS" />
-                        <RowConstraints percentHeight="20" vgrow="ALWAYS" />
-                        <RowConstraints percentHeight="20" vgrow="ALWAYS" />
-                        <RowConstraints percentHeight="20" vgrow="ALWAYS" />
-                        <RowConstraints percentHeight="20" vgrow="ALWAYS" />
-                     </rowConstraints>
+                                                        <columnConstraints>
+                                                                <ColumnConstraints hgrow="ALWAYS"
+                                                                        percentWidth="25" />
+                                                                <ColumnConstraints hgrow="ALWAYS"
+                                                                        percentWidth="25" />
+                                                                <ColumnConstraints hgrow="ALWAYS"
+                                                                        percentWidth="25" />
+                                                                <ColumnConstraints hgrow="ALWAYS"
+                                                                        percentWidth="25" />
+                                                        </columnConstraints>
 
-                     <children>
+                                                        <rowConstraints>
+                                                                <RowConstraints percentHeight="20"
+                                                                        vgrow="ALWAYS" />
+                                                                <RowConstraints percentHeight="20"
+                                                                        vgrow="ALWAYS" />
+                                                                <RowConstraints percentHeight="20"
+                                                                        vgrow="ALWAYS" />
+                                                                <RowConstraints percentHeight="20"
+                                                                        vgrow="ALWAYS" />
+                                                                <RowConstraints percentHeight="20"
+                                                                        vgrow="ALWAYS" />
+                                                        </rowConstraints>
 
-                        <!-- Row 0 -->
+                                                        <children>
 
-                        <Button fx:id="btnClear"
-                                focusTraversable="false"
-                                maxHeight="Infinity"
-                                maxWidth="Infinity"
-                                mnemonicParsing="false"
-                                onAction="#clearDisplay"
-                                text="AC"
-                                GridPane.hgrow="ALWAYS"
-                                GridPane.vgrow="ALWAYS">
-                           <font>
-                              <Font size="24.0" />
-                           </font>
-                        </Button>
+                                                                <!-- Row 0 -->
 
-                        <Button fx:id="btnBackspace"
-                                focusTraversable="false"
-                                maxHeight="Infinity"
-                                maxWidth="Infinity"
-                                mnemonicParsing="false"
-                                onAction="#backspace" text="⌫"
-                                GridPane.columnIndex="2"
-                                GridPane.hgrow="ALWAYS"
-                                GridPane.vgrow="ALWAYS">
-                           <font>
-                              <Font size="24.0" />
-                           </font>
-                        </Button>
+                                                                <Button fx:id="btnClear"
+                                                                        focusTraversable="false"
+                                                                        maxHeight="Infinity"
+                                                                        maxWidth="Infinity"
+                                                                        mnemonicParsing="false"
+                                                                        onAction="#clearDisplay"
+                                                                        text="AC"
+                                                                        GridPane.hgrow="ALWAYS"
+                                                                        GridPane.vgrow="ALWAYS">
+                                                                        <font>
+                                                                                <Font size="24.0" />
+                                                                        </font>
+                                                                </Button>
 
-                        <Button fx:id="btnPercent"
-                                focusTraversable="false"
-                                maxHeight="Infinity"
-                                maxWidth="Infinity"
-                                mnemonicParsing="false"
-                                onAction="#percentClicked"
-                                text="\%"
-                                GridPane.columnIndex="1"
-                                GridPane.hgrow="ALWAYS"
-                                GridPane.vgrow="ALWAYS">
-                           <font>
-                              <Font size="24.0" />
-                           </font>
-                        </Button>
+                                                                <Button fx:id="btnBackspace"
+                                                                        focusTraversable="false"
+                                                                        maxHeight="Infinity"
+                                                                        maxWidth="Infinity"
+                                                                        mnemonicParsing="false"
+                                                                        onAction="#backspace"
+                                                                        text="⌫"
+                                                                        GridPane.columnIndex="2"
+                                                                        GridPane.hgrow="ALWAYS"
+                                                                        GridPane.vgrow="ALWAYS">
+                                                                        <font>
+                                                                                <Font size="24.0" />
+                                                                        </font>
+                                                                </Button>
 
-                        <Button fx:id="btnDivide"
-                                focusTraversable="false"
-                                maxHeight="Infinity"
-                                maxWidth="Infinity"
-                                mnemonicParsing="false"
-                                onAction="#operatorClicked"
-                                styleClass="operator-button"
-                                text="÷"
-                                GridPane.columnIndex="3"
-                                GridPane.hgrow="ALWAYS"
-                                GridPane.vgrow="ALWAYS">
-                           <font>
-                              <Font size="24.0" />
-                           </font>
-                        </Button>
+                                                                <Button fx:id="btnPercent"
+                                                                        focusTraversable="false"
+                                                                        maxHeight="Infinity"
+                                                                        maxWidth="Infinity"
+                                                                        mnemonicParsing="false"
+                                                                        onAction="#percentClicked"
+                                                                        text="\%"
+                                                                        GridPane.columnIndex="1"
+                                                                        GridPane.hgrow="ALWAYS"
+                                                                        GridPane.vgrow="ALWAYS">
+                                                                        <font>
+                                                                                <Font size="24.0" />
+                                                                        </font>
+                                                                </Button>
 
-                        <!-- Row 1 -->
+                                                                <Button fx:id="btnDivide"
+                                                                        focusTraversable="false"
+                                                                        maxHeight="Infinity"
+                                                                        maxWidth="Infinity"
+                                                                        mnemonicParsing="false"
+                                                                        onAction="#operatorClicked"
+                                                                        styleClass="operator-button"
+                                                                        text="÷"
+                                                                        GridPane.columnIndex="3"
+                                                                        GridPane.hgrow="ALWAYS"
+                                                                        GridPane.vgrow="ALWAYS">
+                                                                        <font>
+                                                                                <Font size="24.0" />
+                                                                        </font>
+                                                                </Button>
 
-                        <Button fx:id="btn7"
-                                focusTraversable="false"
-                                maxHeight="Infinity"
-                                maxWidth="Infinity"
-                                onAction="#numberClicked"
-                                text="7"
-                                GridPane.hgrow="ALWAYS"
-                                GridPane.rowIndex="1"
-                                GridPane.vgrow="ALWAYS" />
+                                                                <!-- Row 1 -->
 
-                        <Button fx:id="btn8"
-                                focusTraversable="false"
-                                maxHeight="Infinity"
-                                maxWidth="Infinity"
-                                onAction="#numberClicked"
-                                text="8"
-                                GridPane.columnIndex="1"
-                                GridPane.hgrow="ALWAYS"
-                                GridPane.rowIndex="1"
-                                GridPane.vgrow="ALWAYS" />
+                                                                <Button fx:id="btn7"
+                                                                        focusTraversable="false"
+                                                                        maxHeight="Infinity"
+                                                                        maxWidth="Infinity"
+                                                                        onAction="#numberClicked"
+                                                                        text="7"
+                                                                        GridPane.hgrow="ALWAYS"
+                                                                        GridPane.rowIndex="1"
+                                                                        GridPane.vgrow="ALWAYS" />
 
-                        <Button fx:id="btn9"
-                                focusTraversable="false"
-                                maxHeight="Infinity"
-                                maxWidth="Infinity"
-                                onAction="#numberClicked"
-                                text="9"
-                                GridPane.columnIndex="2"
-                                GridPane.hgrow="ALWAYS"
-                                GridPane.rowIndex="1"
-                                GridPane.vgrow="ALWAYS" />
+                                                                <Button fx:id="btn8"
+                                                                        focusTraversable="false"
+                                                                        maxHeight="Infinity"
+                                                                        maxWidth="Infinity"
+                                                                        onAction="#numberClicked"
+                                                                        text="8"
+                                                                        GridPane.columnIndex="1"
+                                                                        GridPane.hgrow="ALWAYS"
+                                                                        GridPane.rowIndex="1"
+                                                                        GridPane.vgrow="ALWAYS" />
 
-                        <Button fx:id="btnMultiply"
-                                focusTraversable="false"
-                                maxHeight="Infinity"
-                                maxWidth="Infinity"
-                                onAction="#operatorClicked"
-                                styleClass="operator-button"
-                                text="×"
-                                GridPane.columnIndex="3"
-                                GridPane.hgrow="ALWAYS"
-                                GridPane.rowIndex="1"
-                                GridPane.vgrow="ALWAYS" />
+                                                                <Button fx:id="btn9"
+                                                                        focusTraversable="false"
+                                                                        maxHeight="Infinity"
+                                                                        maxWidth="Infinity"
+                                                                        onAction="#numberClicked"
+                                                                        text="9"
+                                                                        GridPane.columnIndex="2"
+                                                                        GridPane.hgrow="ALWAYS"
+                                                                        GridPane.rowIndex="1"
+                                                                        GridPane.vgrow="ALWAYS" />
 
-                        <!-- Row 2 -->
+                                                                <Button fx:id="btnMultiply"
+                                                                        focusTraversable="false"
+                                                                        maxHeight="Infinity"
+                                                                        maxWidth="Infinity"
+                                                                        onAction="#operatorClicked"
+                                                                        styleClass="operator-button"
+                                                                        text="×"
+                                                                        GridPane.columnIndex="3"
+                                                                        GridPane.hgrow="ALWAYS"
+                                                                        GridPane.rowIndex="1"
+                                                                        GridPane.vgrow="ALWAYS" />
 
-                        <Button fx:id="btn4"
-                                focusTraversable="false"
-                                maxHeight="Infinity"
-                                maxWidth="Infinity"
-                                onAction="#numberClicked"
-                                text="4"
-                                GridPane.hgrow="ALWAYS"
-                                GridPane.rowIndex="2"
-                                GridPane.vgrow="ALWAYS" />
+                                                                <!-- Row 2 -->
 
-                        <Button fx:id="btn5"
-                                focusTraversable="false"
-                                maxHeight="Infinity"
-                                maxWidth="Infinity"
-                                onAction="#numberClicked"
-                                text="5"
-                                GridPane.columnIndex="1"
-                                GridPane.hgrow="ALWAYS"
-                                GridPane.rowIndex="2"
-                                GridPane.vgrow="ALWAYS" />
+                                                                <Button fx:id="btn4"
+                                                                        focusTraversable="false"
+                                                                        maxHeight="Infinity"
+                                                                        maxWidth="Infinity"
+                                                                        onAction="#numberClicked"
+                                                                        text="4"
+                                                                        GridPane.hgrow="ALWAYS"
+                                                                        GridPane.rowIndex="2"
+                                                                        GridPane.vgrow="ALWAYS" />
 
-                        <Button fx:id="btn6"
-                                focusTraversable="false"
-                                maxHeight="Infinity"
-                                maxWidth="Infinity"
-                                onAction="#numberClicked"
-                                text="6"
-                                GridPane.columnIndex="2"
-                                GridPane.hgrow="ALWAYS"
-                                GridPane.rowIndex="2"
-                                GridPane.vgrow="ALWAYS" />
+                                                                <Button fx:id="btn5"
+                                                                        focusTraversable="false"
+                                                                        maxHeight="Infinity"
+                                                                        maxWidth="Infinity"
+                                                                        onAction="#numberClicked"
+                                                                        text="5"
+                                                                        GridPane.columnIndex="1"
+                                                                        GridPane.hgrow="ALWAYS"
+                                                                        GridPane.rowIndex="2"
+                                                                        GridPane.vgrow="ALWAYS" />
 
-                        <Button fx:id="btnSubtract"
-                                focusTraversable="false"
-                                maxHeight="Infinity"
-                                maxWidth="Infinity"
-                                onAction="#operatorClicked"
-                                styleClass="operator-button"
-                                text="-"
-                                GridPane.columnIndex="3"
-                                GridPane.hgrow="ALWAYS"
-                                GridPane.rowIndex="2"
-                                GridPane.vgrow="ALWAYS" />
+                                                                <Button fx:id="btn6"
+                                                                        focusTraversable="false"
+                                                                        maxHeight="Infinity"
+                                                                        maxWidth="Infinity"
+                                                                        onAction="#numberClicked"
+                                                                        text="6"
+                                                                        GridPane.columnIndex="2"
+                                                                        GridPane.hgrow="ALWAYS"
+                                                                        GridPane.rowIndex="2"
+                                                                        GridPane.vgrow="ALWAYS" />
 
-                        <!-- Row 3 -->
+                                                                <Button fx:id="btnSubtract"
+                                                                        focusTraversable="false"
+                                                                        maxHeight="Infinity"
+                                                                        maxWidth="Infinity"
+                                                                        onAction="#operatorClicked"
+                                                                        styleClass="operator-button"
+                                                                        text="-"
+                                                                        GridPane.columnIndex="3"
+                                                                        GridPane.hgrow="ALWAYS"
+                                                                        GridPane.rowIndex="2"
+                                                                        GridPane.vgrow="ALWAYS" />
 
-                        <Button fx:id="btn1"
-                                focusTraversable="false"
-                                maxHeight="Infinity"
-                                maxWidth="Infinity"
-                                onAction="#numberClicked"
-                                text="1"
-                                GridPane.hgrow="ALWAYS"
-                                GridPane.rowIndex="3"
-                                GridPane.vgrow="ALWAYS" />
+                                                                <!-- Row 3 -->
 
-                        <Button fx:id="btn2"
-                                focusTraversable="false"
-                                maxHeight="Infinity"
-                                maxWidth="Infinity"
-                                onAction="#numberClicked"
-                                text="2"
-                                GridPane.columnIndex="1"
-                                GridPane.hgrow="ALWAYS"
-                                GridPane.rowIndex="3"
-                                GridPane.vgrow="ALWAYS" />
+                                                                <Button fx:id="btn1"
+                                                                        focusTraversable="false"
+                                                                        maxHeight="Infinity"
+                                                                        maxWidth="Infinity"
+                                                                        onAction="#numberClicked"
+                                                                        text="1"
+                                                                        GridPane.hgrow="ALWAYS"
+                                                                        GridPane.rowIndex="3"
+                                                                        GridPane.vgrow="ALWAYS" />
 
-                        <Button fx:id="btn3"
-                                focusTraversable="false"
-                                maxHeight="Infinity"
-                                maxWidth="Infinity"
-                                onAction="#numberClicked"
-                                text="3"
-                                GridPane.columnIndex="2"
-                                GridPane.hgrow="ALWAYS"
-                                GridPane.rowIndex="3"
-                                GridPane.vgrow="ALWAYS" />
+                                                                <Button fx:id="btn2"
+                                                                        focusTraversable="false"
+                                                                        maxHeight="Infinity"
+                                                                        maxWidth="Infinity"
+                                                                        onAction="#numberClicked"
+                                                                        text="2"
+                                                                        GridPane.columnIndex="1"
+                                                                        GridPane.hgrow="ALWAYS"
+                                                                        GridPane.rowIndex="3"
+                                                                        GridPane.vgrow="ALWAYS" />
 
-                        <Button fx:id="btnAdd"
-                                focusTraversable="false"
-                                maxHeight="Infinity"
-                                maxWidth="Infinity"
-                                onAction="#operatorClicked"
-                                styleClass="operator-button"
-                                text="+"
-                                GridPane.columnIndex="3"
-                                GridPane.hgrow="ALWAYS"
-                                GridPane.rowIndex="3"
-                                GridPane.vgrow="ALWAYS" />
+                                                                <Button fx:id="btn3"
+                                                                        focusTraversable="false"
+                                                                        maxHeight="Infinity"
+                                                                        maxWidth="Infinity"
+                                                                        onAction="#numberClicked"
+                                                                        text="3"
+                                                                        GridPane.columnIndex="2"
+                                                                        GridPane.hgrow="ALWAYS"
+                                                                        GridPane.rowIndex="3"
+                                                                        GridPane.vgrow="ALWAYS" />
 
-                        <!-- Row 4 -->
+                                                                <Button fx:id="btnAdd"
+                                                                        focusTraversable="false"
+                                                                        maxHeight="Infinity"
+                                                                        maxWidth="Infinity"
+                                                                        onAction="#operatorClicked"
+                                                                        styleClass="operator-button"
+                                                                        text="+"
+                                                                        GridPane.columnIndex="3"
+                                                                        GridPane.hgrow="ALWAYS"
+                                                                        GridPane.rowIndex="3"
+                                                                        GridPane.vgrow="ALWAYS" />
 
-                        <Button fx:id="btn0"
-                                focusTraversable="false"
-                                maxHeight="Infinity"
-                                maxWidth="Infinity"
-                                onAction="#numberClicked"
-                                text="0"
-                                textAlignment="CENTER"
-                                GridPane.columnSpan="2"
-                                GridPane.halignment="CENTER"
-                                GridPane.hgrow="ALWAYS"
-                                GridPane.rowIndex="4"
-                                GridPane.valignment="CENTER"
-                                GridPane.vgrow="ALWAYS" />
+                                                                <!-- Row 4 -->
 
-                        <Button fx:id="btnDecimal"
-                                focusTraversable="false"
-                                maxHeight="Infinity"
-                                maxWidth="Infinity"
-                                onAction="#decimalClicked"
-                                text="."
-                                GridPane.columnIndex="2"
-                                GridPane.hgrow="ALWAYS"
-                                GridPane.rowIndex="4"
-                                GridPane.vgrow="ALWAYS" />
+                                                                <Button fx:id="btn0"
+                                                                        focusTraversable="false"
+                                                                        maxHeight="Infinity"
+                                                                        maxWidth="Infinity"
+                                                                        onAction="#numberClicked"
+                                                                        text="0"
+                                                                        textAlignment="CENTER"
+                                                                        GridPane.columnSpan="2"
+                                                                        GridPane.halignment="CENTER"
+                                                                        GridPane.hgrow="ALWAYS"
+                                                                        GridPane.rowIndex="4"
+                                                                        GridPane.valignment="CENTER"
+                                                                        GridPane.vgrow="ALWAYS" />
 
-                        <Button fx:id="btnEquals"
-                                focusTraversable="false"
-                                maxHeight="Infinity"
-                                maxWidth="Infinity"
-                                onAction="#equalsClicked"
-                                styleClass="equals-button"
-                                text="="
-                                GridPane.columnIndex="3"
-                                GridPane.hgrow="ALWAYS"
-                                GridPane.rowIndex="4"
-                                GridPane.vgrow="ALWAYS" />
+                                                                <Button fx:id="btnDecimal"
+                                                                        focusTraversable="false"
+                                                                        maxHeight="Infinity"
+                                                                        maxWidth="Infinity"
+                                                                        onAction="#decimalClicked"
+                                                                        text="."
+                                                                        GridPane.columnIndex="2"
+                                                                        GridPane.hgrow="ALWAYS"
+                                                                        GridPane.rowIndex="4"
+                                                                        GridPane.vgrow="ALWAYS" />
 
-                     </children>
+                                                                <Button fx:id="btnEquals"
+                                                                        focusTraversable="false"
+                                                                        maxHeight="Infinity"
+                                                                        maxWidth="Infinity"
+                                                                        onAction="#equalsClicked"
+                                                                        styleClass="equals-button"
+                                                                        text="="
+                                                                        GridPane.columnIndex="3"
+                                                                        GridPane.hgrow="ALWAYS"
+                                                                        GridPane.rowIndex="4"
+                                                                        GridPane.vgrow="ALWAYS" />
 
-                  </GridPane>
-               </StackPane>
+                                                        </children>
 
-            </VBox>
+                                                </GridPane>
+                                        </StackPane>
 
-            <!-- RIGHT SIDE -->
-            <VBox prefWidth="280"
-                  spacing="15"
-                  styleClass="history-panel">
 
-               <Label
-                       text="History"
-                       styleClass="history-title"/>
 
-               <ScrollPane
-                       fitToWidth="true"
-                       VBox.vgrow="ALWAYS"
-                       styleClass="history-scroll">
 
-                  <content>
+                                </VBox>
 
-                     <VBox
-                             fx:id="historyContainer"
-                             spacing="10"
-                             styleClass="history-container"/>
+                                <!-- RIGHT SIDE -->
+                                <VBox prefWidth="280"
+                                        spacing="15"
+                                        styleClass="history-panel">
 
-                  </content>
+                                        <Label
+                                                text="History"
+                                                styleClass="history-title" />
 
-               </ScrollPane>
+                                        <ScrollPane
+                                                fitToWidth="true"
+                                                VBox.vgrow="ALWAYS"
+                                                styleClass="history-scroll">
 
-            </VBox>
+                                                <content>
 
-         </HBox>
+                                                        <VBox
+                                                                fx:id="historyContainer"
+                                                                spacing="10"
+                                                                styleClass="history-container" />
 
-      </center>
+                                                </content>
 
-   </BorderPane>
+                                        </ScrollPane>
 
-   <Pane fx:id="drawerContainer"
-         mouseTransparent="true"/>
+                                </VBox>
+
+                        </HBox>
+
+                </center>
+
+        </BorderPane>
+
+        <!-- Animated dark backdrop over the entire application -->
+        <Region fx:id="drawerBackdrop"
+                styleClass="drawer-backdrop"
+                visible="false"
+                onMouseClicked="#closeDrawer" />
+
+        <!-- Navigation Drawer Container (Full window height merged to top) -->
+        <StackPane fx:id="drawerContainer"
+                alignment="TOP_LEFT"
+                pickOnBounds="false"
+                prefWidth="280"
+                minWidth="280"
+                maxWidth="280"
+                visible="false"
+                mouseTransparent="false"
+                StackPane.alignment="TOP_LEFT" />
 
 </StackPane>

@@ -19,6 +19,11 @@ import javafx.scene.layout.Pane;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import java.io.IOException;
+import javafx.animation.TranslateTransition;
+import javafx.animation.FadeTransition;
+import javafx.animation.Interpolator;
+import javafx.scene.layout.Region;
+import javafx.util.Duration;
 
 
 public class CalculatorController {
@@ -38,20 +43,67 @@ public class CalculatorController {
     @FXML
     private void toggleDrawer() {
 
-        drawerOpen = !drawerOpen;
+        if (!drawerOpen) {
 
-        drawerContainer.setVisible(drawerOpen);
+            drawerContainer.setVisible(true);
+
+            drawerContent.setTranslateX(-280);
+            drawerContent.setOpacity(0.0);
+
+            TranslateTransition slideIn =
+                    new TranslateTransition(Duration.millis(140), drawerContent);
+            slideIn.setInterpolator(Interpolator.SPLINE(0.1, 0.9, 0.2, 1.0));
+            slideIn.setToX(0);
+
+            FadeTransition fadeIn =
+                    new FadeTransition(Duration.millis(140), drawerContent);
+            fadeIn.setInterpolator(Interpolator.EASE_OUT);
+            fadeIn.setToValue(1.0);
+
+            slideIn.play();
+            fadeIn.play();
+
+            if (drawerBackdrop != null) {
+                drawerBackdrop.setVisible(true);
+                drawerBackdrop.setOpacity(0.0);
+                FadeTransition backdropFade =
+                        new FadeTransition(Duration.millis(140), drawerBackdrop);
+                backdropFade.setInterpolator(Interpolator.EASE_OUT);
+                backdropFade.setToValue(0.6);
+                backdropFade.play();
+            }
+
+            if (appTitleLabel != null) {
+                FadeTransition fadeTitle =
+                        new FadeTransition(Duration.millis(140), appTitleLabel);
+                fadeTitle.setInterpolator(Interpolator.EASE_OUT);
+                fadeTitle.setToValue(0.0);
+                fadeTitle.play();
+            }
+
+            drawerOpen = true;
+
+        } else {
+
+            closeDrawer();
+        }
     }
 
     @FXML
     private Pane drawerContainer;
+
+    @FXML
+    private Region drawerBackdrop;
+
+    @FXML
+    private Label appTitleLabel;
 
     private double firstNumber = 0;
     private String operator = "";
     private boolean startNewNumber = true;
     private double lastSecondNumber = 0;
     private String lastOperator = "";
-    private Parent drawerContent;
+    private Region drawerContent;
     private boolean drawerOpen = false;
 
     // =========================
@@ -59,6 +111,12 @@ public class CalculatorController {
     // =========================
 
     private void inputNumber(String number) {
+
+        if (display.getText().equals("Error")) {
+            display.setText(number);
+            startNewNumber = false;
+            return;
+        }
 
         if (startNewNumber) {
             display.setText(number);
@@ -93,11 +151,7 @@ public class CalculatorController {
 
         // Expression
         Label expression = new Label(
-                formatNumber(first)
-                        + " "
-                        + operator
-                        + " "
-                        + formatNumber(second)
+                formatExpression(first, operator, second)
         );
         expression.getStyleClass().add("working-expression");
 
@@ -109,9 +163,14 @@ public class CalculatorController {
 
         // Add labels to the card
         card.getChildren().addAll(expression, answer);
+        card.setOnMouseClicked(e -> {
+            display.setText(formatNumber(result));
+            startNewNumber = false;
+        });
+        card.setStyle("-fx-cursor: hand;");
 
-        // Add the card to the Working panel
-        workingContainer.getChildren().add(card);
+        // Add the card to the Working panel at top
+        workingContainer.getChildren().add(0, card);
     }
 
     private void addToHistory(
@@ -124,11 +183,7 @@ public class CalculatorController {
         card.getStyleClass().add("history-card");
 
         Label expression = new Label(
-                formatNumber(first)
-                        + " "
-                        + operator
-                        + " "
-                        + formatNumber(second)
+                formatExpression(first, operator, second)
         );
 
         expression.getStyleClass().add("history-expression");
@@ -140,20 +195,59 @@ public class CalculatorController {
         answer.getStyleClass().add("history-result");
 
         card.getChildren().addAll(expression, answer);
+        card.setOnMouseClicked(e -> {
+            display.setText(formatNumber(result));
+            startNewNumber = false;
+        });
+        card.setStyle("-fx-cursor: hand;");
 
-        historyContainer.getChildren().add(card);
+        historyContainer.getChildren().add(0, card);
+    }
+
+    private String formatExpression(double first, String op, double second) {
+        switch (op) {
+            case "sin":
+            case "cos":
+            case "tan":
+            case "log":
+            case "ln":
+            case "√":
+            case "|x|":
+                return op + "(" + formatNumber(first) + ")";
+            case "x²":
+                return formatNumber(first) + "²";
+            case "x³":
+                return formatNumber(first) + "³";
+            case "1/x":
+                return "1/(" + formatNumber(first) + ")";
+            case "n!":
+                return formatNumber(first) + "!";
+            default:
+                return formatNumber(first) + " " + op + " " + formatNumber(second);
+        }
     }
 
     private String formatNumber(double value) {
 
-        if (value == (int) value) {
-            return String.valueOf((int) value);
+        if (Double.isNaN(value) || Double.isInfinite(value)) {
+            return "Error";
         }
 
-        return String.valueOf(value);
+        double rounded = Math.round(value * 1e11) / 1e11;
+
+        if (rounded == (long) rounded && Math.abs(rounded) < 1e15) {
+            return String.valueOf((long) rounded);
+        }
+
+        return String.valueOf(rounded);
     }
 
     private void selectOperator(String newOperator) {
+
+        if (display.getText().equals("Error")) {
+            clearDisplay();
+            return;
+        }
 
         double currentNumber = Double.parseDouble(display.getText());
 
@@ -279,6 +373,11 @@ public class CalculatorController {
     @FXML
     private void decimalClicked() {
 
+        if (display.getText().equals("Error")) {
+            clearDisplay();
+            return;
+        }
+
         if (startNewNumber) {
             display.setText("0.");
             startNewNumber = false;
@@ -290,6 +389,11 @@ public class CalculatorController {
     @FXML
     private void percentClicked() {
 
+        if (display.getText().equals("Error")) {
+            clearDisplay();
+            return;
+        }
+
         double number = Double.parseDouble(display.getText());
 
         if (operator.equals("+") || operator.equals("-")) {
@@ -299,7 +403,7 @@ public class CalculatorController {
         }
 
         updateDisplay(number);
-        expressionLabel.setText(number + "%");
+        expressionLabel.setText(formatNumber(number) + "%");
     }
 
     @FXML
@@ -516,8 +620,14 @@ public class CalculatorController {
     // Initialize
     // =========================
 
+    private boolean isInitialized = false;
+
     @FXML
     public void initialize() {
+        if (isInitialized) {
+            return; // Prevent infinite recursion when FXMLLoader.load() invokes initialize() on this controller again
+        }
+        isInitialized = true;
 
         rootPane.setFocusTraversable(true);
 
@@ -525,9 +635,18 @@ public class CalculatorController {
 
         try {
 
-            drawerContent = FXMLLoader.load(
+            FXMLLoader loader = new FXMLLoader(
                     getClass().getResource("/fxml/NavigationDrawer.fxml")
             );
+            loader.setController(this);
+            drawerContent = loader.load();
+            drawerContent.setMinWidth(280);
+            drawerContent.setPrefWidth(280);
+            drawerContent.setMaxWidth(280);
+
+            drawerContainer.setMinWidth(280);
+            drawerContainer.setPrefWidth(280);
+            drawerContainer.setMaxWidth(280);
 
             drawerContainer.getChildren().add(drawerContent);
 
@@ -557,15 +676,56 @@ public class CalculatorController {
     private Button scientificButton;
 
     @FXML
+    private void closeDrawer() {
+        if (drawerOpen && drawerContent != null) {
+            TranslateTransition slideOut =
+                    new TranslateTransition(Duration.millis(120), drawerContent);
+            slideOut.setInterpolator(Interpolator.SPLINE(0.4, 0.0, 1.0, 1.0));
+            slideOut.setToX(-280);
+
+            FadeTransition fadeOut =
+                    new FadeTransition(Duration.millis(120), drawerContent);
+            fadeOut.setInterpolator(Interpolator.EASE_IN);
+            fadeOut.setToValue(0.0);
+
+            if (drawerBackdrop != null) {
+                FadeTransition backdropFadeOut =
+                        new FadeTransition(Duration.millis(120), drawerBackdrop);
+                backdropFadeOut.setInterpolator(Interpolator.EASE_IN);
+                backdropFadeOut.setToValue(0.0);
+                backdropFadeOut.setOnFinished(e -> drawerBackdrop.setVisible(false));
+                backdropFadeOut.play();
+            }
+
+            if (appTitleLabel != null) {
+                FadeTransition fadeTitle =
+                        new FadeTransition(Duration.millis(120), appTitleLabel);
+                fadeTitle.setInterpolator(Interpolator.EASE_IN);
+                fadeTitle.setToValue(1.0);
+                fadeTitle.play();
+            }
+
+            slideOut.setOnFinished(e -> drawerContainer.setVisible(false));
+            slideOut.play();
+            fadeOut.play();
+
+            drawerOpen = false;
+        }
+    }
+
+    @FXML
     private void showScientificMode() {
 
         try {
 
-            Parent scientificKeypad = FXMLLoader.load(
-                    getClass().getResource("/layouts/ScientificKeypad.fxml")
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/fxml/ScientificKeypad.fxml")
             );
+            loader.setController(this);
+            Parent scientificKeypad = loader.load();
 
             keypadContainer.getChildren().setAll(scientificKeypad);
+            closeDrawer();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -576,6 +736,104 @@ public class CalculatorController {
     private void showStandardMode() {
 
         keypadContainer.getChildren().setAll(buttonGrid);
+        closeDrawer();
+    }
+
+    @FXML
+    private void scientificUnaryClicked(ActionEvent event) {
+        Button button = (Button) event.getSource();
+        String func = button.getText();
+
+        if (display.getText().equals("Error")) {
+            clearDisplay();
+            return;
+        }
+
+        try {
+            double current = Double.parseDouble(display.getText());
+            double result = 0;
+            switch (func) {
+                case "sin":
+                    result = Math.sin(Math.toRadians(current));
+                    break;
+                case "cos":
+                    result = Math.cos(Math.toRadians(current));
+                    break;
+                case "tan":
+                    if (Math.abs(current % 180) == 90) {
+                        throw new ArithmeticException("Undefined");
+                    }
+                    result = Math.tan(Math.toRadians(current));
+                    break;
+                case "log":
+                    if (current <= 0) throw new ArithmeticException("Invalid input");
+                    result = Math.log10(current);
+                    break;
+                case "ln":
+                    if (current <= 0) throw new ArithmeticException("Invalid input");
+                    result = Math.log(current);
+                    break;
+                case "√":
+                    if (current < 0) throw new ArithmeticException("Invalid input");
+                    result = Math.sqrt(current);
+                    break;
+                case "x²":
+                    result = current * current;
+                    break;
+                case "x³":
+                    result = current * current * current;
+                    break;
+                case "1/x":
+                    if (current == 0) throw new ArithmeticException("Cannot divide by zero");
+                    result = 1.0 / current;
+                    break;
+                case "|x|":
+                    result = Math.abs(current);
+                    break;
+                case "n!":
+                    if (current < 0 || current != (int) current || current > 170) {
+                        throw new ArithmeticException("Invalid input");
+                    }
+                    result = factorial((int) current);
+                    break;
+                default:
+                    result = current;
+                    break;
+            }
+
+            addToWorkingArea(current, func, 0, result);
+            addToHistory(current, func, 0, result);
+            updateDisplay(result);
+            if (startNewNumber) {
+                firstNumber = result;
+            }
+        } catch (Exception ex) {
+            display.setText("Error");
+            operator = "";
+            startNewNumber = true;
+        }
+    }
+
+    private double factorial(int n) {
+        double fact = 1;
+        for (int i = 2; i <= n; i++) {
+            fact *= i;
+        }
+        return fact;
+    }
+
+    @FXML
+    private void constantClicked(ActionEvent event) {
+        Button button = (Button) event.getSource();
+        String constant = button.getText();
+        double val = 0;
+        if (constant.equals("π")) {
+            val = Math.PI;
+        } else if (constant.equals("e")) {
+            val = Math.E;
+        }
+        updateDisplay(val);
+        startNewNumber = false;
     }
 
 }

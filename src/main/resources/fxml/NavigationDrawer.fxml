@@ -1,37 +1,155 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
 <VBox xmlns="http://javafx.com/javafx/17.0.12"
       xmlns:fx="http://javafx.com/fxml/1"
-      fx:id="drawer"
-      prefWidth="250"
-      spacing="8"
+      prefWidth="280"
+      minWidth="280"
+      maxWidth="280"
       styleClass="drawer">
 
-    <Button text="🧮 Standard"
-            styleClass="drawer-button"/>
+    <!-- Top Header inside Drawer: Just the Burger Button ☰ (NovaCalc title is disappeared!) -->
+    <HBox alignment="CENTER_LEFT" styleClass="drawer-header" prefHeight="55" minHeight="55" maxHeight="55">
+        <Button text="☰"
+                styleClass="menu-button"
+                onAction="#closeDrawer"/>
+    </HBox>
 
-    <Button text="🔬 Scientific"
-            styleClass="drawer-button"/>
+    <!-- Scrollable Windows 11 Menu Items -->
+    <ScrollPane fitToWidth="true"
+                styleClass="drawer-scroll"
+                VBox.vgrow="ALWAYS"
+                hbarPolicy="NEVER"
+                vbarPolicy="AS_NEEDED">
 
-    <Button text="📈 Graph"
-            styleClass="drawer-button"/>
+        <content>
+            <VBox spacing="2" styleClass="drawer-list">
 
-    <Button text="💻 Programmer"
-            styleClass="drawer-button"/>
+                <Label text="Calculator" styleClass="drawer-section-title"/>
 
-    <Button text="🔄 Converter"
-            styleClass="drawer-button"/>
+                <Button text="🖩   Standard"
+                        styleClass="drawer-item, drawer-item-active"
+                        prefWidth="255" maxWidth="255" minWidth="255"
+                        focusTraversable="false"
+                        onAction="#showStandardMode"/>
 
-    <Button text="🤖 AI Assistant"
-            styleClass="drawer-button"/>
+                <Button text="🧪   Scientific"
+                        styleClass="drawer-item"
+                        prefWidth="255" maxWidth="255" minWidth="255"
+                        focusTraversable="false"
+                        onAction="#showScientificMode"/>
 
-    <Button text="📚 Formula Library"
-            styleClass="drawer-button"/>
+                <Button text="📈   Graphing"
+                        styleClass="drawer-item"
+                        prefWidth="255" maxWidth="255" minWidth="255"
+                        focusTraversable="false"
+                        onAction="#closeDrawer"/>
 
-    <Button text="⚙ Settings"
-            styleClass="drawer-button"/>
+                <Button text="&lt;/&gt;   Programmer"
+                        styleClass="drawer-item"
+                        prefWidth="255" maxWidth="255" minWidth="255"
+                        focusTraversable="false"
+                        onAction="#closeDrawer"/>
+
+                <Button text="📅   Date calculation"
+                        styleClass="drawer-item"
+                        prefWidth="255" maxWidth="255" minWidth="255"
+                        focusTraversable="false"
+                        onAction="#closeDrawer"/>
+
+                <Region prefHeight="8"/>
+
+                <Label text="Converter" styleClass="drawer-section-title"/>
+
+                <Button text="💲   Currency"
+                        styleClass="drawer-item"
+                        prefWidth="255" maxWidth="255" minWidth="255"
+                        focusTraversable="false"
+                        onAction="#closeDrawer"/>
+
+                <Button text="🧊   Volume"
+                        styleClass="drawer-item"
+                        prefWidth="255" maxWidth="255" minWidth="255"
+                        focusTraversable="false"
+                        onAction="#closeDrawer"/>
+
+                <Button text="📏   Length"
+                        styleClass="drawer-item"
+                        prefWidth="255" maxWidth="255" minWidth="255"
+                        focusTraversable="false"
+                        onAction="#closeDrawer"/>
+
+                <Button text="⚖   Weight and mass"
+                        styleClass="drawer-item"
+                        prefWidth="255" maxWidth="255" minWidth="255"
+                        focusTraversable="false"
+                        onAction="#closeDrawer"/>
+
+                <Button text="🌡   Temperature"
+                        styleClass="drawer-item"
+                        prefWidth="255" maxWidth="255" minWidth="255"
+                        focusTraversable="false"
+                        onAction="#closeDrawer"/>
+
+                <Button text="🔥   Energy"
+                        styleClass="drawer-item"
+                        prefWidth="255" maxWidth="255" minWidth="255"
+                        focusTraversable="false"
+                        onAction="#closeDrawer"/>
+
+                <Button text="⬛   Area"
+                        styleClass="drawer-item"
+                        prefWidth="255" maxWidth="255" minWidth="255"
+                        focusTraversable="false"
+                        onAction="#closeDrawer"/>
+
+                <Button text="🏃   Speed"
+                        styleClass="drawer-item"
+                        prefWidth="255" maxWidth="255" minWidth="255"
+                        focusTraversable="false"
+                        onAction="#closeDrawer"/>
+
+                <Button text="⏱   Time"
+                        styleClass="drawer-item"
+                        prefWidth="255" maxWidth="255" minWidth="255"
+                        focusTraversable="false"
+                        onAction="#closeDrawer"/>
+
+                <Button text="⚡   Power"
+                        styleClass="drawer-item"
+                        prefWidth="255" maxWidth="255" minWidth="255"
+                        focusTraversable="false"
+                        onAction="#closeDrawer"/>
+
+                <Button text="💾   Data"
+                        styleClass="drawer-item"
+                        prefWidth="255" maxWidth="255" minWidth="255"
+                        focusTraversable="false"
+                        onAction="#closeDrawer"/>
+
+                <Button text="🌪   Pressure"
+                        styleClass="drawer-item"
+                        prefWidth="255" maxWidth="255" minWidth="255"
+                        focusTraversable="false"
+                        onAction="#closeDrawer"/>
+
+            </VBox>
+        </content>
+    </ScrollPane>
+
+    <!-- Fixed Footer Settings Button -->
+    <VBox styleClass="drawer-footer">
+        <Button text="⚙   Settings"
+                styleClass="drawer-item"
+                prefWidth="255" maxWidth="255" minWidth="255"
+                focusTraversable="false"
+                onAction="#closeDrawer"/>
+    </VBox>
 
 </VBox>

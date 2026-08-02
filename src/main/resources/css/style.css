@@ -55,6 +55,19 @@
     -fx-background-color: #505050;
 }
 
+.scientific-button {
+    -fx-background-color: #334155;
+    -fx-text-fill: #E2E8F0;
+}
+
+.scientific-button:hover {
+    -fx-background-color: #475569;
+}
+
+.scientific-button:pressed {
+    -fx-background-color: #1E293B;
+}
+
 .label {
     -fx-text-fill: white;
 }
@@ -150,6 +163,10 @@
     -fx-spacing: 5;
 }
 
+.working-card:hover {
+    -fx-background-color: #333333;
+}
+
 .working-expression {
     -fx-text-fill: #BDBDBD;
     -fx-font-size: 16px;
@@ -217,6 +234,10 @@
     -fx-spacing: 5;
 }
 
+.history-card:hover {
+    -fx-background-color: #383838;
+}
+
 .history-expression {
     -fx-text-fill: #AAAAAA;
     -fx-font-size: 14px;
@@ -225,5 +246,102 @@
 .history-result {
     -fx-text-fill: white;
     -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
+
+/* =========================================================
+   WINDOWS 11 FLUENT NAVIGATION DRAWER
+   ========================================================= */
+
+.drawer-backdrop {
+    -fx-background-color: rgba(0, 0, 0, 0.65);
+    -fx-cursor: hand;
+}
+
+.drawer {
+    -fx-background-color: #1F222A;
+    -fx-border-color: #2F333D;
+    -fx-border-width: 0 1 0 0;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.65), 30, 0.25, 8, 0);
+}
+
+.drawer-header {
+    -fx-padding: 15;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.drawer-main-title {
+    -fx-text-fill: white;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
+
+.drawer-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 0 8 0 8;
+}
+
+.drawer-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+.drawer-list {
+    -fx-background-color: transparent;
+    -fx-padding: 0 0 10 0;
+}
+
+.drawer-section-title {
+    -fx-text-fill: #9CA3AF;
+    -fx-font-size: 12.5px;
+    -fx-font-weight: bold;
+    -fx-padding: 12 12 6 12;
+}
+
+.drawer-item {
+    -fx-background-color: transparent;
+    -fx-text-fill: #E5E7EB;
+    -fx-font-size: 14.5px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 10 16 10 16;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-cursor: hand;
+    -fx-graphic-text-gap: 12;
+}
+
+.drawer-item:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.07);
+}
+
+.drawer-item:pressed {
+    -fx-background-color: rgba(255, 255, 255, 0.04);
+    -fx-text-fill: #9CA3AF;
+}
+
+/* Active Windows 11 style item with left accent bar indicator */
+.drawer-item-active {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-border-color: #60CDFF;
+    -fx-border-width: 0 0 0 3;
+    -fx-border-insets: 6 0 6 0;
+}
+
+.drawer-item-active:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.11);
+}
+
+.drawer-footer {
+    -fx-padding: 8 10 12 10;
+    -fx-border-color: rgba(255, 255, 255, 0.08);
+    -fx-border-width: 1 0 0 0;
+}
+
+.app-title {
+    -fx-text-fill: white;
+    -fx-font-size: 22px;
     -fx-font-weight: bold;
 }
