@@ -23,7 +23,13 @@ import javafx.animation.TranslateTransition;
 import javafx.animation.FadeTransition;
 import javafx.animation.Interpolator;
 import javafx.scene.layout.Region;
+import javafx.scene.web.WebView;
+import javafx.scene.web.WebEngine;
 import javafx.util.Duration;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
+import javafx.stage.Stage;
+import com.banukasineth.advancedcalculator.app.service.AISolverService;
 
 
 public class CalculatorController {
@@ -31,11 +37,89 @@ public class CalculatorController {
     @FXML
     private BorderPane rootPane;
 
+    @FXML private HBox titleBar;
+    private double xOffset = 0;
+    private double yOffset = 0;
+
+    @FXML
+    public void handleTitleBarPressed(MouseEvent event) {
+        xOffset = event.getSceneX();
+        yOffset = event.getSceneY();
+    }
+
+    @FXML
+    public void handleTitleBarDragged(MouseEvent event) {
+        Stage stage = (Stage) rootPane.getScene().getWindow();
+        stage.setX(event.getScreenX() - xOffset);
+        stage.setY(event.getScreenY() - yOffset);
+    }
+
+    @FXML
+    public void minimizeWindow(ActionEvent event) {
+        Stage stage = (Stage) rootPane.getScene().getWindow();
+        stage.setIconified(true);
+    }
+
+    @FXML
+    public void maximizeWindow(ActionEvent event) {
+        Stage stage = (Stage) rootPane.getScene().getWindow();
+        stage.setMaximized(!stage.isMaximized());
+    }
+
+    @FXML
+    public void closeWindow(ActionEvent event) {
+        Platform.exit();
+    }
+
     @FXML
     private Label expressionLabel;
 
     @FXML
     private TextField display;
+    
+    @FXML
+    private WebView mathWebView;
+
+    @FXML
+    private WebView solutionWebView;
+
+    @FXML
+    private VBox loadingBox;
+
+    private AISolverService aiSolverService = new AISolverService();
+
+    // Phase 3: Track the current LaTeX string for KaTeX
+    private StringBuilder currentLatexExpression = new StringBuilder();
+
+    /**
+     * Updates the KaTeX math expression in the WebView.
+     * Use double backslashes for LaTeX (e.g., "\\frac{1}{2}")
+     */
+    public void setMathExpression(String latex) {
+        if (mathWebView != null) {
+            String renderLatex = latex;
+            // Auto-close open curly braces for KaTeX rendering
+            int openCurly = 0;
+            for (char c : renderLatex.toCharArray()) {
+                if (c == '{') openCurly++;
+                else if (c == '}') openCurly--;
+            }
+            while (openCurly > 0) {
+                renderLatex += "}";
+                openCurly--;
+            }
+
+            // Escape backslashes for JavaScript execution
+            String jsSafeLatex = renderLatex.replace("\\", "\\\\");
+            Platform.runLater(() -> {
+                try {
+                    mathWebView.getEngine().executeScript("updateMath('" + jsSafeLatex + "')");
+                } catch (Exception e) {
+                    System.err.println("Error executing KaTeX script: " + e.getMessage());
+                }
+            });
+        }
+    }
 
     @FXML
     private VBox drawer;
@@ -105,6 +189,143 @@ public class CalculatorController {
     private String lastOperator = "";
     private Region drawerContent;
     private boolean drawerOpen = false;
+
+    // =========================
+    // Keypad Logic (Phase 3)
+    // =========================
+
+    @FXML
+    public void handleAdvancedKey(ActionEvent event) {
+        Button btn = (Button) event.getSource();
+        processKeyInput(btn.getText());
+    }
+
+    private void processKeyInput(String text) {
+        switch (text) {
+            case "sin": case "cos": case "tan":
+            case "csc": case "sec": case "cot":
+            case "sinh": case "cosh": case "tanh":
+            case "log": case "ln":
+                currentLatexExpression.append("\\").append(text).append("(");
+                break;
+            case "π":
+                currentLatexExpression.append("\\pi");
+                break;
+            case "mod":
+                currentLatexExpression.append(" \\bmod ");
+                break;
+            case "↑n":
+                currentLatexExpression.append("^{n}");
+                break;
+            case "n↓":
+                currentLatexExpression.append("_{n}");
+                break;
+            case "√":
+                currentLatexExpression.append("\\sqrt{");
+                break;
+            case "x²":
+                currentLatexExpression.append("^2");
+                break;
+            case "xʸ":
+                currentLatexExpression.append("^{");
+                break;
+            case "x⁻¹":
+                currentLatexExpression.append("^{-1}");
+                break;
+            case "x10ⁿ":
+                currentLatexExpression.append("\\times 10^{");
+                break;
+            case "x!":
+                currentLatexExpression.append("!");
+                break;
+            case "|x|":
+                currentLatexExpression.append("|");
+                break;
+            case "Re":
+                currentLatexExpression.append("\\operatorname{Re}(");
+                break;
+            case "Im":
+                currentLatexExpression.append("\\operatorname{Im}(");
+                break;
+            case "conj":
+                currentLatexExpression.append("\\overline{");
+                break;
+            case "arg":
+                currentLatexExpression.append("\\arg(");
+                break;
+            case "deg":
+                currentLatexExpression.append("^{\\circ}");
+                break;
+            case "rad":
+                currentLatexExpression.append("\\text{rad}");
+                break;
+            case "f(x)":
+                currentLatexExpression.append("f(");
+                break;
+            case "÷":
+                currentLatexExpression.append(" \\div ");
+                break;
+            case "×":
+                currentLatexExpression.append(" \\times ");
+                break;
+            case "-":
+                currentLatexExpression.append(" - ");
+                break;
+            case "+":
+                currentLatexExpression.append(" + ");
+                break;
+            case "%":
+                // In LaTeX, % is a comment, so we must escape it as \%
+                currentLatexExpression.append("\\%");
+                break;
+            case ")":
+                java.util.Stack<Character> brackets = new java.util.Stack<>();
+                for (char c : currentLatexExpression.toString().toCharArray()) {
+                    if (c == '(') brackets.push('(');
+                    else if (c == '{') brackets.push('{');
+                    else if (c == ')') {
+                        if (!brackets.isEmpty() && brackets.peek() == '(') brackets.pop();
+                    }
+                    else if (c == '}') {
+                        if (!brackets.isEmpty() && brackets.peek() == '{') brackets.pop();
+                    }
+                }
+                if (!brackets.isEmpty() && brackets.peek() == '{') {
+                    currentLatexExpression.append("}");
+                } else {
+                    currentLatexExpression.append(")");
+                }
+                break;
+            case "=":
+                // Phase 4: Ask AI to solve it
+                loadingBox.setVisible(true);
+                solutionWebView.setVisible(false);
+                aiSolverService.solveMathExpression(currentLatexExpression.toString())
+                    .thenAccept(solutionLatex -> {
+                        Platform.runLater(() -> {
+                            loadingBox.setVisible(false);
+                            solutionWebView.setVisible(true);
+                            String jsSafeLatex = solutionLatex.replace("\\", "\\\\").replace("\n", "\\n").replace("'", "\\'");
+                            try {
+                                solutionWebView.getEngine().executeScript("updateSolution('" + jsSafeLatex + "')");
+                            } catch (Exception e) {
+                                System.err.println("Error rendering solution: " + e.getMessage());
+                            }
+                        });
+                    });
+                break;
+            case "⌫":
+                backspace();
+                return; // backspace handles the update
+            default:
+                // For numbers or standard symbols like (, )
+                currentLatexExpression.append(text);
+                break;
+        }
+        
+        // Instantly update the KaTeX display
+        setMathExpression(currentLatexExpression.toString());
+    }
 
     // =========================
     // Helper Methods
@@ -344,6 +565,8 @@ public class CalculatorController {
 
     @FXML
     private void clearDisplay() {
+        currentLatexExpression.setLength(0);
+        setMathExpression("");
 
         display.setText("0");
         expressionLabel.setText("");
@@ -355,6 +578,64 @@ public class CalculatorController {
 
     @FXML
     private void backspace() {
+        if (currentLatexExpression.length() > 0) {
+            String expr = currentLatexExpression.toString();
+            
+            if (expr.endsWith(" \\div ")) {
+                currentLatexExpression.setLength(currentLatexExpression.length() - 6);
+            } else if (expr.endsWith(" \\times ")) {
+                currentLatexExpression.setLength(currentLatexExpression.length() - 8);
+            } else if (expr.endsWith(" - ")) {
+                currentLatexExpression.setLength(currentLatexExpression.length() - 3);
+            } else if (expr.endsWith(" + ")) {
+                currentLatexExpression.setLength(currentLatexExpression.length() - 3);
+            } else if (expr.endsWith(" \\bmod ")) {
+                currentLatexExpression.setLength(currentLatexExpression.length() - 7);
+            } else if (expr.endsWith("^{n}")) {
+                currentLatexExpression.setLength(currentLatexExpression.length() - 4);
+            } else if (expr.endsWith("_{n}")) {
+                currentLatexExpression.setLength(currentLatexExpression.length() - 4);
+            } else if (expr.endsWith("\\pi")) {
+                currentLatexExpression.setLength(currentLatexExpression.length() - 3);
+            } else if (expr.endsWith("\\sqrt{")) {
+                currentLatexExpression.setLength(currentLatexExpression.length() - 6);
+            } else if (expr.endsWith("^{")) {
+                currentLatexExpression.setLength(currentLatexExpression.length() - 2);
+            } else if (expr.endsWith("^2")) {
+                currentLatexExpression.setLength(currentLatexExpression.length() - 2);
+            } else if (expr.endsWith("^{-1}")) {
+                currentLatexExpression.setLength(currentLatexExpression.length() - 5);
+            } else if (expr.endsWith("\\sin(") || expr.endsWith("\\cos(") || expr.endsWith("\\tan(") ||
+                       expr.endsWith("\\csc(") || expr.endsWith("\\sec(") || expr.endsWith("\\cot(") ||
+                       expr.endsWith("\\log(") || expr.endsWith("\\arg(")) {
+                currentLatexExpression.setLength(currentLatexExpression.length() - 5);
+            } else if (expr.endsWith("\\sinh(") || expr.endsWith("\\cosh(") || expr.endsWith("\\tanh(")) {
+                currentLatexExpression.setLength(currentLatexExpression.length() - 6);
+            } else if (expr.endsWith("\\ln(")) {
+                currentLatexExpression.setLength(currentLatexExpression.length() - 4);
+            } else if (expr.endsWith("\\operatorname{Re}(") || expr.endsWith("\\operatorname{Im}(")) {
+                currentLatexExpression.setLength(currentLatexExpression.length() - 18);
+            } else if (expr.endsWith("^{\\circ}")) {
+                currentLatexExpression.setLength(currentLatexExpression.length() - 8);
+            } else if (expr.endsWith("f(")) {
+                currentLatexExpression.setLength(currentLatexExpression.length() - 2);
+            } else if (expr.endsWith("\\overline{") || expr.endsWith("\\text{rad}")) {
+                currentLatexExpression.setLength(currentLatexExpression.length() - 10);
+            } else if (expr.endsWith("\\times 10^{")) {
+                currentLatexExpression.setLength(currentLatexExpression.length() - 11);
+            } else {
+                // Simplified backspace: just removes the last character.
+                currentLatexExpression.deleteCharAt(currentLatexExpression.length() - 1);
+                
+                // If the last character deleted leaves an exposed backslash (e.g. after deleting '%' from '\%'),
+                // delete the backslash as well so it doesn't show up on screen.
+                if (currentLatexExpression.length() > 0 && currentLatexExpression.charAt(currentLatexExpression.length() - 1) == '\\') {
+                    currentLatexExpression.deleteCharAt(currentLatexExpression.length() - 1);
+                }
+            }
+            
+            setMathExpression(currentLatexExpression.toString());
+        }
 
         String text = display.getText();
 
@@ -491,128 +772,37 @@ public class CalculatorController {
 
     @FXML
     private void handleKeyPressed(KeyEvent event) {
-
-        if (event.getCode() == KeyCode.DIGIT8 && event.isShiftDown()) {
-            selectOperator("×");
-            return;
+        if (event.isShiftDown()) {
+            switch (event.getCode()) {
+                case DIGIT8: processKeyInput("×"); return;
+                case EQUALS: processKeyInput("+"); return;
+                case DIGIT5: processKeyInput("%"); return;
+                case DIGIT9: processKeyInput("("); return;
+                case DIGIT0: processKeyInput(")"); return;
+            }
         }
 
         switch (event.getCode()) {
-
-            // Numbers
-            case DIGIT0:
-            case NUMPAD0:
-                inputNumber("0");
-                break;
-
-            case DIGIT1:
-            case NUMPAD1:
-                inputNumber("1");
-                break;
-
-            case DIGIT2:
-            case NUMPAD2:
-                inputNumber("2");
-                break;
-
-            case DIGIT3:
-            case NUMPAD3:
-                inputNumber("3");
-                break;
-
-            case DIGIT4:
-            case NUMPAD4:
-                inputNumber("4");
-                break;
-
-            case DIGIT5:
-
-                if (event.isShiftDown()) {
-                    percentClicked();
-                } else {
-                    inputNumber("5");
-                }
-
-                break;
-
-            case NUMPAD5:
-                inputNumber("5");
-                break;
-
-            case DIGIT6:
-            case NUMPAD6:
-                inputNumber("6");
-                break;
-
-            case DIGIT7:
-            case NUMPAD7:
-                inputNumber("7");
-                break;
-
-            case DIGIT8:
-            case NUMPAD8:
-                inputNumber("8");
-                break;
-
-            case DIGIT9:
-            case NUMPAD9:
-                inputNumber("9");
-                break;
-
-            // Operators (Numeric Keypad)
-            case ADD:
-                selectOperator("+");
-                break;
-
-            case SUBTRACT:
-            case MINUS:
-                selectOperator("-");
-                break;
-
-            case MULTIPLY:
-                selectOperator("×");
-                break;
-
-            case DIVIDE:
-            case SLASH:
-                selectOperator("÷");
-                break;
-
-            // Main Keyboard "=" key
-            case EQUALS:
-
-                if (event.isShiftDown()) {
-                    selectOperator("+");
-                } else {
-                    equalsClicked();
-                }
-
-                break;
-
-            // Enter
-            case ENTER:
-                equalsClicked();
-                break;
-
-            // Decimal
-            case DECIMAL:
-            case PERIOD:
-                decimalClicked();
-                break;
-
-            // Editing
-            case BACK_SPACE:
-                backspace();
-                break;
-
-            case DELETE:
-                clearDisplay();
-                break;
-
-            default:
-                break;
+            case DIGIT0: case NUMPAD0: processKeyInput("0"); break;
+            case DIGIT1: case NUMPAD1: processKeyInput("1"); break;
+            case DIGIT2: case NUMPAD2: processKeyInput("2"); break;
+            case DIGIT3: case NUMPAD3: processKeyInput("3"); break;
+            case DIGIT4: case NUMPAD4: processKeyInput("4"); break;
+            case DIGIT5: case NUMPAD5: processKeyInput("5"); break;
+            case DIGIT6: case NUMPAD6: processKeyInput("6"); break;
+            case DIGIT7: case NUMPAD7: processKeyInput("7"); break;
+            case DIGIT8: case NUMPAD8: processKeyInput("8"); break;
+            case DIGIT9: case NUMPAD9: processKeyInput("9"); break;
+            case ADD: processKeyInput("+"); break;
+            case SUBTRACT: case MINUS: processKeyInput("-"); break;
+            case MULTIPLY: processKeyInput("×"); break;
+            case DIVIDE: case SLASH: processKeyInput("÷"); break;
+            case EQUALS: case ENTER: processKeyInput("="); break;
+            case DECIMAL: case PERIOD: processKeyInput("."); break;
+            case BACK_SPACE: processKeyInput("⌫"); break;
+            case DELETE: clearDisplay(); break;
+            default: break;
         }
-
         event.consume();
     }
 
@@ -634,25 +824,36 @@ public class CalculatorController {
         Platform.runLater(() -> rootPane.requestFocus());
 
         try {
-
+            // New Advanced Calculator doesn't use the old NavigationDrawer
+            /*
             FXMLLoader loader = new FXMLLoader(
                     getClass().getResource("/fxml/NavigationDrawer.fxml")
             );
-            loader.setController(this);
-            drawerContent = loader.load();
-            drawerContent.setMinWidth(280);
-            drawerContent.setPrefWidth(280);
-            drawerContent.setMaxWidth(280);
-
-            drawerContainer.setMinWidth(280);
-            drawerContainer.setPrefWidth(280);
-            drawerContainer.setMaxWidth(280);
-
-            drawerContainer.getChildren().add(drawerContent);
-
-            drawerContainer.setVisible(false);
-
-        } catch (IOException e) {
+            ...
+            */
+            
+            // Initialize KaTeX WebView for mathematical rendering
+            if (mathWebView != null) {
+                WebEngine webEngine = mathWebView.getEngine();
+                String url = getClass().getResource("/html/math_display.html").toExternalForm();
+                webEngine.load(url);
+                
+                // Wait for page to load before setting initial expression
+                webEngine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
+                    if (newState == javafx.concurrent.Worker.State.SUCCEEDED) {
+                        setMathExpression("\\\\frac{d}{dx}(dy) + \\\\frac{d}{dy}(3y) = 5");
+                    }
+                });
+            }
+            
+            // Initialize KaTeX WebView for AI solution
+            if (solutionWebView != null) {
+                WebEngine solEngine = solutionWebView.getEngine();
+                String url = getClass().getResource("/html/solution_display.html").toExternalForm();
+                solEngine.load(url);
+            }
+            
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

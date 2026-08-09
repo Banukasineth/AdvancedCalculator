@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Math Display</title>
+    <!-- Load KaTeX -->
+    <link rel="stylesheet" href="../katex/katex.min.css">
+    <script defer src="../katex/katex.min.js"></script>
+    <style>
+        body {
+            background-color: #262432; /* Matches the display-split-area background */
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            font-size: 32px; /* Large font size for visibility */
+        }
+        #math-content {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="math-content"></div>
+
+    <script>
+        function updateMath(latexString) {
+            const mathContent = document.getElementById('math-content');
+            try {
+                katex.render(latexString, mathContent, {
+                    throwOnError: false,
+                    displayMode: true // Centers and makes equations larger
+                });
+            } catch (e) {
+                mathContent.innerText = "Error rendering math";
+                console.error(e);
+            }
+        }
+    </script>
+</body>
+</html>

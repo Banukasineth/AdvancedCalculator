@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Solution Display</title>
+    <!-- Load KaTeX -->
+    <link rel="stylesheet" href="../katex/katex.min.css">
+    <script defer src="../katex/katex.min.js"></script>
+    <style>
+        body {
+            background-color: transparent;
+            color: white;
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
+            padding: 20px;
+            margin: 0;
+            font-size: 18px; /* Slightly smaller than main display for multiline steps */
+        }
+        #solution-content {
+            text-align: left;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="solution-content"></div>
+
+    <script>
+        function updateSolution(latexString) {
+            const solutionContent = document.getElementById('solution-content');
+            try {
+                katex.render(latexString, solutionContent, {
+                    throwOnError: false,
+                    displayMode: true,
+                    strict: false
+                });
+            } catch (e) {
+                solutionContent.innerText = "Error rendering solution";
+                console.error(e);
+            }
+        }
+    </script>
+</body>
+</html>
