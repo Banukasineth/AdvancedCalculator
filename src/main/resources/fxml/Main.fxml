@@ -71,7 +71,7 @@
                 <HBox spacing="10" VBox.vgrow="ALWAYS" styleClass="display-split-area">
                     
                     <!-- Working Area (Left) -->
-                    <VBox HBox.hgrow="ALWAYS" styleClass="working-area">
+                    <VBox fx:id="workingArea" HBox.hgrow="ALWAYS" styleClass="working-area">
                         <Label text="Working" styleClass="area-title"/>
                         <VBox alignment="CENTER" VBox.vgrow="ALWAYS">
                             <!-- Complex math rendering WebView -->
@@ -83,10 +83,10 @@
                     </VBox>
                     
                     <!-- Divider -->
-                    <Region styleClass="vertical-divider"/>
+                    <Region fx:id="verticalDivider" visible="false" managed="false" styleClass="vertical-divider"/>
 
                     <!-- Solution Area (Right) -->
-                    <VBox prefWidth="300" styleClass="solution-area">
+                    <VBox fx:id="solutionArea" HBox.hgrow="ALWAYS" prefWidth="0" minWidth="0" maxWidth="0" styleClass="solution-area">
                         <Label text="Solution" styleClass="area-title"/>
                         <StackPane VBox.vgrow="ALWAYS">
                             <!-- Loading Orb State -->

@@ -21,8 +21,11 @@ public class CalculatorApplication extends Application {
         scene.getStylesheets().add(
                 getClass().getResource("/css/style.css").toExternalForm());
 
-        // Remove default Windows title bar
-        stage.initStyle(StageStyle.UNDECORATED);
+        // Set transparent scene to avoid white background around the rounded corners and drop shadow
+        scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+
+        // Use TRANSPARENT style to remove OS window chrome and support transparent scene background
+        stage.initStyle(StageStyle.TRANSPARENT);
         
         stage.setTitle("Advanced Calculator");
         stage.setScene(scene);

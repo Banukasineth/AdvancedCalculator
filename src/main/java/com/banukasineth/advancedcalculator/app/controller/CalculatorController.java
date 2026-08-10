@@ -22,7 +22,11 @@ import java.io.IOException;
 import javafx.animation.TranslateTransition;
 import javafx.animation.FadeTransition;
 import javafx.animation.Interpolator;
+import javafx.animation.Timeline;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
 import javafx.scene.layout.Region;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.web.WebView;
 import javafx.scene.web.WebEngine;
 import javafx.util.Duration;
@@ -201,6 +205,10 @@ public class CalculatorController {
     }
 
     private void processKeyInput(String text) {
+        if (!text.equals("=")) {
+            hideSolutionArea();
+        }
+
         switch (text) {
             case "sin": case "cos": case "tan":
             case "csc": case "sec": case "cot":
@@ -262,6 +270,9 @@ public class CalculatorController {
             case "f(x)":
                 currentLatexExpression.append("f(");
                 break;
+            case "A=B":
+                currentLatexExpression.append("=");
+                break;
             case "÷":
                 currentLatexExpression.append(" \\div ");
                 break;
@@ -298,6 +309,7 @@ public class CalculatorController {
                 break;
             case "=":
                 // Phase 4: Ask AI to solve it
+                showSolutionArea();
                 loadingBox.setVisible(true);
                 solutionWebView.setVisible(false);
                 aiSolverService.solveMathExpression(currentLatexExpression.toString())
@@ -546,6 +558,53 @@ public class CalculatorController {
     }
 
     // =========================
+    // Dynamic Layout Animation
+    // =========================
+
+    @FXML private VBox workingArea;
+    @FXML private Region verticalDivider;
+    @FXML private VBox solutionArea;
+
+    private void showSolutionArea() {
+        if (solutionArea.getPrefWidth() > 0) return;
+        
+        verticalDivider.setVisible(true);
+        verticalDivider.setManaged(true);
+        
+        Timeline timeline = new Timeline(
+                new KeyFrame(Duration.millis(350),
+                        new KeyValue(solutionArea.prefWidthProperty(), 3000, Interpolator.EASE_BOTH),
+                        new KeyValue(solutionArea.minWidthProperty(), 3000, Interpolator.EASE_BOTH),
+                        new KeyValue(solutionArea.maxWidthProperty(), 3000, Interpolator.EASE_BOTH),
+                        new KeyValue(workingArea.prefWidthProperty(), 0, Interpolator.EASE_BOTH),
+                        new KeyValue(workingArea.minWidthProperty(), 0, Interpolator.EASE_BOTH),
+                        new KeyValue(workingArea.maxWidthProperty(), 0, Interpolator.EASE_BOTH)
+                )
+        );
+        timeline.play();
+    }
+
+    private void hideSolutionArea() {
+        if (solutionArea.getPrefWidth() == 0) return;
+        
+        Timeline timeline = new Timeline(
+                new KeyFrame(Duration.millis(350),
+                        new KeyValue(solutionArea.prefWidthProperty(), 0, Interpolator.EASE_BOTH),
+                        new KeyValue(solutionArea.minWidthProperty(), 0, Interpolator.EASE_BOTH),
+                        new KeyValue(solutionArea.maxWidthProperty(), 0, Interpolator.EASE_BOTH),
+                        new KeyValue(workingArea.prefWidthProperty(), 3000, Interpolator.EASE_BOTH),
+                        new KeyValue(workingArea.minWidthProperty(), 3000, Interpolator.EASE_BOTH),
+                        new KeyValue(workingArea.maxWidthProperty(), 3000, Interpolator.EASE_BOTH)
+                )
+        );
+        timeline.setOnFinished(e -> {
+            verticalDivider.setVisible(false);
+            verticalDivider.setManaged(false);
+        });
+        timeline.play();
+    }
+
+    // =========================
     // Button Events
     // =========================
 
@@ -565,6 +624,7 @@ public class CalculatorController {
 
     @FXML
     private void clearDisplay() {
+        hideSolutionArea();
         currentLatexExpression.setLength(0);
         setMathExpression("");
 
@@ -599,6 +659,8 @@ public class CalculatorController {
                 currentLatexExpression.setLength(currentLatexExpression.length() - 3);
             } else if (expr.endsWith("\\sqrt{")) {
                 currentLatexExpression.setLength(currentLatexExpression.length() - 6);
+            } else if (expr.endsWith("\\times 10^{")) {
+                currentLatexExpression.setLength(currentLatexExpression.length() - 11);
             } else if (expr.endsWith("^{")) {
                 currentLatexExpression.setLength(currentLatexExpression.length() - 2);
             } else if (expr.endsWith("^2")) {
@@ -621,8 +683,6 @@ public class CalculatorController {
                 currentLatexExpression.setLength(currentLatexExpression.length() - 2);
             } else if (expr.endsWith("\\overline{") || expr.endsWith("\\text{rad}")) {
                 currentLatexExpression.setLength(currentLatexExpression.length() - 10);
-            } else if (expr.endsWith("\\times 10^{")) {
-                currentLatexExpression.setLength(currentLatexExpression.length() - 11);
             } else {
                 // Simplified backspace: just removes the last character.
                 currentLatexExpression.deleteCharAt(currentLatexExpression.length() - 1);
@@ -822,6 +882,18 @@ public class CalculatorController {
         rootPane.setFocusTraversable(true);
 
         Platform.runLater(() -> rootPane.requestFocus());
+
+        if (workingArea != null && solutionArea != null) {
+            Rectangle workingClip = new Rectangle();
+            workingClip.widthProperty().bind(workingArea.widthProperty());
+            workingClip.heightProperty().bind(workingArea.heightProperty());
+            workingArea.setClip(workingClip);
+
+            Rectangle solutionClip = new Rectangle();
+            solutionClip.widthProperty().bind(solutionArea.widthProperty());
+            solutionClip.heightProperty().bind(solutionArea.heightProperty());
+            solutionArea.setClip(solutionClip);
+        }
 
         try {
             // New Advanced Calculator doesn't use the old NavigationDrawer
