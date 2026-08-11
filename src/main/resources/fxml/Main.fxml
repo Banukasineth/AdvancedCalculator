@@ -68,7 +68,7 @@
                 </HBox>
 
                 <!-- Display Area -->
-                <HBox spacing="10" VBox.vgrow="ALWAYS" styleClass="display-split-area">
+                <HBox fx:id="displaySplitArea" spacing="10" VBox.vgrow="ALWAYS" styleClass="display-split-area">
                     
                     <!-- Working Area (Left) -->
                     <VBox fx:id="workingArea" HBox.hgrow="ALWAYS" styleClass="working-area">

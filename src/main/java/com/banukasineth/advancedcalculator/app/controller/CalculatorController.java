@@ -27,6 +27,8 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.scene.layout.Region;
 import javafx.scene.shape.Rectangle;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.scene.web.WebView;
 import javafx.scene.web.WebEngine;
 import javafx.util.Duration;
@@ -561,40 +563,33 @@ public class CalculatorController {
     // Dynamic Layout Animation
     // =========================
 
+    @FXML private HBox displaySplitArea;
     @FXML private VBox workingArea;
     @FXML private Region verticalDivider;
     @FXML private VBox solutionArea;
+    
+    private DoubleProperty workingAreaFraction = new SimpleDoubleProperty(1.0);
 
     private void showSolutionArea() {
-        if (solutionArea.getPrefWidth() > 0) return;
+        if (workingAreaFraction.get() == 0.0) return;
         
         verticalDivider.setVisible(true);
         verticalDivider.setManaged(true);
         
         Timeline timeline = new Timeline(
                 new KeyFrame(Duration.millis(350),
-                        new KeyValue(solutionArea.prefWidthProperty(), 3000, Interpolator.EASE_BOTH),
-                        new KeyValue(solutionArea.minWidthProperty(), 3000, Interpolator.EASE_BOTH),
-                        new KeyValue(solutionArea.maxWidthProperty(), 3000, Interpolator.EASE_BOTH),
-                        new KeyValue(workingArea.prefWidthProperty(), 0, Interpolator.EASE_BOTH),
-                        new KeyValue(workingArea.minWidthProperty(), 0, Interpolator.EASE_BOTH),
-                        new KeyValue(workingArea.maxWidthProperty(), 0, Interpolator.EASE_BOTH)
+                        new KeyValue(workingAreaFraction, 0.0, Interpolator.EASE_BOTH)
                 )
         );
         timeline.play();
     }
 
     private void hideSolutionArea() {
-        if (solutionArea.getPrefWidth() == 0) return;
+        if (workingAreaFraction.get() == 1.0) return;
         
         Timeline timeline = new Timeline(
                 new KeyFrame(Duration.millis(350),
-                        new KeyValue(solutionArea.prefWidthProperty(), 0, Interpolator.EASE_BOTH),
-                        new KeyValue(solutionArea.minWidthProperty(), 0, Interpolator.EASE_BOTH),
-                        new KeyValue(solutionArea.maxWidthProperty(), 0, Interpolator.EASE_BOTH),
-                        new KeyValue(workingArea.prefWidthProperty(), 3000, Interpolator.EASE_BOTH),
-                        new KeyValue(workingArea.minWidthProperty(), 3000, Interpolator.EASE_BOTH),
-                        new KeyValue(workingArea.maxWidthProperty(), 3000, Interpolator.EASE_BOTH)
+                        new KeyValue(workingAreaFraction, 1.0, Interpolator.EASE_BOTH)
                 )
         );
         timeline.setOnFinished(e -> {
@@ -861,6 +856,35 @@ public class CalculatorController {
             case DECIMAL: case PERIOD: processKeyInput("."); break;
             case BACK_SPACE: processKeyInput("⌫"); break;
             case DELETE: clearDisplay(); break;
+            
+            // Letters for algebra/variables
+            case A: processKeyInput("a"); break;
+            case B: processKeyInput("b"); break;
+            case C: processKeyInput("c"); break;
+            case D: processKeyInput("d"); break;
+            case E: processKeyInput("e"); break;
+            case F: processKeyInput("f"); break;
+            case G: processKeyInput("g"); break;
+            case H: processKeyInput("h"); break;
+            case I: processKeyInput("i"); break;
+            case J: processKeyInput("j"); break;
+            case K: processKeyInput("k"); break;
+            case L: processKeyInput("l"); break;
+            case M: processKeyInput("m"); break;
+            case N: processKeyInput("n"); break;
+            case O: processKeyInput("o"); break;
+            case P: processKeyInput("p"); break;
+            case Q: processKeyInput("q"); break;
+            case R: processKeyInput("r"); break;
+            case S: processKeyInput("s"); break;
+            case T: processKeyInput("t"); break;
+            case U: processKeyInput("u"); break;
+            case V: processKeyInput("v"); break;
+            case W: processKeyInput("w"); break;
+            case X: processKeyInput("x"); break;
+            case Y: processKeyInput("y"); break;
+            case Z: processKeyInput("z"); break;
+            
             default: break;
         }
         event.consume();
@@ -883,7 +907,7 @@ public class CalculatorController {
 
         Platform.runLater(() -> rootPane.requestFocus());
 
-        if (workingArea != null && solutionArea != null) {
+        if (workingArea != null && solutionArea != null && displaySplitArea != null) {
             Rectangle workingClip = new Rectangle();
             workingClip.widthProperty().bind(workingArea.widthProperty());
             workingClip.heightProperty().bind(workingArea.heightProperty());
@@ -893,6 +917,15 @@ public class CalculatorController {
             solutionClip.widthProperty().bind(solutionArea.widthProperty());
             solutionClip.heightProperty().bind(solutionArea.heightProperty());
             solutionArea.setClip(solutionClip);
+            
+            workingArea.setMinWidth(0);
+            solutionArea.setMinWidth(0);
+            workingArea.maxWidthProperty().bind(displaySplitArea.widthProperty().multiply(workingAreaFraction));
+            workingArea.prefWidthProperty().bind(workingArea.maxWidthProperty());
+            
+            // For solution area, fraction is (1.0 - workingAreaFraction)
+            solutionArea.maxWidthProperty().bind(displaySplitArea.widthProperty().multiply(workingAreaFraction.subtract(1).multiply(-1)));
+            solutionArea.prefWidthProperty().bind(solutionArea.maxWidthProperty());
         }
 
         try {
