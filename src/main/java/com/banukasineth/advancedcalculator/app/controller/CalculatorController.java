@@ -7,6 +7,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import javafx.scene.input.KeyCode;
@@ -49,6 +53,11 @@ public class CalculatorController {
     @FXML private ComboBox<String> equationLibraryBox;
     @FXML private ComboBox<String> calculusLibraryBox;
 
+    @FXML private GridPane basicKeypad;
+    @FXML private GridPane advancedKeypad;
+    @FXML private GridPane scientificKeypad;
+    @FXML private GridPane programmerKeypad;
+
     private final Map<String, String> equationMap = new LinkedHashMap<>();
     private final Map<String, String> calculusMap = new LinkedHashMap<>();
 
@@ -82,8 +91,33 @@ public class CalculatorController {
     }
 
     @FXML
-    public void closeWindow(ActionEvent event) {
-        Platform.exit();
+    public void closeWindow() {
+        javafx.application.Platform.exit();
+    }
+
+    @FXML
+    public void plotGraph1() {
+        if (graphWebView != null && equation1Field != null && !equation1Field.getText().isEmpty()) {
+            String eq = equation1Field.getText();
+            graphWebView.getEngine().executeScript("plotEquation('" + eq.replace("'", "\\'") + "', '#ff6b6b', 'eq1')");
+        }
+    }
+
+    @FXML
+    public void plotGraph2() {
+        if (graphWebView != null && equation2Field != null && !equation2Field.getText().isEmpty()) {
+            String eq = equation2Field.getText();
+            graphWebView.getEngine().executeScript("plotEquation('" + eq.replace("'", "\\'") + "', '#4cd137', 'eq2')");
+        }
+    }
+
+    @FXML
+    public void clearGraph() {
+        if (graphWebView != null) {
+            graphWebView.getEngine().executeScript("clearGraph()");
+        }
+        if (equation1Field != null) equation1Field.clear();
+        if (equation2Field != null) equation2Field.clear();
     }
 
     @FXML
@@ -206,6 +240,166 @@ public class CalculatorController {
     private Region drawerContent;
     private boolean drawerOpen = false;
 
+    // =========================
+    // Graphing Logic
+    // =========================
+
+    @FXML private ToggleButton trigToggle;
+    @FXML private ToggleButton ineqToggle;
+    @FXML private ToggleButton funcToggle;
+    @FXML private GridPane trigPopup;
+    @FXML private GridPane ineqPopup;
+    @FXML private GridPane funcPopup;
+
+    @FXML
+    public void toggleTrigPopup() {
+        boolean selected = trigToggle.isSelected();
+        resetPopups();
+        if (selected) {
+            trigToggle.setSelected(true);
+            trigPopup.setVisible(true);
+            trigPopup.setManaged(true);
+        }
+    }
+
+    @FXML
+    public void toggleIneqPopup() {
+        boolean selected = ineqToggle.isSelected();
+        resetPopups();
+        if (selected) {
+            ineqToggle.setSelected(true);
+            ineqPopup.setVisible(true);
+            ineqPopup.setManaged(true);
+        }
+    }
+
+    @FXML
+    public void toggleFuncPopup() {
+        boolean selected = funcToggle.isSelected();
+        resetPopups();
+        if (selected) {
+            funcToggle.setSelected(true);
+            funcPopup.setVisible(true);
+            funcPopup.setManaged(true);
+        }
+    }
+
+    private void resetPopups() {
+        if (trigToggle != null) trigToggle.setSelected(false);
+        if (ineqToggle != null) ineqToggle.setSelected(false);
+        if (funcToggle != null) funcToggle.setSelected(false);
+        
+        if (trigPopup != null) { trigPopup.setVisible(false); trigPopup.setManaged(false); }
+        if (ineqPopup != null) { ineqPopup.setVisible(false); ineqPopup.setManaged(false); }
+        if (funcPopup != null) { funcPopup.setVisible(false); funcPopup.setManaged(false); }
+    }
+
+    @FXML
+    public void handleGraphingKey(ActionEvent event) {
+        TextField activeField = (equation2Field != null && equation2Field.isFocused()) ? equation2Field : equation1Field;
+        if (activeField == null) return;
+        
+        Button btn = (Button) event.getSource();
+        String text = btn.getText();
+        
+        String insertText = "";
+        switch (text) {
+            case "sin": case "cos": case "tan": case "log": case "ln":
+            case "hyp": case "sec": case "csc": case "cot":
+                insertText = text + "(";
+                break;
+            case "√":
+                insertText = "sqrt(";
+                break;
+            case "∛x":
+                insertText = "cbrt(";
+                break;
+            case "x²":
+                insertText = "^2";
+                break;
+            case "xʸ":
+            case "10ˣ":
+                insertText = "^";
+                break;
+            case "x⁻¹":
+                insertText = "^-1";
+                break;
+            case "π":
+                insertText = "PI";
+                break;
+            case "e":
+                insertText = "E";
+                break;
+            case "÷":
+                insertText = "/";
+                break;
+            case "×":
+                insertText = "*";
+                break;
+            case "⏎":
+                if (activeField == equation1Field) plotGraph1();
+                else plotGraph2();
+                return;
+            case "⌫":
+                String currentText = activeField.getText();
+                int caretPos = activeField.getCaretPosition();
+                if (caretPos > 0 && currentText.length() > 0) {
+                    String newText = currentText.substring(0, caretPos - 1) + currentText.substring(caretPos);
+                    activeField.setText(newText);
+                    activeField.positionCaret(caretPos - 1);
+                }
+                activeField.requestFocus();
+                resetPopups();
+                return;
+            case "C":
+                activeField.clear();
+                resetPopups();
+                return;
+            case "±":
+                insertText = "-";
+                break;
+            case "|x|":
+                insertText = "abs(";
+                break;
+            case "⌊x⌋":
+                insertText = "floor(";
+                break;
+            case "⌈x⌉":
+                insertText = "ceil(";
+                break;
+            case "<":
+                insertText = "<";
+                break;
+            case "≤":
+                insertText = "<=";
+                break;
+            case "=":
+                insertText = "=";
+                break;
+            case "≥":
+                insertText = ">=";
+                break;
+            case ">":
+                insertText = ">";
+                break;
+            default:
+                insertText = text;
+                break;
+        }
+        
+        int pos = activeField.getCaretPosition();
+        String currentText = activeField.getText();
+        activeField.setText(currentText.substring(0, pos) + insertText + currentText.substring(pos));
+        
+        if (insertText.endsWith("(")) {
+            activeField.positionCaret(pos + insertText.length());
+        } else {
+            activeField.positionCaret(pos + insertText.length());
+        }
+        
+        activeField.requestFocus();
+        resetPopups();
+    }
     // =========================
     // Keypad Logic (Phase 3)
     // =========================
@@ -605,9 +799,16 @@ public class CalculatorController {
 
     @FXML private HBox displaySplitArea;
     @FXML private VBox workingArea;
-    @FXML private Region verticalDivider;
     @FXML private VBox solutionArea;
+    @FXML private Region verticalDivider;
     
+    @FXML private VBox standardLayout;
+    @FXML private HBox graphingLayout;
+    @FXML private WebView graphWebView;
+    @FXML private TextField equation1Field;
+    @FXML private TextField equation2Field;
+    @FXML private ComboBox<String> graphModeComboBox;
+
     private DoubleProperty workingAreaFraction = new SimpleDoubleProperty(1.0);
 
     private void showSolutionArea() {
@@ -920,13 +1121,60 @@ public class CalculatorController {
 
         // Initialize ComboBoxes
         if (modeComboBox != null) {
-            modeComboBox.getItems().addAll("Basic", "Advanced", "Scientific", "Programmer");
+            modeComboBox.getItems().addAll("Basic", "Advanced", "Scientific", "Programmer", "Graphing");
             modeComboBox.setValue("Advanced");
+            
+            modeComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal == null) return;
+                
+                if (newVal.equals("Graphing")) {
+                    if (standardLayout != null) { standardLayout.setVisible(false); standardLayout.setManaged(false); }
+                    if (graphingLayout != null) { graphingLayout.setVisible(true); graphingLayout.setManaged(true); }
+                } else {
+                    if (graphingLayout != null) { graphingLayout.setVisible(false); graphingLayout.setManaged(false); }
+                    if (standardLayout != null) { standardLayout.setVisible(true); standardLayout.setManaged(true); }
+                    
+                    // Hide all keypads
+                    if (basicKeypad != null) { basicKeypad.setVisible(false); basicKeypad.setManaged(false); }
+                    if (advancedKeypad != null) { advancedKeypad.setVisible(false); advancedKeypad.setManaged(false); }
+                    if (scientificKeypad != null) { scientificKeypad.setVisible(false); scientificKeypad.setManaged(false); }
+                    if (programmerKeypad != null) { programmerKeypad.setVisible(false); programmerKeypad.setManaged(false); }
+                    
+                    // Show selected keypad
+                    switch (newVal) {
+                        case "Basic":
+                            if (basicKeypad != null) { basicKeypad.setVisible(true); basicKeypad.setManaged(true); }
+                            break;
+                        case "Advanced":
+                            if (advancedKeypad != null) { advancedKeypad.setVisible(true); advancedKeypad.setManaged(true); }
+                            break;
+                        case "Scientific":
+                            if (scientificKeypad != null) { scientificKeypad.setVisible(true); scientificKeypad.setManaged(true); }
+                            break;
+                        case "Programmer":
+                            if (programmerKeypad != null) { programmerKeypad.setVisible(true); programmerKeypad.setManaged(true); }
+                            break;
+                    }
+                }
+            });
+        }
+        
+        if (graphModeComboBox != null) {
+            graphModeComboBox.getItems().addAll("Basic", "Advanced", "Scientific", "Programmer", "Graphing");
+            graphModeComboBox.setValue("Graphing");
+            graphModeComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal != null && !newVal.equals("Graphing") && modeComboBox != null) {
+                    modeComboBox.setValue(newVal);
+                }
+            });
         }
 
-        // Initialize KaTeX WebViews
+        // Initialize WebViews
         setupWebView(mathWebView, "math_display.html");
         setupWebView(solutionWebView, "solution_display.html");
+        if (graphWebView != null) {
+            setupWebView(graphWebView, "graph_display.html");
+        }
 
         // Set up ComboBox Prompt Text fix
         setupComboBoxPromptText(modeComboBox);

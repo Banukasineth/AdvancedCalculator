@@ -235,3 +235,39 @@
 .action-btn:pressed {
     -fx-background-color: #C42273;
 }
+
+/* Graphing Advanced Menu Buttons */
+.graph-menu-btn {
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+    -fx-padding: 5 5;
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+.graph-menu-btn:hover {
+    -fx-background-color: #383645;
+    -fx-background-radius: 4;
+}
+.graph-menu-btn:selected {
+    -fx-background-color: #4A4858;
+    -fx-background-radius: 4;
+}
+
+/* Custom Overlay Popups */
+.custom-popup {
+    -fx-background-color: #2b2b2b;
+    -fx-padding: 8;
+    -fx-background-radius: 4;
+    -fx-border-color: #383645;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 10, 0, 0, 5);
+}
+
+/* Custom Popup Grid Buttons */
+.popup-key-btn {
+    -fx-min-width: 50px;
+    -fx-min-height: 40px;
+}

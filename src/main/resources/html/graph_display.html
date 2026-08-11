@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Graph Display</title>
+    <!-- function-plot dependencies (Offline) -->
+    <script src="../js/d3.min.js"></script>
+    <script src="../js/function-plot.js"></script>
+    <style>
+        body, html { 
+            margin: 0; 
+            padding: 0; 
+            width: 100%; 
+            height: 100%; 
+            overflow: hidden; 
+            background-color: white; 
+            font-family: 'Segoe UI Variable', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        #graph { 
+            width: 100%; 
+            height: 100%; 
+        }
+    </style>
+    <style id="trace-style"></style>
+    <style>
+        /* Floating Controls */
+        .controls-container {
+            position: absolute;
+            background-color: #2b2b2b;
+            border-radius: 8px;
+            display: flex;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            padding: 4px;
+            z-index: 1000;
+        }
+        .zoom-controls {
+            bottom: 20px;
+            right: 20px;
+            flex-direction: column;
+        }
+        .tool-controls {
+            top: 20px;
+            right: 20px;
+            flex-direction: row;
+        }
+        .icon-btn {
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            width: 36px;
+            height: 36px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            margin: 2px;
+            transition: background-color 0.2s;
+        }
+        .icon-btn:hover { background-color: rgba(255, 255, 255, 0.1); }
+        .icon-btn:active { background-color: rgba(255, 255, 255, 0.2); }
+        .icon-btn.active { background-color: rgba(255, 255, 255, 0.2); }
+        .divider { height: 1px; background-color: #444; margin: 4px 6px; }
+        .v-divider { width: 1px; background-color: #444; margin: 6px 4px; }
+        
+        /* Tooltip styling */
+        .icon-btn[title]:hover::after {
+            content: attr(title);
+            position: absolute;
+            background-color: #2b2b2b;
+            color: white;
+            padding: 6px 10px;
+            border-radius: 4px;
+            border: 1px solid #444;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1001;
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+        .zoom-controls .icon-btn:hover::after { right: 50px; }
+        .tool-controls .icon-btn:hover::after { top: 50px; }
+
+        /* Fluent Design Graph Options Popup */
+        #options-popup {
+            position: absolute;
+            top: 65px;
+            right: 20px;
+            width: 300px;
+            background-color: #2b2b2b;
+            color: white;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+            border: 1px solid #3d3d3d;
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+            font-size: 14px;
+        }
+        .options-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        .options-header h3 { margin: 0; font-size: 16px; font-weight: 600; }
+        .reset-link { color: #4cc2ff; cursor: pointer; font-size: 12px; text-decoration: none; }
+        .reset-link:hover { text-decoration: underline; }
+        
+        .popup-section { display: flex; flex-direction: column; gap: 8px; }
+        .section-title { font-size: 12px; color: #d0d0d0; }
+        
+        /* Window Grid */
+        .window-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .input-group { display: flex; flex-direction: column; gap: 4px; }
+        .input-group label { font-size: 12px; color: #d0d0d0; }
+        .input-group input {
+            background-color: #202020;
+            border: 1px solid #3d3d3d;
+            color: white;
+            padding: 6px 10px;
+            border-radius: 4px;
+            outline: none;
+            font-size: 14px;
+            width: 100%;
+            box-sizing: border-box;
+            border-bottom: 2px solid #555;
+        }
+        .input-group input:focus { border-bottom-color: #4cc2ff; background-color: #1e1e1e; }
+        
+        /* Segmented Control */
+        .segmented-control {
+            display: flex;
+            background-color: #202020;
+            border-radius: 4px;
+            border: 1px solid #3d3d3d;
+            overflow: hidden;
+        }
+        .segment {
+            flex: 1;
+            background: none;
+            border: none;
+            color: white;
+            padding: 8px 0;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .segment:hover { background-color: rgba(255,255,255,0.05); }
+        .segment.active { background-color: #4cc2ff; color: black; font-weight: 500; }
+        
+        /* Slider */
+        .fluent-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 4px;
+            background: #4cc2ff;
+            border-radius: 2px;
+            outline: none;
+        }
+        .fluent-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 4px solid #2b2b2b;
+            cursor: pointer;
+        }
+        
+        /* Radio Buttons */
+        .radio-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        .radio-label input[type="radio"] {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid #a0a0a0;
+            outline: none;
+            background-color: transparent;
+            position: relative;
+            cursor: pointer;
+        }
+        .radio-label input[type="radio"]:checked { border-color: #4cc2ff; }
+        .radio-label input[type="radio"]:checked::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #4cc2ff;
+        }
+
+        /* Notification Toast */
+        #toast {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333333;
+            border: 1px solid #444;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 2000;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="graph"></div>
+    
+    <!-- Tool Controls -->
+    <div class="controls-container tool-controls">
+        <button id="btnTrace" class="icon-btn active" title="Start tracing" onclick="toggleTrace()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 3l14 9-14 9 4-9-4-9z"/></svg>
+        </button>
+        <button class="icon-btn" title="Share" onclick="shareGraph()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+        </button>
+        <div class="v-divider"></div>
+        <button id="btnSettings" class="icon-btn" title="Graph Options" onclick="toggleOptions()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg>
+        </button>
+    </div>
+
+    <!-- Zoom Controls -->
+    <div class="controls-container zoom-controls">
+        <button class="icon-btn" title="Zoom in (Ctrl + plus)" onclick="zoom(0.8)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <button class="icon-btn" title="Zoom out (Ctrl + minus)" onclick="zoom(1.25)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14"/></svg>
+        </button>
+        <div class="divider"></div>
+        <button class="icon-btn" title="Refresh view automatically (Ctrl + 0)" onclick="resetZoom()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3h6v6H3zM15 3h6v6h-6zM15 15h6v6h-6zM3 15h6v6H3z"/></svg>
+        </button>
+    </div>
+
+    <!-- Graph Options Popup -->
+    <div id="options-popup">
+        <div class="options-header">
+            <h3>Graph options</h3>
+            <a class="reset-link" onclick="resetZoom()">Reset view</a>
+        </div>
+        
+        <div class="popup-section">
+            <label class="section-title">Window</label>
+            <div class="window-grid">
+                <div class="input-group">
+                    <label>X-Min</label>
+                    <input type="number" id="inpXMin" value="-10" onchange="applyOptions()" onkeyup="applyOptionsDelayed()">
+                </div>
+                <div class="input-group">
+                    <label>X-Max</label>
+                    <input type="number" id="inpXMax" value="10" onchange="applyOptions()" onkeyup="applyOptionsDelayed()">
+                </div>
+                <div class="input-group">
+                    <label>Y-Min</label>
+                    <input type="number" id="inpYMin" value="-10" onchange="applyOptions()" onkeyup="applyOptionsDelayed()">
+                </div>
+                <div class="input-group">
+                    <label>Y-Max</label>
+                    <input type="number" id="inpYMax" value="10" onchange="applyOptions()" onkeyup="applyOptionsDelayed()">
+                </div>
+            </div>
+        </div>
+        
+        <div class="popup-section">
+            <label class="section-title">Units</label>
+            <div class="segmented-control">
+                <button class="segment active" onclick="setUnit(this, 'rad')">Radians</button>
+                <button class="segment" onclick="setUnit(this, 'deg')">Degrees</button>
+                <button class="segment" onclick="setUnit(this, 'grad')">Gradians</button>
+            </div>
+        </div>
+        
+        <div class="popup-section">
+            <label class="section-title">Line thickness</label>
+            <input type="range" min="1" max="5" value="2" class="fluent-slider" onchange="renderGraph()">
+        </div>
+        
+        <div class="popup-section">
+            <label class="section-title">Graph theme</label>
+            <label class="radio-label">
+                <input type="radio" name="theme" value="light" checked onchange="changeTheme('light')"> Always light
+            </label>
+            <label class="radio-label">
+                <input type="radio" name="theme" value="app" onchange="changeTheme('app')"> Match app theme
+            </label>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast">Copied to clipboard!</div>
+    
+    <script>
+        let equations = {}; 
+        let currentChart = null;
+        let isTracing = true;
+        let currentUnit = 'rad';
+        let currentTheme = 'light';
+        let applyTimeout = null;
+        
+        let currentXDomain = [-10, 10];
+        let currentYDomain = [-10, 10];
+        
+        function renderGraph() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            
+            let data = [];
+            for (let id in equations) {
+                // simple unit conversion mock for display purposes if using deg
+                let expr = equations[id].expr;
+                
+                data.push({
+                    fn: expr,
+                    color: equations[id].color || '#0078D7',
+                    graphType: 'polyline'
+                });
+            }
+
+            try {
+                document.getElementById('graph').innerHTML = '';
+                
+                let bgColor = currentTheme === 'app' ? '#1e1e1e' : '#ffffff';
+                let textColor = currentTheme === 'app' ? '#ffffff' : '#000000';
+                let gridColor = currentTheme === 'app' ? '#333333' : '#e0e0e0';
+                
+                document.body.style.backgroundColor = bgColor;
+
+                currentChart = functionPlot({
+                    target: '#graph',
+                    width: width,
+                    height: height,
+                    grid: true,
+                    data: data,
+                    disableZoom: false,
+                    xAxis: { domain: currentXDomain },
+                    yAxis: { domain: currentYDomain },
+                    tip: {
+                        xLine: true,
+                        yLine: true,
+                        renderer: function (x, y, index) {
+                            return 'x: ' + x.toFixed(3) + '\ny: ' + y.toFixed(3);
+                        }
+                    }
+                });
+                
+                // Style grid lines based on theme
+                d3.selectAll('.domain').style('stroke', textColor);
+                d3.selectAll('.tick line').style('stroke', gridColor);
+                d3.selectAll('.tick text').style('fill', textColor);
+                
+                currentChart.on('after:draw', function () {
+                    if (currentChart.meta && currentChart.meta.xScale) {
+                        currentXDomain = currentChart.meta.xScale.domain();
+                        currentYDomain = currentChart.meta.yScale.domain();
+                        updateOptionsInputs();
+                        
+                        d3.selectAll('.domain').style('stroke', textColor);
+                        d3.selectAll('.tick line').style('stroke', gridColor);
+                        d3.selectAll('.tick text').style('fill', textColor);
+                    }
+                });
+                updateOptionsInputs();
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function zoom(factor) {
+            const xCenter = (currentXDomain[0] + currentXDomain[1]) / 2;
+            const yCenter = (currentYDomain[0] + currentYDomain[1]) / 2;
+            const xSpan = (currentXDomain[1] - currentXDomain[0]) * factor / 2;
+            const ySpan = (currentYDomain[1] - currentYDomain[0]) * factor / 2;
+            
+            currentXDomain = [xCenter - xSpan, xCenter + xSpan];
+            currentYDomain = [yCenter - ySpan, yCenter + ySpan];
+            
+            renderGraph();
+        }
+
+        function resetZoom() {
+            currentXDomain = [-10, 10];
+            currentYDomain = [-10, 10];
+            renderGraph();
+        }
+        
+        function toggleTrace() {
+            isTracing = !isTracing;
+            const btn = document.getElementById('btnTrace');
+            if (isTracing) {
+                document.getElementById('trace-style').innerHTML = '';
+                btn.classList.add('active');
+            } else {
+                document.getElementById('trace-style').innerHTML = '.tip { display: none !important; }';
+                btn.classList.remove('active');
+            }
+        }
+
+        function toggleOptions() {
+            const popup = document.getElementById('options-popup');
+            if (popup.style.display === 'flex') {
+                popup.style.display = 'none';
+                document.getElementById('btnSettings').classList.remove('active');
+            } else {
+                updateOptionsInputs();
+                popup.style.display = 'flex';
+                document.getElementById('btnSettings').classList.add('active');
+            }
+        }
+
+        function updateOptionsInputs() {
+            if(document.activeElement.tagName !== 'INPUT') {
+                document.getElementById('inpXMin').value = currentXDomain[0].toFixed(2);
+                document.getElementById('inpXMax').value = currentXDomain[1].toFixed(2);
+                document.getElementById('inpYMin').value = currentYDomain[0].toFixed(2);
+                document.getElementById('inpYMax').value = currentYDomain[1].toFixed(2);
+            }
+        }
+        
+        function applyOptionsDelayed() {
+            clearTimeout(applyTimeout);
+            applyTimeout = setTimeout(applyOptions, 600);
+        }
+
+        function applyOptions() {
+            const xMin = parseFloat(document.getElementById('inpXMin').value);
+            const xMax = parseFloat(document.getElementById('inpXMax').value);
+            const yMin = parseFloat(document.getElementById('inpYMin').value);
+            const yMax = parseFloat(document.getElementById('inpYMax').value);
+            
+            if (!isNaN(xMin) && !isNaN(xMax) && xMin < xMax) {
+                currentXDomain = [xMin, xMax];
+            }
+            if (!isNaN(yMin) && !isNaN(yMax) && yMin < yMax) {
+                currentYDomain = [yMin, yMax];
+            }
+            renderGraph();
+        }
+        
+        function setUnit(btn, unit) {
+            document.querySelectorAll('.segment').forEach(el => el.classList.remove('active'));
+            btn.classList.add('active');
+            currentUnit = unit;
+            renderGraph();
+        }
+        
+        function changeTheme(theme) {
+            currentTheme = theme;
+            renderGraph();
+        }
+        
+        function shareGraph() {
+            const toast = document.getElementById('toast');
+            toast.innerText = 'Graph URL/Image copied to clipboard!';
+            toast.style.opacity = '1';
+            setTimeout(() => { toast.style.opacity = '0'; }, 3000);
+        }
+
+        function plotEquation(equationStr, color, id) {
+            try {
+                equations[id] = { expr: equationStr, color: color };
+                renderGraph();
+                return "Success";
+            } catch (err) {
+                return "Error: " + err.message;
+            }
+        }
+
+        function clearGraph() {
+            equations = {};
+            renderGraph();
+        }
+
+        window.onresize = renderGraph;
+        renderGraph();
+    </script>
+</body>
+</html>
