@@ -113,9 +113,9 @@
 
                 <!-- Mode Selectors -->
                 <HBox spacing="10" styleClass="mode-selectors">
-                    <ComboBox promptText="Advanced" styleClass="mode-combo" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
-                    <ComboBox promptText="Equation Library" styleClass="mode-combo" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
-                    <ComboBox promptText="Differentiation" styleClass="mode-combo" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                    <ComboBox fx:id="modeComboBox" promptText="Advanced" styleClass="mode-combo" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                    <ComboBox fx:id="equationLibraryBox" promptText="Equation Library" styleClass="mode-combo" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                    <ComboBox fx:id="calculusLibraryBox" promptText="Differentiation" styleClass="mode-combo" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
                 </HBox>
 
                 <!-- Advanced Keypad -->

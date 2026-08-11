@@ -6,6 +6,9 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ComboBox;
+import java.util.Map;
+import java.util.LinkedHashMap;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
@@ -40,8 +43,14 @@ import com.banukasineth.advancedcalculator.app.service.AISolverService;
 
 public class CalculatorController {
 
-    @FXML
-    private BorderPane rootPane;
+    @FXML private BorderPane rootPane;
+
+    @FXML private ComboBox<String> modeComboBox;
+    @FXML private ComboBox<String> equationLibraryBox;
+    @FXML private ComboBox<String> calculusLibraryBox;
+
+    private final Map<String, String> equationMap = new LinkedHashMap<>();
+    private final Map<String, String> calculusMap = new LinkedHashMap<>();
 
     @FXML private HBox titleBar;
     private double xOffset = 0;
@@ -96,6 +105,7 @@ public class CalculatorController {
 
     // Phase 3: Track the current LaTeX string for KaTeX
     private StringBuilder currentLatexExpression = new StringBuilder();
+    private java.util.Stack<String> history = new java.util.Stack<>();
 
     /**
      * Updates the KaTeX math expression in the WebView.
@@ -210,6 +220,13 @@ public class CalculatorController {
         if (!text.equals("=")) {
             hideSolutionArea();
         }
+
+        if (text.equals("⌫")) {
+            backspace();
+            return; // backspace handles the update
+        }
+
+        history.push(currentLatexExpression.toString());
 
         switch (text) {
             case "sin": case "cos": case "tan":
@@ -327,10 +344,8 @@ public class CalculatorController {
                             }
                         });
                     });
+                history.pop(); // Revert the history push since '=' doesn't modify the expression
                 break;
-            case "⌫":
-                backspace();
-                return; // backspace handles the update
             default:
                 // For numbers or standard symbols like (, )
                 currentLatexExpression.append(text);
@@ -344,6 +359,31 @@ public class CalculatorController {
     // =========================
     // Helper Methods
     // =========================
+
+    private <T> void setupComboBoxPromptText(ComboBox<T> comboBox) {
+        if (comboBox == null) return;
+        comboBox.setButtonCell(new javafx.scene.control.ListCell<T>() {
+            @Override
+            protected void updateItem(T item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(comboBox.getPromptText());
+                    setStyle("-fx-text-fill: rgba(255, 255, 255, 0.7);"); // Dimmer for prompt
+                } else {
+                    setText(item.toString());
+                    setStyle("-fx-text-fill: white;");
+                }
+            }
+        });
+    }
+
+    private void setupWebView(WebView webView, String htmlFile) {
+        if (webView != null) {
+            WebEngine engine = webView.getEngine();
+            String url = getClass().getResource("/html/" + htmlFile).toExternalForm();
+            engine.load(url);
+        }
+    }
 
     private void inputNumber(String number) {
 
@@ -620,6 +660,7 @@ public class CalculatorController {
     @FXML
     private void clearDisplay() {
         hideSolutionArea();
+        history.clear();
         currentLatexExpression.setLength(0);
         setMathExpression("");
 
@@ -633,64 +674,13 @@ public class CalculatorController {
 
     @FXML
     private void backspace() {
-        if (currentLatexExpression.length() > 0) {
-            String expr = currentLatexExpression.toString();
-            
-            if (expr.endsWith(" \\div ")) {
-                currentLatexExpression.setLength(currentLatexExpression.length() - 6);
-            } else if (expr.endsWith(" \\times ")) {
-                currentLatexExpression.setLength(currentLatexExpression.length() - 8);
-            } else if (expr.endsWith(" - ")) {
-                currentLatexExpression.setLength(currentLatexExpression.length() - 3);
-            } else if (expr.endsWith(" + ")) {
-                currentLatexExpression.setLength(currentLatexExpression.length() - 3);
-            } else if (expr.endsWith(" \\bmod ")) {
-                currentLatexExpression.setLength(currentLatexExpression.length() - 7);
-            } else if (expr.endsWith("^{n}")) {
-                currentLatexExpression.setLength(currentLatexExpression.length() - 4);
-            } else if (expr.endsWith("_{n}")) {
-                currentLatexExpression.setLength(currentLatexExpression.length() - 4);
-            } else if (expr.endsWith("\\pi")) {
-                currentLatexExpression.setLength(currentLatexExpression.length() - 3);
-            } else if (expr.endsWith("\\sqrt{")) {
-                currentLatexExpression.setLength(currentLatexExpression.length() - 6);
-            } else if (expr.endsWith("\\times 10^{")) {
-                currentLatexExpression.setLength(currentLatexExpression.length() - 11);
-            } else if (expr.endsWith("^{")) {
-                currentLatexExpression.setLength(currentLatexExpression.length() - 2);
-            } else if (expr.endsWith("^2")) {
-                currentLatexExpression.setLength(currentLatexExpression.length() - 2);
-            } else if (expr.endsWith("^{-1}")) {
-                currentLatexExpression.setLength(currentLatexExpression.length() - 5);
-            } else if (expr.endsWith("\\sin(") || expr.endsWith("\\cos(") || expr.endsWith("\\tan(") ||
-                       expr.endsWith("\\csc(") || expr.endsWith("\\sec(") || expr.endsWith("\\cot(") ||
-                       expr.endsWith("\\log(") || expr.endsWith("\\arg(")) {
-                currentLatexExpression.setLength(currentLatexExpression.length() - 5);
-            } else if (expr.endsWith("\\sinh(") || expr.endsWith("\\cosh(") || expr.endsWith("\\tanh(")) {
-                currentLatexExpression.setLength(currentLatexExpression.length() - 6);
-            } else if (expr.endsWith("\\ln(")) {
-                currentLatexExpression.setLength(currentLatexExpression.length() - 4);
-            } else if (expr.endsWith("\\operatorname{Re}(") || expr.endsWith("\\operatorname{Im}(")) {
-                currentLatexExpression.setLength(currentLatexExpression.length() - 18);
-            } else if (expr.endsWith("^{\\circ}")) {
-                currentLatexExpression.setLength(currentLatexExpression.length() - 8);
-            } else if (expr.endsWith("f(")) {
-                currentLatexExpression.setLength(currentLatexExpression.length() - 2);
-            } else if (expr.endsWith("\\overline{") || expr.endsWith("\\text{rad}")) {
-                currentLatexExpression.setLength(currentLatexExpression.length() - 10);
-            } else {
-                // Simplified backspace: just removes the last character.
-                currentLatexExpression.deleteCharAt(currentLatexExpression.length() - 1);
-                
-                // If the last character deleted leaves an exposed backslash (e.g. after deleting '%' from '\%'),
-                // delete the backslash as well so it doesn't show up on screen.
-                if (currentLatexExpression.length() > 0 && currentLatexExpression.charAt(currentLatexExpression.length() - 1) == '\\') {
-                    currentLatexExpression.deleteCharAt(currentLatexExpression.length() - 1);
-                }
-            }
-            
-            setMathExpression(currentLatexExpression.toString());
+        if (!history.isEmpty()) {
+            currentLatexExpression.setLength(0);
+            currentLatexExpression.append(history.pop());
+        } else {
+            currentLatexExpression.setLength(0);
         }
+        setMathExpression(currentLatexExpression.toString());
 
         String text = display.getText();
 
@@ -928,6 +918,80 @@ public class CalculatorController {
             solutionArea.prefWidthProperty().bind(solutionArea.maxWidthProperty());
         }
 
+        // Initialize ComboBoxes
+        if (modeComboBox != null) {
+            modeComboBox.getItems().addAll("Basic", "Advanced", "Scientific", "Programmer");
+            modeComboBox.setValue("Advanced");
+        }
+
+        // Initialize KaTeX WebViews
+        setupWebView(mathWebView, "math_display.html");
+        setupWebView(solutionWebView, "solution_display.html");
+
+        // Set up ComboBox Prompt Text fix
+        setupComboBoxPromptText(modeComboBox);
+        setupComboBoxPromptText(equationLibraryBox);
+        setupComboBoxPromptText(calculusLibraryBox);
+
+        // Hide solution area initially
+        hideSolutionArea();
+
+        if (equationLibraryBox != null) {
+            equationMap.put("Quadratic Formula", "x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}");
+            equationMap.put("Pythagorean Theorem", "a^2 + b^2 = c^2");
+            equationMap.put("Newton's 2nd Law", "F = ma");
+            equationMap.put("Euler's Identity", "e^{i\\pi} + 1 = 0");
+            equationMap.put("Area of Circle", "A = \\pi r^2");
+            equationMap.put("Volume of Sphere", "V = \\frac{4}{3} \\pi r^3");
+            equationMap.put("Trigonometric Identity", "\\sin^2\\theta + \\cos^2\\theta = 1");
+            equationMap.put("Mass-Energy Equivalence", "E = mc^2");
+            equationMap.put("Schrödinger Equation", "i\\hbar\\frac{\\partial}{\\partial t}\\Psi = \\hat{H}\\Psi");
+            equationMap.put("Ideal Gas Law", "PV = nRT");
+            equationMap.put("Law of Cosines", "c^2 = a^2 + b^2 - 2ab\\cos(C)");
+            
+            equationLibraryBox.getItems().addAll(equationMap.keySet());
+            equationLibraryBox.setOnAction(e -> {
+                String selected = equationLibraryBox.getValue();
+                if (selected != null && equationMap.containsKey(selected)) {
+                    history.push(currentLatexExpression.toString());
+                    currentLatexExpression.setLength(0);
+                    currentLatexExpression.append(equationMap.get(selected));
+                    setMathExpression(currentLatexExpression.toString());
+                    Platform.runLater(() -> {
+                        equationLibraryBox.getSelectionModel().clearSelection();
+                        equationLibraryBox.setValue(null);
+                    });
+                }
+            });
+        }
+
+        if (calculusLibraryBox != null) {
+            calculusMap.put("Derivative (d/dx)", "\\frac{d}{dx}(");
+            calculusMap.put("2nd Derivative", "\\frac{d^2}{dx^2}(");
+            calculusMap.put("Partial Derivative", "\\frac{\\partial}{\\partial x}(");
+            calculusMap.put("Indefinite Integral", "\\int dx");
+            calculusMap.put("Definite Integral", "\\int_{a}^{b} dx");
+            calculusMap.put("Double Integral", "\\iint dx dy");
+            calculusMap.put("Limit (x→0)", "\\lim_{x \\to 0}(");
+            calculusMap.put("Limit (x→∞)", "\\lim_{x \\to \\infty}(");
+            calculusMap.put("Summation", "\\sum_{i=1}^{n}(");
+            calculusMap.put("Product", "\\prod_{i=1}^{n}(");
+            
+            calculusLibraryBox.getItems().addAll(calculusMap.keySet());
+            calculusLibraryBox.setOnAction(e -> {
+                String selected = calculusLibraryBox.getValue();
+                if (selected != null && calculusMap.containsKey(selected)) {
+                    history.push(currentLatexExpression.toString());
+                    currentLatexExpression.append(calculusMap.get(selected));
+                    setMathExpression(currentLatexExpression.toString());
+                    Platform.runLater(() -> {
+                        calculusLibraryBox.getSelectionModel().clearSelection();
+                        calculusLibraryBox.setValue(null);
+                    });
+                }
+            });
+        }
+
         try {
             // New Advanced Calculator doesn't use the old NavigationDrawer
             /*
@@ -937,26 +1001,12 @@ public class CalculatorController {
             ...
             */
             
-            // Initialize KaTeX WebView for mathematical rendering
-            if (mathWebView != null) {
-                WebEngine webEngine = mathWebView.getEngine();
-                String url = getClass().getResource("/html/math_display.html").toExternalForm();
-                webEngine.load(url);
-                
-                // Wait for page to load before setting initial expression
-                webEngine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
-                    if (newState == javafx.concurrent.Worker.State.SUCCEEDED) {
-                        setMathExpression("\\\\frac{d}{dx}(dy) + \\\\frac{d}{dy}(3y) = 5");
-                    }
-                });
-            }
-            
-            // Initialize KaTeX WebView for AI solution
-            if (solutionWebView != null) {
-                WebEngine solEngine = solutionWebView.getEngine();
-                String url = getClass().getResource("/html/solution_display.html").toExternalForm();
-                solEngine.load(url);
-            }
+            // Wait for page to load before setting initial expression
+            mathWebView.getEngine().getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
+                if (newState == javafx.concurrent.Worker.State.SUCCEEDED) {
+                    setMathExpression("\\\\frac{d}{dx}(dy) + \\\\frac{d}{dy}(3y) = 5");
+                }
+            });
             
         } catch (Exception e) {
             e.printStackTrace();

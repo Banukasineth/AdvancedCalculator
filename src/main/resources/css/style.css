@@ -163,18 +163,35 @@
     -fx-text-fill: white;
 }
 
-/* Mode Selectors */
+/* Mode Selectors & Dropdowns */
 .mode-combo {
     -fx-background-color: #262432;
     -fx-background-radius: 8;
     -fx-padding: 5;
 }
 .mode-combo .list-cell {
-    -fx-text-fill: #A09EAA;
+    -fx-text-fill: white;
     -fx-font-size: 13px;
 }
 .mode-combo:hover {
     -fx-background-color: #2D2B38;
+}
+
+/* Glassy Dropdown Popup */
+.mode-combo .combo-box-popup .list-view {
+    -fx-background-color: rgba(30, 28, 39, 0.95); /* Dark glassy background */
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 10, 0, 0, 5);
+}
+.mode-combo .combo-box-popup .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-padding: 8 12;
+}
+.mode-combo .combo-box-popup .list-cell:filled:hover {
+    -fx-background-color: rgba(214, 51, 132, 0.4); /* Pinkish hover effect */
 }
 
 /* Advanced Keypad */
