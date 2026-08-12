@@ -494,10 +494,94 @@
         }
         
         function shareGraph() {
-            const toast = document.getElementById('toast');
-            toast.innerText = 'Graph URL/Image copied to clipboard!';
-            toast.style.opacity = '1';
-            setTimeout(() => { toast.style.opacity = '0'; }, 3000);
+            const svg = document.querySelector('svg');
+            if (!svg) return;
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const svgSize = svg.getBoundingClientRect();
+            
+            // Helper to format raw math strings to pretty unicode
+            const formatMath = (str) => {
+                const sup = {'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'};
+                return str.replace(/\^\(?(-?\d+)\)?/g, (match, p1) => {
+                    return p1.split('').map(c => sup[c] || c).join('');
+                }).replace(/\*/g, '×').replace(/sqrt\(/g, '√(');
+            };
+
+            let activeEquations = Object.values(equations).filter(eq => !eq.hidden && eq.expr);
+            let legendWidth = 0;
+            
+            if (activeEquations.length > 0) {
+                const tempCtx = document.createElement('canvas').getContext('2d');
+                tempCtx.font = 'bold 15px "Segoe UI", Arial, sans-serif';
+                let maxTextWidth = 0;
+                activeEquations.forEach(eq => {
+                    let w = tempCtx.measureText(formatMath(eq.expr)).width;
+                    if (w > maxTextWidth) maxTextWidth = w;
+                });
+                legendWidth = maxTextWidth + 80;
+                if (legendWidth < 200) legendWidth = 200;
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = svgSize.width + legendWidth;
+            canvas.height = svgSize.height;
+            const ctx = canvas.getContext('2d');
+            
+            // Add background color
+            ctx.fillStyle = currentTheme === 'dark' ? '#1E1E1E' : '#FFFFFF';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            const img = new Image();
+            img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+            img.onload = function() {
+                ctx.drawImage(img, 0, 0);
+                
+                // Draw Legend Panel on the right
+                if (activeEquations.length > 0) {
+                    let sideX = svgSize.width;
+                    
+                    // Separator line
+                    ctx.beginPath();
+                    ctx.moveTo(sideX, 0);
+                    ctx.lineTo(sideX, canvas.height);
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = currentTheme === 'dark' ? '#333333' : '#E0E0E0';
+                    ctx.stroke();
+                    
+                    // Title
+                    ctx.fillStyle = currentTheme === 'dark' ? '#FFFFFF' : '#000000';
+                    ctx.font = 'bold 18px "Segoe UI", Arial, sans-serif';
+                    ctx.fillText("Expressions", sideX + 20, 35);
+                    
+                    // Draw each equation
+                    ctx.font = 'bold 15px "Segoe UI", Arial, sans-serif';
+                    activeEquations.forEach((eq, index) => {
+                        let y = 75 + (index * 35);
+                        
+                        // Color marker
+                        ctx.fillStyle = eq.color || '#0078D7';
+                        ctx.beginPath();
+                        if (ctx.roundRect) {
+                            ctx.roundRect(sideX + 20, y - 14, 18, 18, 4);
+                        } else {
+                            ctx.rect(sideX + 20, y - 14, 18, 18);
+                        }
+                        ctx.fill();
+                        
+                        // Text
+                        ctx.fillStyle = currentTheme === 'dark' ? '#DDDDDD' : '#333333';
+                        ctx.fillText(formatMath(eq.expr), sideX + 50, y + 1);
+                    });
+                }
+                
+                const imgData = canvas.toDataURL('image/png');
+                window.alert('SHARE:' + imgData);
+                
+                const toast = document.getElementById('toast');
+                toast.innerText = 'Graph Image copied to clipboard!';
+                toast.style.opacity = '1';
+                setTimeout(() => { toast.style.opacity = '0'; }, 3000);
+            };
         }
 
         function plotEquation(equationStr, color, id, hidden, style) {

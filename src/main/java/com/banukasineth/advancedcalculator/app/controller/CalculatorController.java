@@ -951,9 +951,16 @@ public class CalculatorController {
 
     private void setupWebView(WebView webView, String htmlFile) {
         if (webView != null) {
-            WebEngine engine = webView.getEngine();
+            javafx.scene.web.WebEngine engine = webView.getEngine();
             String url = getClass().getResource("/html/" + htmlFile).toExternalForm();
             if (htmlFile.equals("graph_display.html")) {
+                engine.setOnAlert(event -> {
+                    String data = event.getData();
+                    if (data != null && data.startsWith("SHARE:")) {
+                        String base64 = data.substring(6);
+                        copyImageToClipboard(base64);
+                    }
+                });
                 engine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
                     if (newState == javafx.concurrent.Worker.State.SUCCEEDED) {
                         plotAllGraphs();
@@ -961,6 +968,24 @@ public class CalculatorController {
                 });
             }
             engine.load(url);
+        }
+    }
+
+    private void copyImageToClipboard(String base64Image) {
+        try {
+            if (base64Image.contains(",")) {
+                base64Image = base64Image.split(",")[1];
+            }
+            byte[] imageBytes = java.util.Base64.getDecoder().decode(base64Image);
+            java.io.ByteArrayInputStream bis = new java.io.ByteArrayInputStream(imageBytes);
+            javafx.scene.image.Image image = new javafx.scene.image.Image(bis);
+            
+            javafx.scene.input.Clipboard clipboard = javafx.scene.input.Clipboard.getSystemClipboard();
+            javafx.scene.input.ClipboardContent content = new javafx.scene.input.ClipboardContent();
+            content.putImage(image);
+            clipboard.setContent(content);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
