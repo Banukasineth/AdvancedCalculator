@@ -328,13 +328,20 @@
             
             let data = [];
             for (let id in equations) {
-                // simple unit conversion mock for display purposes if using deg
+                if (equations[id].hidden) continue;
                 let expr = equations[id].expr;
+                let style = equations[id].style || 'solid';
+                let dashArray = '';
+                if (style === 'dashed') dashArray = '8,8';
+                else if (style === 'dotted') dashArray = '3,4';
                 
                 data.push({
                     fn: expr,
                     color: equations[id].color || '#0078D7',
-                    graphType: 'polyline'
+                    graphType: 'polyline',
+                    attr: {
+                        "stroke-dasharray": dashArray
+                    }
                 });
             }
 
@@ -383,7 +390,8 @@
                 });
                 updateOptionsInputs();
             } catch (e) {
-                console.error(e);
+                console.error("Partial expression, waiting for completion: ", e.message);
+                // We don't clear the screen or show an error so the user isn't interrupted while typing.
             }
         }
 
@@ -477,19 +485,17 @@
             setTimeout(() => { toast.style.opacity = '0'; }, 3000);
         }
 
-        function plotEquation(equationStr, color, id) {
-            try {
-                equations[id] = { expr: equationStr, color: color };
-                renderGraph();
-                return "Success";
-            } catch (err) {
-                return "Error: " + err.message;
-            }
+        function plotEquation(equationStr, color, id, hidden, style) {
+            equations[id] = { expr: equationStr, color: color, hidden: hidden, style: style };
+            return "Success";
+        }
+
+        function renderAll() {
+            renderGraph();
         }
 
         function clearGraph() {
             equations = {};
-            renderGraph();
         }
 
         window.onresize = renderGraph;

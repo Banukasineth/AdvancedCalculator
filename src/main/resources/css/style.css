@@ -203,7 +203,7 @@
     -fx-background-color: #2B2936;
     -fx-background-radius: 8;
     -fx-text-fill: white;
-    -fx-font-size: 16px;
+    -fx-font-size: 18px;
     -fx-cursor: hand;
     -fx-max-width: Infinity;
     -fx-max-height: Infinity;
@@ -218,7 +218,7 @@
 .dark-btn {
     -fx-background-color: #22202A;
     -fx-text-fill: #C0BEC9;
-    -fx-font-size: 14px;
+    -fx-font-size: 16px;
 }
 .dark-btn:hover {
     -fx-background-color: #2B2936;
@@ -258,7 +258,7 @@
 /* Custom Overlay Popups */
 .custom-popup {
     -fx-background-color: #2b2b2b;
-    -fx-padding: 8;
+    -fx-padding: 4;
     -fx-background-radius: 4;
     -fx-border-color: #383645;
     -fx-border-width: 1;
@@ -270,4 +270,14 @@
 .popup-key-btn {
     -fx-min-width: 50px;
     -fx-min-height: 40px;
+}
+
+/* Hide Custom Color option from specific ColorPickers */
+.no-custom-color .custom-color-link {
+    visibility: hidden;
+    -fx-pref-height: 0;
+    -fx-max-height: 0;
+    -fx-min-height: 0;
+    -fx-padding: 0;
+    -fx-opacity: 0;
 }
