@@ -416,7 +416,7 @@ public class CalculatorController {
         equationFields.add(eqField);
         equationNameFields.add(nameField);
         equationsListContainer.getChildren().add(card);
-        Platform.runLater(eqField::requestFocus);
+        // Do not request focus here to avoid jumping when auto-adding rows
         
         plotAllGraphs();
     }
