@@ -294,7 +294,7 @@
         
         <div class="popup-section">
             <label class="section-title">Line thickness</label>
-            <input type="range" min="1" max="5" value="2" class="fluent-slider" onchange="renderGraph()">
+            <input type="range" id="inpThickness" min="1" max="5" value="2" class="fluent-slider" onchange="renderGraph()" oninput="renderGraph()">
         </div>
         
         <div class="popup-section">
@@ -326,6 +326,9 @@
             const width = window.innerWidth;
             const height = window.innerHeight;
             
+            const thicknessSlider = document.getElementById('inpThickness');
+            const thickness = thicknessSlider ? thicknessSlider.value : 2;
+            
             let data = [];
             for (let id in equations) {
                 if (equations[id].hidden) continue;
@@ -335,12 +338,24 @@
                 if (style === 'dashed') dashArray = '8,8';
                 else if (style === 'dotted') dashArray = '3,4';
                 
+                // Extremely basic unit conversion for simple expressions
+                if (currentUnit === 'deg') {
+                    expr = expr.replace(/sin\(/g, "sin(PI/180*");
+                    expr = expr.replace(/cos\(/g, "cos(PI/180*");
+                    expr = expr.replace(/tan\(/g, "tan(PI/180*");
+                } else if (currentUnit === 'grad') {
+                    expr = expr.replace(/sin\(/g, "sin(PI/200*");
+                    expr = expr.replace(/cos\(/g, "cos(PI/200*");
+                    expr = expr.replace(/tan\(/g, "tan(PI/200*");
+                }
+                
                 data.push({
                     fn: expr,
                     color: equations[id].color || '#0078D7',
                     graphType: 'polyline',
                     attr: {
-                        "stroke-dasharray": dashArray
+                        "stroke-dasharray": dashArray,
+                        "stroke-width": thickness
                     }
                 });
             }

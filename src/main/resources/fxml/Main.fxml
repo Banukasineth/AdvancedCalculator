@@ -10,31 +10,35 @@
 <?import javafx.scene.web.WebView?>
 
 <StackPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="com.banukasineth.advancedcalculator.app.controller.CalculatorController"
-           styleClass="root-pane">
+    fx:controller="com.banukasineth.advancedcalculator.app.controller.CalculatorController"
+    styleClass="root-pane">
 
-    <BorderPane fx:id="rootPane" focusTraversable="true" onKeyPressed="#handleKeyPressed" styleClass="main-border-pane">
+    <BorderPane fx:id="rootPane" focusTraversable="true" onKeyPressed="#handleKeyPressed"
+        styleClass="main-border-pane">
 
         <!-- Custom Top Bar for Undecorated Window -->
         <top>
-            <HBox fx:id="titleBar" alignment="CENTER_LEFT" styleClass="custom-title-bar" onMousePressed="#handleTitleBarPressed" onMouseDragged="#handleTitleBarDragged">
-                
+            <HBox fx:id="titleBar" alignment="CENTER_LEFT" styleClass="custom-title-bar"
+                onMousePressed="#handleTitleBarPressed" onMouseDragged="#handleTitleBarDragged">
+
                 <!-- App Tabs -->
                 <HBox alignment="CENTER_LEFT" spacing="5" styleClass="title-tabs">
                     <HBox alignment="CENTER" styleClass="active-tab">
-                        <Label text="🖩 Calculator" styleClass="tab-text"/>
-                        <Button text="×" styleClass="tab-close-btn"/>
+                        <Label text="🖩 Calculator" styleClass="tab-text" />
+                        <Button text="×" styleClass="tab-close-btn" />
                     </HBox>
-                    <Button text="+" styleClass="new-tab-btn"/>
+                    <Button text="+" styleClass="new-tab-btn" />
                 </HBox>
 
                 <Region HBox.hgrow="ALWAYS" />
 
                 <!-- Window Controls -->
                 <HBox alignment="CENTER_RIGHT" styleClass="window-controls">
-                    <Button text="—" styleClass="window-btn, minimize-btn" onAction="#minimizeWindow"/>
-                    <Button text="□" styleClass="window-btn, maximize-btn" onAction="#maximizeWindow"/>
-                    <Button text="✕" styleClass="window-btn, close-btn" onAction="#closeWindow"/>
+                    <Button text="—" styleClass="window-btn, minimize-btn"
+                        onAction="#minimizeWindow" />
+                    <Button text="□" styleClass="window-btn, maximize-btn"
+                        onAction="#maximizeWindow" />
+                    <Button text="✕" styleClass="window-btn, close-btn" onAction="#closeWindow" />
                 </HBox>
             </HBox>
         </top>
@@ -42,506 +46,959 @@
         <center>
             <StackPane>
                 <VBox fx:id="standardLayout" spacing="10" styleClass="calculator-content">
-                <padding>
-                    <Insets top="15" right="20" bottom="20" left="20"/>
-                </padding>
+                    <padding>
+                        <Insets top="15" right="20" bottom="20" left="20" />
+                    </padding>
 
-                <!-- Toolbar (Undo, Redo, Zoom, etc.) -->
-                <HBox alignment="CENTER_LEFT" spacing="15" styleClass="toolbar">
-                    <Button text="◫" styleClass="toolbar-btn"/>
-                    <Button text="↩" styleClass="toolbar-btn"/>
-                    <Button text="↪" styleClass="toolbar-btn"/>
-                    <Button text="🗑" styleClass="toolbar-btn"/>
-                    
-                    <Region HBox.hgrow="ALWAYS"/>
-                    
-                    <!-- Zoom Slider placeholder -->
-                    <HBox alignment="CENTER" spacing="5" styleClass="zoom-container">
-                        <Label text="−" styleClass="zoom-icon"/>
-                        <Slider value="100" min="50" max="200" styleClass="zoom-slider"/>
-                        <Label text="+ 100%" styleClass="zoom-text"/>
-                    </HBox>
-                    
-                    <Region HBox.hgrow="ALWAYS"/>
-                    
-                    <Button text="🗑" styleClass="toolbar-btn"/>
-                    <Button text="✎" styleClass="toolbar-btn"/>
-                    <Button text="⚙" styleClass="toolbar-btn"/>
-                </HBox>
+                    <!-- Toolbar (Undo, Redo, Zoom, etc.) -->
+                    <HBox alignment="CENTER_LEFT" spacing="15" styleClass="toolbar">
+                        <Button text="◫" styleClass="toolbar-btn" />
+                        <Button text="↩" styleClass="toolbar-btn" />
+                        <Button text="↪" styleClass="toolbar-btn" />
+                        <Button text="🗑" styleClass="toolbar-btn" />
 
-                <!-- Display Area -->
-                <HBox fx:id="displaySplitArea" spacing="10" VBox.vgrow="ALWAYS" styleClass="display-split-area">
-                    
-                    <!-- Working Area (Left) -->
-                    <VBox fx:id="workingArea" HBox.hgrow="ALWAYS" styleClass="working-area">
-                        <Label text="Working" styleClass="area-title"/>
-                        <VBox alignment="CENTER" VBox.vgrow="ALWAYS">
-                            <!-- Complex math rendering WebView -->
-                            <WebView fx:id="mathWebView" prefHeight="200" prefWidth="400" VBox.vgrow="ALWAYS" style="-fx-page-fill: transparent;" />
-                            <!-- Old display mapped here temporarily so controller doesn't break -->
-                            <TextField fx:id="display" editable="false" text="0" visible="false" managed="false"/>
-                            <Label fx:id="expressionLabel" visible="false" managed="false"/>
-                        </VBox>
-                    </VBox>
-                    
-                    <!-- Divider -->
-                    <Region fx:id="verticalDivider" visible="false" managed="false" styleClass="vertical-divider"/>
+                        <Region HBox.hgrow="ALWAYS" />
 
-                    <!-- Solution Area (Right) -->
-                    <VBox fx:id="solutionArea" HBox.hgrow="ALWAYS" prefWidth="0" minWidth="0" maxWidth="0" styleClass="solution-area">
-                        <Label text="Solution" styleClass="area-title"/>
-                        <StackPane VBox.vgrow="ALWAYS">
-                            <!-- Loading Orb State -->
-                            <VBox fx:id="loadingBox" alignment="CENTER" visible="true">
-                                <Region VBox.vgrow="ALWAYS"/>
-                                <Circle radius="30" styleClass="solution-orb"/>
-                                <Label text="Generating a&#10;solution..." textAlignment="CENTER" styleClass="solution-text"/>
-                                <Region VBox.vgrow="ALWAYS"/>
-                            </VBox>
-                            
-                            <!-- AI Solution WebView -->
-                            <WebView fx:id="solutionWebView" visible="false" style="-fx-page-fill: transparent;" />
-                        </StackPane>
-                    </VBox>
-                    
-                </HBox>
-
-                <!-- Input Field -->
-                <HBox alignment="CENTER_LEFT" styleClass="input-area">
-                    <TextField promptText="Type Math equation here" HBox.hgrow="ALWAYS" styleClass="math-input-field"/>
-                    <Button text="🎤" styleClass="input-icon-btn"/>
-                    <Button text="📷" styleClass="input-icon-btn"/>
-                </HBox>
-
-                <!-- Mode Selectors -->
-                <HBox spacing="10" styleClass="mode-selectors">
-                    <ComboBox fx:id="modeComboBox" promptText="Advanced" styleClass="mode-combo" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
-                    <ComboBox fx:id="equationLibraryBox" promptText="Equation Library" styleClass="mode-combo" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
-                    <ComboBox fx:id="calculusLibraryBox" promptText="Differentiation" styleClass="mode-combo" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
-                </HBox>
-
-                <!-- Keypad Container -->
-                <StackPane VBox.vgrow="ALWAYS">
-                    <!-- Advanced Keypad (Default) -->
-                    <GridPane fx:id="advancedKeypad" hgap="8" vgap="8" styleClass="advanced-keypad">
-                        <columnConstraints>
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="9"/>
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="9"/>
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="9"/>
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="9"/>
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="9"/>
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="10"/>
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="9"/>
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="9"/>
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="9"/>
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="9"/>
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="9"/>
-                        </columnConstraints>
-                        <rowConstraints>
-                            <RowConstraints vgrow="ALWAYS" minHeight="40"/>
-                            <RowConstraints vgrow="ALWAYS" minHeight="40"/>
-                            <RowConstraints vgrow="ALWAYS" minHeight="40"/>
-                            <RowConstraints vgrow="ALWAYS" minHeight="40"/>
-                            <RowConstraints vgrow="ALWAYS" minHeight="40"/>
-                        </rowConstraints>
-                        <!-- Row 0 -->
-                        <Button focusTraversable="false" text="⌫" styleClass="key-btn, action-btn" onAction="#backspace" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                        <Button focusTraversable="false" text="(" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-                        <Button focusTraversable="false" text=")" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
-                        <Button focusTraversable="false" text="mod" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
-                        <Button focusTraversable="false" text="π" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="4" GridPane.rowIndex="0"/>
-                        <Button focusTraversable="false" text="↑n" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="5" GridPane.rowIndex="0"/>
-                        <Button focusTraversable="false" text="n↓" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="6" GridPane.rowIndex="0"/>
-                        <Button focusTraversable="false" text="cos" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="7" GridPane.rowIndex="0"/>
-                        <Button focusTraversable="false" text="sin" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="8" GridPane.rowIndex="0"/>
-                        <Button focusTraversable="false" text="tan" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="9" GridPane.rowIndex="0"/>
-                        <Button focusTraversable="false" text="csc" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="10" GridPane.rowIndex="0"/>
-                        <!-- Row 1 -->
-                        <Button focusTraversable="false" fx:id="btn7" text="7" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                        <Button focusTraversable="false" fx:id="btn8" text="8" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                        <Button focusTraversable="false" fx:id="btn9" text="9" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
-                        <Button focusTraversable="false" fx:id="btnDivide" text="÷" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
-                        <Button focusTraversable="false" text="√" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="4" GridPane.rowIndex="1"/>
-                        <Button focusTraversable="false" text="A=B" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="5" GridPane.rowIndex="1"/>
-                        <Button focusTraversable="false" text="x10ⁿ" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="6" GridPane.rowIndex="1"/>
-                        <Button focusTraversable="false" text="cosh" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="7" GridPane.rowIndex="1"/>
-                        <Button focusTraversable="false" text="sinh" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="8" GridPane.rowIndex="1"/>
-                        <Button focusTraversable="false" text="tanh" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="9" GridPane.rowIndex="1"/>
-                        <Button focusTraversable="false" text="sec" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="10" GridPane.rowIndex="1"/>
-                        <!-- Row 2 -->
-                        <Button focusTraversable="false" fx:id="btn4" text="4" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-                        <Button focusTraversable="false" fx:id="btn5" text="5" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-                        <Button focusTraversable="false" fx:id="btn6" text="6" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
-                        <Button focusTraversable="false" fx:id="btnMultiply" text="×" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="3" GridPane.rowIndex="2"/>
-                        <Button focusTraversable="false" text="x²" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="4" GridPane.rowIndex="2"/>
-                        <Button focusTraversable="false" text="xʸ" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="5" GridPane.rowIndex="2"/>
-                        <Button focusTraversable="false" text="x⁻¹" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="6" GridPane.rowIndex="2"/>
-                        <Button focusTraversable="false" text="e" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="7" GridPane.rowIndex="2"/>
-                        <Button focusTraversable="false" text="ln" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="8" GridPane.rowIndex="2"/>
-                        <Button focusTraversable="false" text="log" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="9" GridPane.rowIndex="2"/>
-                        <Button focusTraversable="false" text="cot" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="10" GridPane.rowIndex="2"/>
-                        <!-- Row 3 -->
-                        <Button focusTraversable="false" fx:id="btn1" text="1" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-                        <Button focusTraversable="false" fx:id="btn2" text="2" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-                        <Button focusTraversable="false" fx:id="btn3" text="3" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="2" GridPane.rowIndex="3"/>
-                        <Button focusTraversable="false" fx:id="btnSubtract" text="-" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="3" GridPane.rowIndex="3"/>
-                        <Button focusTraversable="false" fx:id="btnEquals" text="=" styleClass="key-btn, action-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="4" GridPane.rowIndex="3" GridPane.rowSpan="2"/>
-                        <Button focusTraversable="false" text="x!" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="5" GridPane.rowIndex="3"/>
-                        <Button focusTraversable="false" text="|x|" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="6" GridPane.rowIndex="3"/>
-                        <Button focusTraversable="false" text="i" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="7" GridPane.rowIndex="3"/>
-                        <Button focusTraversable="false" text="Re" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="8" GridPane.rowIndex="3"/>
-                        <Button focusTraversable="false" text="Im" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="9" GridPane.rowIndex="3"/>
-                        <Button focusTraversable="false" text="deg" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="10" GridPane.rowIndex="3"/>
-                        <!-- Row 4 -->
-                        <Button focusTraversable="false" fx:id="btn0" text="0" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
-                        <Button focusTraversable="false" fx:id="btnDecimal" text="." styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
-                        <Button focusTraversable="false" text="\%" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="2" GridPane.rowIndex="4"/>
-                        <Button focusTraversable="false" fx:id="btnAdd" text="+" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="3" GridPane.rowIndex="4"/>
-                        <Button focusTraversable="false" text="x" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="5" GridPane.rowIndex="4" GridPane.columnSpan="2"/>
-                        <Button focusTraversable="false" text="f(x)" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="7" GridPane.rowIndex="4"/>
-                        <Button focusTraversable="false" text="conj" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="8" GridPane.rowIndex="4"/>
-                        <Button focusTraversable="false" text="arg" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="9" GridPane.rowIndex="4"/>
-                        <Button focusTraversable="false" text="rad" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="10" GridPane.rowIndex="4"/>
-                    </GridPane>
-
-                    <!-- Basic Keypad -->
-                    <GridPane fx:id="basicKeypad" hgap="8" vgap="8" visible="false" managed="false" styleClass="advanced-keypad">
-                        <columnConstraints>
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="25"/>
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="25"/>
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="25"/>
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="25"/>
-                        </columnConstraints>
-                        <rowConstraints>
-                            <RowConstraints vgrow="ALWAYS" minHeight="40"/>
-                            <RowConstraints vgrow="ALWAYS" minHeight="40"/>
-                            <RowConstraints vgrow="ALWAYS" minHeight="40"/>
-                            <RowConstraints vgrow="ALWAYS" minHeight="40"/>
-                            <RowConstraints vgrow="ALWAYS" minHeight="40"/>
-                            <RowConstraints vgrow="ALWAYS" minHeight="40"/>
-                        </rowConstraints>
-                        
-                        <!-- Row 0 -->
-                        <Button focusTraversable="false" text="\%" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                        <Button focusTraversable="false" text="CE" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-                        <Button focusTraversable="false" text="C" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
-                        <Button focusTraversable="false" text="⌫" styleClass="key-btn, action-btn" onAction="#backspace" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
-                        
-                        <!-- Row 1 -->
-                        <Button focusTraversable="false" text="x⁻¹" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                        <Button focusTraversable="false" text="x²" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                        <Button focusTraversable="false" text="√" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
-                        <Button focusTraversable="false" text="÷" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
-                        
-                        <!-- Row 2 -->
-                        <Button focusTraversable="false" text="7" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-                        <Button focusTraversable="false" text="8" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-                        <Button focusTraversable="false" text="9" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
-                        <Button focusTraversable="false" text="×" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="3" GridPane.rowIndex="2"/>
-                        
-                        <!-- Row 3 -->
-                        <Button focusTraversable="false" text="4" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-                        <Button focusTraversable="false" text="5" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-                        <Button focusTraversable="false" text="6" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="2" GridPane.rowIndex="3"/>
-                        <Button focusTraversable="false" text="-" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="3" GridPane.rowIndex="3"/>
-                        
-                        <!-- Row 4 -->
-                        <Button focusTraversable="false" text="1" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
-                        <Button focusTraversable="false" text="2" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
-                        <Button focusTraversable="false" text="3" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="2" GridPane.rowIndex="4"/>
-                        <Button focusTraversable="false" text="+" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="3" GridPane.rowIndex="4"/>
-                        
-                        <!-- Row 5 -->
-                        <Button focusTraversable="false" text="±" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
-                        <Button focusTraversable="false" text="0" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
-                        <Button focusTraversable="false" text="." styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="2" GridPane.rowIndex="5"/>
-                        <Button focusTraversable="false" text="=" styleClass="key-btn, action-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="3" GridPane.rowIndex="5"/>
-                    </GridPane>
-
-                    <!-- Scientific Keypad -->
-                    <GridPane fx:id="scientificKeypad" hgap="8" vgap="8" visible="false" managed="false" styleClass="advanced-keypad">
-                        <columnConstraints>
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="20"/>
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="20"/>
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="20"/>
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="20"/>
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="20"/>
-                        </columnConstraints>
-                        <rowConstraints>
-                            <RowConstraints vgrow="ALWAYS" minHeight="40"/>
-                            <RowConstraints vgrow="ALWAYS" minHeight="40"/>
-                            <RowConstraints vgrow="ALWAYS" minHeight="40"/>
-                            <RowConstraints vgrow="ALWAYS" minHeight="40"/>
-                            <RowConstraints vgrow="ALWAYS" minHeight="40"/>
-                            <RowConstraints vgrow="ALWAYS" minHeight="40"/>
-                            <RowConstraints vgrow="ALWAYS" minHeight="40"/>
-                        </rowConstraints>
-                        
-                        <!-- Row 0 -->
-                        <Button focusTraversable="false" text="2ⁿᵈ" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                        <Button focusTraversable="false" text="π" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-                        <Button focusTraversable="false" text="e" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
-                        <Button focusTraversable="false" text="C" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
-                        <Button focusTraversable="false" text="⌫" styleClass="key-btn, action-btn" onAction="#backspace" GridPane.columnIndex="4" GridPane.rowIndex="0"/>
-                        
-                        <!-- Row 1 -->
-                        <Button focusTraversable="false" text="x²" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                        <Button focusTraversable="false" text="x⁻¹" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                        <Button focusTraversable="false" text="|x|" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
-                        <Button focusTraversable="false" text="exp" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
-                        <Button focusTraversable="false" text="mod" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="4" GridPane.rowIndex="1"/>
-                        
-                        <!-- Row 2 -->
-                        <Button focusTraversable="false" text="√" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-                        <Button focusTraversable="false" text="(" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-                        <Button focusTraversable="false" text=")" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
-                        <Button focusTraversable="false" text="n!" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="3" GridPane.rowIndex="2"/>
-                        <Button focusTraversable="false" text="÷" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="4" GridPane.rowIndex="2"/>
-                        
-                        <!-- Row 3 -->
-                        <Button focusTraversable="false" text="xʸ" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-                        <Button focusTraversable="false" text="7" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-                        <Button focusTraversable="false" text="8" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="2" GridPane.rowIndex="3"/>
-                        <Button focusTraversable="false" text="9" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="3" GridPane.rowIndex="3"/>
-                        <Button focusTraversable="false" text="×" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="4" GridPane.rowIndex="3"/>
-                        
-                        <!-- Row 4 -->
-                        <Button focusTraversable="false" text="10ˣ" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
-                        <Button focusTraversable="false" text="4" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
-                        <Button focusTraversable="false" text="5" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="2" GridPane.rowIndex="4"/>
-                        <Button focusTraversable="false" text="6" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="3" GridPane.rowIndex="4"/>
-                        <Button focusTraversable="false" text="-" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="4" GridPane.rowIndex="4"/>
-                        
-                        <!-- Row 5 -->
-                        <Button focusTraversable="false" text="log" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
-                        <Button focusTraversable="false" text="1" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
-                        <Button focusTraversable="false" text="2" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="2" GridPane.rowIndex="5"/>
-                        <Button focusTraversable="false" text="3" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="3" GridPane.rowIndex="5"/>
-                        <Button focusTraversable="false" text="+" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="4" GridPane.rowIndex="5"/>
-                        
-                        <!-- Row 6 -->
-                        <Button focusTraversable="false" text="ln" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
-                        <Button focusTraversable="false" text="±" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
-                        <Button focusTraversable="false" text="0" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="2" GridPane.rowIndex="6"/>
-                        <Button focusTraversable="false" text="." styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="3" GridPane.rowIndex="6"/>
-                        <Button focusTraversable="false" text="=" styleClass="key-btn, action-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="4" GridPane.rowIndex="6"/>
-                    </GridPane>
-
-                    <!-- Programmer Keypad -->
-                    <GridPane fx:id="programmerKeypad" hgap="8" vgap="8" visible="false" managed="false" styleClass="advanced-keypad">
-                        <columnConstraints>
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="16.6"/>
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="16.6"/>
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="16.6"/>
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="16.6"/>
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="16.6"/>
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="17"/>
-                        </columnConstraints>
-                        <rowConstraints>
-                            <RowConstraints vgrow="ALWAYS" minHeight="40"/>
-                            <RowConstraints vgrow="ALWAYS" minHeight="40"/>
-                            <RowConstraints vgrow="ALWAYS" minHeight="40"/>
-                            <RowConstraints vgrow="ALWAYS" minHeight="40"/>
-                            <RowConstraints vgrow="ALWAYS" minHeight="40"/>
-                        </rowConstraints>
-                        <Button focusTraversable="false" text="HEX" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                        <Button focusTraversable="false" text="DEC" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-                        <Button focusTraversable="false" text="OCT" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
-                        <Button focusTraversable="false" text="BIN" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
-                        <Button focusTraversable="false" text="⌫" styleClass="key-btn, action-btn" onAction="#backspace" GridPane.columnIndex="4" GridPane.rowIndex="0"/>
-                        <Button focusTraversable="false" text="C" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="5" GridPane.rowIndex="0"/>
-                        
-                        <Button focusTraversable="false" text="A" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                        <Button focusTraversable="false" text="B" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                        <Button focusTraversable="false" text="7" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
-                        <Button focusTraversable="false" text="8" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
-                        <Button focusTraversable="false" text="9" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="4" GridPane.rowIndex="1"/>
-                        <Button focusTraversable="false" text="÷" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="5" GridPane.rowIndex="1"/>
-                        
-                        <Button focusTraversable="false" text="C" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-                        <Button focusTraversable="false" text="D" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-                        <Button focusTraversable="false" text="4" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
-                        <Button focusTraversable="false" text="5" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="3" GridPane.rowIndex="2"/>
-                        <Button focusTraversable="false" text="6" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="4" GridPane.rowIndex="2"/>
-                        <Button focusTraversable="false" text="×" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="5" GridPane.rowIndex="2"/>
-                        
-                        <Button focusTraversable="false" text="E" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-                        <Button focusTraversable="false" text="F" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-                        <Button focusTraversable="false" text="1" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="2" GridPane.rowIndex="3"/>
-                        <Button focusTraversable="false" text="2" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="3" GridPane.rowIndex="3"/>
-                        <Button focusTraversable="false" text="3" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="4" GridPane.rowIndex="3"/>
-                        <Button focusTraversable="false" text="-" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="5" GridPane.rowIndex="3"/>
-                        
-                        <Button focusTraversable="false" text="AND" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
-                        <Button focusTraversable="false" text="OR" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
-                        <Button focusTraversable="false" text="0" styleClass="key-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="2" GridPane.rowIndex="4" GridPane.columnSpan="2"/>
-                        <Button focusTraversable="false" text="=" styleClass="key-btn, action-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="4" GridPane.rowIndex="4"/>
-                        <Button focusTraversable="false" text="+" styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey" GridPane.columnIndex="5" GridPane.rowIndex="4"/>
-                    </GridPane>
-                </StackPane>
-            </VBox>
-
-            <!-- Graphing Layout -->
-            <HBox fx:id="graphingLayout" spacing="10" styleClass="calculator-content" visible="false" managed="false">
-                <padding>
-                    <Insets top="15" right="20" bottom="20" left="20"/>
-                </padding>
-                
-                <!-- Left Side: Graph WebView -->
-                <VBox HBox.hgrow="ALWAYS" styleClass="working-area">
-                    <WebView fx:id="graphWebView" VBox.vgrow="ALWAYS" style="-fx-page-fill: transparent;" />
-                </VBox>
-                
-                <!-- Right Side: Equations and Keypad -->
-                <VBox spacing="10" minWidth="420" maxWidth="450" HBox.hgrow="NEVER">
-                    
-                    <!-- Mode Selector for Graphing Layout -->
-                    <ComboBox fx:id="graphModeComboBox" promptText="Graphing" styleClass="mode-combo" maxWidth="Infinity"/>
-                    
-                    <!-- Equations List -->
-                    <ScrollPane VBox.vgrow="ALWAYS" fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;">
-                        <VBox spacing="10">
-                            <VBox fx:id="equationsListContainer" spacing="10">
-                                <!-- Dynamic equation cards will be added here -->
-                            </VBox>
-                            <Button focusTraversable="false" text="Clear Graph" onAction="#clearGraph" styleClass="key-btn, dark-btn" maxWidth="Infinity"/>
-                        </VBox>
-                    </ScrollPane>
-
-                    <!-- Graphing Keypad Wrapper -->
-                    <VBox fx:id="graphingKeypad" spacing="0" VBox.vgrow="ALWAYS">
-                        <!-- Top Menu Bar -->
-                        <HBox spacing="5" alignment="CENTER_LEFT" style="-fx-padding: 10 5;">
-                            <ToggleButton focusTraversable="false" fx:id="trigToggle" styleClass="graph-menu-btn" onAction="#toggleTrigPopup" minWidth="-Infinity">
-                                <graphic>
-                                    <HBox alignment="CENTER" spacing="5">
-                                        <SVGPath content="M 2 2 L 2 14 L 14 14 Z M 2 10 L 6 10 L 6 14" stroke="white" strokeWidth="1" fill="transparent"/>
-                                        <Label text="Trigonometry" minWidth="-Infinity" style="-fx-text-fill: white; -fx-font-size: 13px; -fx-padding: 0 2 0 0;"/>
-                                        <SVGPath content="M 0 0 L 4 4 L 8 0" stroke="white" strokeWidth="1" fill="transparent"/>
-                                    </HBox>
-                                </graphic>
-                            </ToggleButton>
-                            <ToggleButton focusTraversable="false" fx:id="ineqToggle" styleClass="graph-menu-btn" onAction="#toggleIneqPopup" minWidth="-Infinity">
-                                <graphic>
-                                    <HBox alignment="CENTER" spacing="5">
-                                        <SVGPath content="M 2 14 L 2 8 L 7 8 L 7 14 Z M 7 14 L 7 4 L 14 4 L 14 14 Z" stroke="white" strokeWidth="1" fill="transparent"/>
-                                        <Label text="Inequalities" minWidth="-Infinity" style="-fx-text-fill: white; -fx-font-size: 13px; -fx-padding: 0 2 0 0;"/>
-                                        <SVGPath content="M 0 0 L 4 4 L 8 0" stroke="white" strokeWidth="1" fill="transparent"/>
-                                    </HBox>
-                                </graphic>
-                            </ToggleButton>
-                            <ToggleButton focusTraversable="false" fx:id="funcToggle" styleClass="graph-menu-btn" onAction="#toggleFuncPopup" minWidth="-Infinity">
-                                <graphic>
-                                    <HBox alignment="CENTER" spacing="5">
-                                        <Label text="ƒ" minWidth="-Infinity" style="-fx-text-fill: white; -fx-font-size: 15px; -fx-font-style: italic; -fx-font-family: 'Georgia', serif;"/>
-                                        <Label text="Function" minWidth="-Infinity" style="-fx-text-fill: white; -fx-font-size: 13px; -fx-padding: 0 2 0 0;"/>
-                                        <SVGPath content="M 0 0 L 4 4 L 8 0" stroke="white" strokeWidth="1" fill="transparent"/>
-                                    </HBox>
-                                </graphic>
-                            </ToggleButton>
+                        <!-- Zoom Slider placeholder -->
+                        <HBox alignment="CENTER" spacing="5" styleClass="zoom-container">
+                            <Label text="−" styleClass="zoom-icon" />
+                            <Slider value="100" min="50" max="200" styleClass="zoom-slider" />
+                            <Label text="+ 100%" styleClass="zoom-text" />
                         </HBox>
 
-                        <StackPane VBox.vgrow="ALWAYS">
-                            <!-- Main Graphing Keypad -->
-                            <GridPane hgap="4" vgap="4" styleClass="advanced-keypad">
-                                <columnConstraints>
-                                    <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="20"/>
-                                    <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="20"/>
-                                    <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="20"/>
-                                    <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="20"/>
-                                    <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="20"/>
-                                </columnConstraints>
-                                <rowConstraints>
-                                    <RowConstraints vgrow="ALWAYS" minHeight="35"/>
-                                    <RowConstraints vgrow="ALWAYS" minHeight="35"/>
-                                    <RowConstraints vgrow="ALWAYS" minHeight="35"/>
-                                    <RowConstraints vgrow="ALWAYS" minHeight="35"/>
-                                    <RowConstraints vgrow="ALWAYS" minHeight="35"/>
-                                    <RowConstraints vgrow="ALWAYS" minHeight="35"/>
-                                    <RowConstraints vgrow="ALWAYS" minHeight="35"/>
-                                </rowConstraints>
-                                
-                                <!-- Row 0 -->
-                                <Button focusTraversable="false" text="2nd" styleClass="key-btn, dark-btn" onAction="#handleGraphingKey" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                                <Button focusTraversable="false" text="π" styleClass="key-btn, dark-btn" onAction="#handleGraphingKey" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-                                <Button focusTraversable="false" text="e" styleClass="key-btn, dark-btn" onAction="#handleGraphingKey" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
-                                <Button focusTraversable="false" text="C" styleClass="key-btn, dark-btn" onAction="#handleGraphingKey" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
-                                <Button focusTraversable="false" text="⌫" styleClass="key-btn, dark-btn" onAction="#handleGraphingKey" GridPane.columnIndex="4" GridPane.rowIndex="0"/>
-                                
-                                <!-- Row 1 -->
-                                <Button focusTraversable="false" text="x²" styleClass="key-btn, dark-btn" onAction="#handleGraphingKey" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                                <Button focusTraversable="false" text="1/x" styleClass="key-btn, dark-btn" onAction="#handleGraphingKey" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                                <Button focusTraversable="false" text="|x|" styleClass="key-btn, dark-btn" onAction="#handleGraphingKey" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
-                                <Button focusTraversable="false" text="x" styleClass="key-btn, dark-btn" onAction="#handleGraphingKey" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
-                                <Button focusTraversable="false" text="y" styleClass="key-btn, dark-btn" onAction="#handleGraphingKey" GridPane.columnIndex="4" GridPane.rowIndex="1"/>
-                                
-                                <!-- Row 2 -->
-                                <Button focusTraversable="false" text="∛x" styleClass="key-btn, dark-btn" onAction="#handleGraphingKey" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-                                <Button focusTraversable="false" text="(" styleClass="key-btn, dark-btn" onAction="#handleGraphingKey" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-                                <Button focusTraversable="false" text=")" styleClass="key-btn, dark-btn" onAction="#handleGraphingKey" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
-                                <Button focusTraversable="false" text="=" styleClass="key-btn, dark-btn" onAction="#handleGraphingKey" GridPane.columnIndex="3" GridPane.rowIndex="2"/>
-                                <Button focusTraversable="false" text="÷" styleClass="key-btn, dark-btn" onAction="#handleGraphingKey" GridPane.columnIndex="4" GridPane.rowIndex="2"/>
-                                
-                                <!-- Row 3 -->
-                                <Button focusTraversable="false" text="xʸ" styleClass="key-btn, dark-btn" onAction="#handleGraphingKey" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-                                <Button focusTraversable="false" text="7" styleClass="key-btn" onAction="#handleGraphingKey" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-                                <Button focusTraversable="false" text="8" styleClass="key-btn" onAction="#handleGraphingKey" GridPane.columnIndex="2" GridPane.rowIndex="3"/>
-                                <Button focusTraversable="false" text="9" styleClass="key-btn" onAction="#handleGraphingKey" GridPane.columnIndex="3" GridPane.rowIndex="3"/>
-                                <Button focusTraversable="false" text="×" styleClass="key-btn, dark-btn" onAction="#handleGraphingKey" GridPane.columnIndex="4" GridPane.rowIndex="3"/>
-                                
-                                <!-- Row 4 -->
-                                <Button focusTraversable="false" text="10ˣ" styleClass="key-btn, dark-btn" onAction="#handleGraphingKey" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
-                                <Button focusTraversable="false" text="4" styleClass="key-btn" onAction="#handleGraphingKey" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
-                                <Button focusTraversable="false" text="5" styleClass="key-btn" onAction="#handleGraphingKey" GridPane.columnIndex="2" GridPane.rowIndex="4"/>
-                                <Button focusTraversable="false" text="6" styleClass="key-btn" onAction="#handleGraphingKey" GridPane.columnIndex="3" GridPane.rowIndex="4"/>
-                                <Button focusTraversable="false" text="-" styleClass="key-btn, dark-btn" onAction="#handleGraphingKey" GridPane.columnIndex="4" GridPane.rowIndex="4"/>
-                                
-                                <!-- Row 5 -->
-                                <Button focusTraversable="false" text="log" styleClass="key-btn, dark-btn" onAction="#handleGraphingKey" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
-                                <Button focusTraversable="false" text="1" styleClass="key-btn" onAction="#handleGraphingKey" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
-                                <Button focusTraversable="false" text="2" styleClass="key-btn" onAction="#handleGraphingKey" GridPane.columnIndex="2" GridPane.rowIndex="5"/>
-                                <Button focusTraversable="false" text="3" styleClass="key-btn" onAction="#handleGraphingKey" GridPane.columnIndex="3" GridPane.rowIndex="5"/>
-                                <Button focusTraversable="false" text="+" styleClass="key-btn, dark-btn" onAction="#handleGraphingKey" GridPane.columnIndex="4" GridPane.rowIndex="5"/>
-                                
-                                <!-- Row 6 -->
-                                <Button focusTraversable="false" text="ln" styleClass="key-btn, dark-btn" onAction="#handleGraphingKey" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
-                                <Button focusTraversable="false" text="(-)" styleClass="key-btn" onAction="#handleGraphingKey" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
-                                <Button focusTraversable="false" text="0" styleClass="key-btn" onAction="#handleGraphingKey" GridPane.columnIndex="2" GridPane.rowIndex="6"/>
-                                <Button focusTraversable="false" text="." styleClass="key-btn" onAction="#handleGraphingKey" GridPane.columnIndex="3" GridPane.rowIndex="6"/>
-                                <Button focusTraversable="false" text="⏎" styleClass="key-btn, action-btn" onAction="#handleGraphingKey" GridPane.columnIndex="4" GridPane.rowIndex="6"/>
-                            </GridPane>
-                            
-                            <!-- Trigonometry Overlay -->
-                            <GridPane fx:id="trigPopup" visible="false" managed="false" StackPane.alignment="TOP_LEFT" maxWidth="-Infinity" maxHeight="-Infinity" hgap="2" vgap="2" styleClass="custom-popup" translateX="10" translateY="5">
-                                <Button focusTraversable="false" text="2ⁿᵈ" styleClass="key-btn, dark-btn, popup-key-btn" onAction="#handleGraphingKey" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                                <Button focusTraversable="false" text="sin" styleClass="key-btn, dark-btn, popup-key-btn" onAction="#handleGraphingKey" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-                                <Button focusTraversable="false" text="cos" styleClass="key-btn, dark-btn, popup-key-btn" onAction="#handleGraphingKey" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
-                                <Button focusTraversable="false" text="tan" styleClass="key-btn, dark-btn, popup-key-btn" onAction="#handleGraphingKey" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
-                                <Button focusTraversable="false" text="hyp" styleClass="key-btn, dark-btn, popup-key-btn" onAction="#handleGraphingKey" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                                <Button focusTraversable="false" text="sec" styleClass="key-btn, dark-btn, popup-key-btn" onAction="#handleGraphingKey" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                                <Button focusTraversable="false" text="csc" styleClass="key-btn, dark-btn, popup-key-btn" onAction="#handleGraphingKey" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
-                                <Button focusTraversable="false" text="cot" styleClass="key-btn, dark-btn, popup-key-btn" onAction="#handleGraphingKey" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
-                            </GridPane>
+                        <Region HBox.hgrow="ALWAYS" />
 
-                            <!-- Inequalities Overlay -->
-                            <GridPane fx:id="ineqPopup" visible="false" managed="false" StackPane.alignment="TOP_CENTER" maxWidth="-Infinity" maxHeight="-Infinity" hgap="2" vgap="2" styleClass="custom-popup" translateY="5">
-                                <Button focusTraversable="false" text="&lt;" styleClass="key-btn, dark-btn, popup-key-btn" onAction="#handleGraphingKey" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                                <Button focusTraversable="false" text="≤" styleClass="key-btn, dark-btn, popup-key-btn" onAction="#handleGraphingKey" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-                                <Button focusTraversable="false" text="=" styleClass="key-btn, dark-btn, popup-key-btn" onAction="#handleGraphingKey" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
-                                <Button focusTraversable="false" text="≥" styleClass="key-btn, dark-btn, popup-key-btn" onAction="#handleGraphingKey" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
-                                <Button focusTraversable="false" text="&gt;" styleClass="key-btn, dark-btn, popup-key-btn" onAction="#handleGraphingKey" GridPane.columnIndex="4" GridPane.rowIndex="0"/>
-                            </GridPane>
+                        <Button text="🗑" styleClass="toolbar-btn" />
+                        <Button text="✎" styleClass="toolbar-btn" />
+                        <Button text="⚙" styleClass="toolbar-btn" />
+                    </HBox>
 
-                            <!-- Function Overlay -->
-                            <GridPane fx:id="funcPopup" visible="false" managed="false" StackPane.alignment="TOP_RIGHT" maxWidth="-Infinity" maxHeight="-Infinity" hgap="2" vgap="2" styleClass="custom-popup" translateX="-10" translateY="5">
-                                <Button focusTraversable="false" text="|x|" styleClass="key-btn, dark-btn, popup-key-btn" onAction="#handleGraphingKey" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                                <Button focusTraversable="false" text="⌊x⌋" styleClass="key-btn, dark-btn, popup-key-btn" onAction="#handleGraphingKey" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-                                <Button focusTraversable="false" text="⌈x⌉" styleClass="key-btn, dark-btn, popup-key-btn" onAction="#handleGraphingKey" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
-                            </GridPane>
-                        </StackPane>
-                    </VBox>
+                    <!-- Display Area -->
+                    <HBox fx:id="displaySplitArea" spacing="10" VBox.vgrow="ALWAYS"
+                        styleClass="display-split-area">
+
+                        <!-- Working Area (Left) -->
+                        <VBox fx:id="workingArea" HBox.hgrow="ALWAYS" styleClass="working-area">
+                            <Label text="Working" styleClass="area-title" />
+                            <VBox alignment="CENTER" VBox.vgrow="ALWAYS">
+                                <!-- Complex math rendering WebView -->
+                                <WebView fx:id="mathWebView" prefHeight="200" prefWidth="400"
+                                    VBox.vgrow="ALWAYS" style="-fx-page-fill: transparent;" />
+                                <!-- Old display mapped here temporarily so controller doesn't break -->
+                                <TextField fx:id="display" editable="false" text="0" visible="false"
+                                    managed="false" />
+                                <Label fx:id="expressionLabel" visible="false" managed="false" />
+                            </VBox>
+                        </VBox>
+
+                        <!-- Divider -->
+                        <Region fx:id="verticalDivider" visible="false" managed="false"
+                            styleClass="vertical-divider" />
+
+                        <!-- Solution Area (Right) -->
+                        <VBox fx:id="solutionArea" HBox.hgrow="ALWAYS" prefWidth="0" minWidth="0"
+                            maxWidth="0" styleClass="solution-area">
+                            <Label text="Solution" styleClass="area-title" />
+                            <StackPane VBox.vgrow="ALWAYS">
+                                <!-- Loading Orb State -->
+                                <VBox fx:id="loadingBox" alignment="CENTER" visible="true">
+                                    <Region VBox.vgrow="ALWAYS" />
+                                    <Circle radius="30" styleClass="solution-orb" />
+                                    <Label text="Generating a&#10;solution..."
+                                        textAlignment="CENTER" styleClass="solution-text" />
+                                    <Region VBox.vgrow="ALWAYS" />
+                                </VBox>
+
+                                <!-- AI Solution WebView -->
+                                <WebView fx:id="solutionWebView" visible="false"
+                                    style="-fx-page-fill: transparent;" />
+                            </StackPane>
+                        </VBox>
+
+                    </HBox>
+
+                    <!-- Input Field -->
+                    <HBox alignment="CENTER_LEFT" styleClass="input-area">
+                        <TextField promptText="Type Math equation here" HBox.hgrow="ALWAYS"
+                            styleClass="math-input-field" />
+                        <Button text="🎤" styleClass="input-icon-btn" />
+                        <Button text="📷" styleClass="input-icon-btn" />
+                    </HBox>
+
+                    <!-- Mode Selectors -->
+                    <HBox spacing="10" styleClass="mode-selectors">
+                        <ComboBox fx:id="modeComboBox" promptText="Advanced" styleClass="mode-combo"
+                            HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+                        <ComboBox fx:id="equationLibraryBox" promptText="Equation Library"
+                            styleClass="mode-combo" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+                        <ComboBox fx:id="calculusLibraryBox" promptText="Differentiation"
+                            styleClass="mode-combo" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+                    </HBox>
+
+                    <!-- Keypad Container -->
+                    <StackPane VBox.vgrow="ALWAYS">
+                        <!-- Advanced Keypad (Default) -->
+                        <GridPane fx:id="advancedKeypad" hgap="8" vgap="8"
+                            styleClass="advanced-keypad">
+                            <columnConstraints>
+                                <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="9" />
+                                <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="9" />
+                                <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="9" />
+                                <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="9" />
+                                <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="9" />
+                                <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="10" />
+                                <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="9" />
+                                <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="9" />
+                                <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="9" />
+                                <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="9" />
+                                <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="9" />
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
+                            </rowConstraints>
+                            <!-- Row 0 -->
+                            <Button focusTraversable="false" text="⌫"
+                                styleClass="key-btn, action-btn" onAction="#backspace"
+                                GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                            <Button focusTraversable="false" text="(" styleClass="key-btn, dark-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="1"
+                                GridPane.rowIndex="0" />
+                            <Button focusTraversable="false" text=")" styleClass="key-btn, dark-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="2"
+                                GridPane.rowIndex="0" />
+                            <Button focusTraversable="false" text="mod"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="3" GridPane.rowIndex="0" />
+                            <Button focusTraversable="false" text="π" styleClass="key-btn, dark-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="4"
+                                GridPane.rowIndex="0" />
+                            <Button focusTraversable="false" text="↑n"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="5" GridPane.rowIndex="0" />
+                            <Button focusTraversable="false" text="n↓"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="6" GridPane.rowIndex="0" />
+                            <Button focusTraversable="false" text="cos"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="7" GridPane.rowIndex="0" />
+                            <Button focusTraversable="false" text="sin"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="8" GridPane.rowIndex="0" />
+                            <Button focusTraversable="false" text="tan"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="9" GridPane.rowIndex="0" />
+                            <Button focusTraversable="false" text="csc"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="10" GridPane.rowIndex="0" />
+                            <!-- Row 1 -->
+                            <Button focusTraversable="false" fx:id="btn7" text="7"
+                                styleClass="key-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                            <Button focusTraversable="false" fx:id="btn8" text="8"
+                                styleClass="key-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                            <Button focusTraversable="false" fx:id="btn9" text="9"
+                                styleClass="key-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                            <Button focusTraversable="false" fx:id="btnDivide" text="÷"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="3" GridPane.rowIndex="1" />
+                            <Button focusTraversable="false" text="√" styleClass="key-btn, dark-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="4"
+                                GridPane.rowIndex="1" />
+                            <Button focusTraversable="false" text="A=B"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="5" GridPane.rowIndex="1" />
+                            <Button focusTraversable="false" text="x10ⁿ"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="6" GridPane.rowIndex="1" />
+                            <Button focusTraversable="false" text="cosh"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="7" GridPane.rowIndex="1" />
+                            <Button focusTraversable="false" text="sinh"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="8" GridPane.rowIndex="1" />
+                            <Button focusTraversable="false" text="tanh"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="9" GridPane.rowIndex="1" />
+                            <Button focusTraversable="false" text="sec"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="10" GridPane.rowIndex="1" />
+                            <!-- Row 2 -->
+                            <Button focusTraversable="false" fx:id="btn4" text="4"
+                                styleClass="key-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                            <Button focusTraversable="false" fx:id="btn5" text="5"
+                                styleClass="key-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                            <Button focusTraversable="false" fx:id="btn6" text="6"
+                                styleClass="key-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                            <Button focusTraversable="false" fx:id="btnMultiply" text="×"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="3" GridPane.rowIndex="2" />
+                            <Button focusTraversable="false" text="x²"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="4" GridPane.rowIndex="2" />
+                            <Button focusTraversable="false" text="xʸ"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="5" GridPane.rowIndex="2" />
+                            <Button focusTraversable="false" text="x⁻¹"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="6" GridPane.rowIndex="2" />
+                            <Button focusTraversable="false" text="e" styleClass="key-btn, dark-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="7"
+                                GridPane.rowIndex="2" />
+                            <Button focusTraversable="false" text="ln"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="8" GridPane.rowIndex="2" />
+                            <Button focusTraversable="false" text="log"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="9" GridPane.rowIndex="2" />
+                            <Button focusTraversable="false" text="cot"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="10" GridPane.rowIndex="2" />
+                            <!-- Row 3 -->
+                            <Button focusTraversable="false" fx:id="btn1" text="1"
+                                styleClass="key-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                            <Button focusTraversable="false" fx:id="btn2" text="2"
+                                styleClass="key-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                            <Button focusTraversable="false" fx:id="btn3" text="3"
+                                styleClass="key-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="2" GridPane.rowIndex="3" />
+                            <Button focusTraversable="false" fx:id="btnSubtract" text="-"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="3" GridPane.rowIndex="3" />
+                            <Button focusTraversable="false" fx:id="btnEquals" text="="
+                                styleClass="key-btn, action-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="4" GridPane.rowIndex="3" GridPane.rowSpan="2" />
+                            <Button focusTraversable="false" text="x!"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="5" GridPane.rowIndex="3" />
+                            <Button focusTraversable="false" text="|x|"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="6" GridPane.rowIndex="3" />
+                            <Button focusTraversable="false" text="i" styleClass="key-btn, dark-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="7"
+                                GridPane.rowIndex="3" />
+                            <Button focusTraversable="false" text="Re"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="8" GridPane.rowIndex="3" />
+                            <Button focusTraversable="false" text="Im"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="9" GridPane.rowIndex="3" />
+                            <Button focusTraversable="false" text="deg"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="10" GridPane.rowIndex="3" />
+                            <!-- Row 4 -->
+                            <Button focusTraversable="false" fx:id="btn0" text="0"
+                                styleClass="key-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                            <Button focusTraversable="false" fx:id="btnDecimal" text="."
+                                styleClass="key-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                            <Button focusTraversable="false" text="\%" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="2"
+                                GridPane.rowIndex="4" />
+                            <Button focusTraversable="false" fx:id="btnAdd" text="+"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="3" GridPane.rowIndex="4" />
+                            <Button focusTraversable="false" text="x" styleClass="key-btn, dark-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="5"
+                                GridPane.rowIndex="4" GridPane.columnSpan="2" />
+                            <Button focusTraversable="false" text="f(x)"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="7" GridPane.rowIndex="4" />
+                            <Button focusTraversable="false" text="conj"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="8" GridPane.rowIndex="4" />
+                            <Button focusTraversable="false" text="arg"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="9" GridPane.rowIndex="4" />
+                            <Button focusTraversable="false" text="rad"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="10" GridPane.rowIndex="4" />
+                        </GridPane>
+
+                        <!-- Basic Keypad -->
+                        <GridPane fx:id="basicKeypad" hgap="8" vgap="8" visible="false"
+                            managed="false" styleClass="advanced-keypad">
+                            <columnConstraints>
+                                <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="25" />
+                                <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="25" />
+                                <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="25" />
+                                <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="25" />
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
+                            </rowConstraints>
+
+                            <!-- Row 0 -->
+                            <Button focusTraversable="false" text="\%"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                            <Button focusTraversable="false" text="CE"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                            <Button focusTraversable="false" text="C" styleClass="key-btn, dark-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="2"
+                                GridPane.rowIndex="0" />
+                            <Button focusTraversable="false" text="⌫"
+                                styleClass="key-btn, action-btn" onAction="#backspace"
+                                GridPane.columnIndex="3" GridPane.rowIndex="0" />
+
+                            <!-- Row 1 -->
+                            <Button focusTraversable="false" text="x⁻¹"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                            <Button focusTraversable="false" text="x²"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                            <Button focusTraversable="false" text="√" styleClass="key-btn, dark-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="2"
+                                GridPane.rowIndex="1" />
+                            <Button focusTraversable="false" text="÷" styleClass="key-btn, dark-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="3"
+                                GridPane.rowIndex="1" />
+
+                            <!-- Row 2 -->
+                            <Button focusTraversable="false" text="7" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="0"
+                                GridPane.rowIndex="2" />
+                            <Button focusTraversable="false" text="8" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="1"
+                                GridPane.rowIndex="2" />
+                            <Button focusTraversable="false" text="9" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="2"
+                                GridPane.rowIndex="2" />
+                            <Button focusTraversable="false" text="×" styleClass="key-btn, dark-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="3"
+                                GridPane.rowIndex="2" />
+
+                            <!-- Row 3 -->
+                            <Button focusTraversable="false" text="4" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="0"
+                                GridPane.rowIndex="3" />
+                            <Button focusTraversable="false" text="5" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="1"
+                                GridPane.rowIndex="3" />
+                            <Button focusTraversable="false" text="6" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="2"
+                                GridPane.rowIndex="3" />
+                            <Button focusTraversable="false" text="-" styleClass="key-btn, dark-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="3"
+                                GridPane.rowIndex="3" />
+
+                            <!-- Row 4 -->
+                            <Button focusTraversable="false" text="1" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="0"
+                                GridPane.rowIndex="4" />
+                            <Button focusTraversable="false" text="2" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="1"
+                                GridPane.rowIndex="4" />
+                            <Button focusTraversable="false" text="3" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="2"
+                                GridPane.rowIndex="4" />
+                            <Button focusTraversable="false" text="+" styleClass="key-btn, dark-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="3"
+                                GridPane.rowIndex="4" />
+
+                            <!-- Row 5 -->
+                            <Button focusTraversable="false" text="±" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="0"
+                                GridPane.rowIndex="5" />
+                            <Button focusTraversable="false" text="0" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="1"
+                                GridPane.rowIndex="5" />
+                            <Button focusTraversable="false" text="." styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="2"
+                                GridPane.rowIndex="5" />
+                            <Button focusTraversable="false" text="="
+                                styleClass="key-btn, action-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="3" GridPane.rowIndex="5" />
+                        </GridPane>
+
+                        <!-- Scientific Keypad -->
+                        <GridPane fx:id="scientificKeypad" hgap="8" vgap="8" visible="false"
+                            managed="false" styleClass="advanced-keypad">
+                            <columnConstraints>
+                                <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="20" />
+                                <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="20" />
+                                <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="20" />
+                                <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="20" />
+                                <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="20" />
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
+                            </rowConstraints>
+
+                            <!-- Row 0 -->
+                            <Button focusTraversable="false" text="2ⁿᵈ"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                            <Button focusTraversable="false" text="π" styleClass="key-btn, dark-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="1"
+                                GridPane.rowIndex="0" />
+                            <Button focusTraversable="false" text="e" styleClass="key-btn, dark-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="2"
+                                GridPane.rowIndex="0" />
+                            <Button focusTraversable="false" text="C" styleClass="key-btn, dark-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="3"
+                                GridPane.rowIndex="0" />
+                            <Button focusTraversable="false" text="⌫"
+                                styleClass="key-btn, action-btn" onAction="#backspace"
+                                GridPane.columnIndex="4" GridPane.rowIndex="0" />
+
+                            <!-- Row 1 -->
+                            <Button focusTraversable="false" text="x²"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                            <Button focusTraversable="false" text="x⁻¹"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                            <Button focusTraversable="false" text="|x|"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                            <Button focusTraversable="false" text="exp"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="3" GridPane.rowIndex="1" />
+                            <Button focusTraversable="false" text="mod"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="4" GridPane.rowIndex="1" />
+
+                            <!-- Row 2 -->
+                            <Button focusTraversable="false" text="√" styleClass="key-btn, dark-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="0"
+                                GridPane.rowIndex="2" />
+                            <Button focusTraversable="false" text="(" styleClass="key-btn, dark-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="1"
+                                GridPane.rowIndex="2" />
+                            <Button focusTraversable="false" text=")" styleClass="key-btn, dark-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="2"
+                                GridPane.rowIndex="2" />
+                            <Button focusTraversable="false" text="n!"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="3" GridPane.rowIndex="2" />
+                            <Button focusTraversable="false" text="÷" styleClass="key-btn, dark-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="4"
+                                GridPane.rowIndex="2" />
+
+                            <!-- Row 3 -->
+                            <Button focusTraversable="false" text="xʸ"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                            <Button focusTraversable="false" text="7" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="1"
+                                GridPane.rowIndex="3" />
+                            <Button focusTraversable="false" text="8" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="2"
+                                GridPane.rowIndex="3" />
+                            <Button focusTraversable="false" text="9" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="3"
+                                GridPane.rowIndex="3" />
+                            <Button focusTraversable="false" text="×" styleClass="key-btn, dark-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="4"
+                                GridPane.rowIndex="3" />
+
+                            <!-- Row 4 -->
+                            <Button focusTraversable="false" text="10ˣ"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                            <Button focusTraversable="false" text="4" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="1"
+                                GridPane.rowIndex="4" />
+                            <Button focusTraversable="false" text="5" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="2"
+                                GridPane.rowIndex="4" />
+                            <Button focusTraversable="false" text="6" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="3"
+                                GridPane.rowIndex="4" />
+                            <Button focusTraversable="false" text="-" styleClass="key-btn, dark-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="4"
+                                GridPane.rowIndex="4" />
+
+                            <!-- Row 5 -->
+                            <Button focusTraversable="false" text="log"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                            <Button focusTraversable="false" text="1" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="1"
+                                GridPane.rowIndex="5" />
+                            <Button focusTraversable="false" text="2" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="2"
+                                GridPane.rowIndex="5" />
+                            <Button focusTraversable="false" text="3" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="3"
+                                GridPane.rowIndex="5" />
+                            <Button focusTraversable="false" text="+" styleClass="key-btn, dark-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="4"
+                                GridPane.rowIndex="5" />
+
+                            <!-- Row 6 -->
+                            <Button focusTraversable="false" text="ln"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="0" GridPane.rowIndex="6" />
+                            <Button focusTraversable="false" text="±" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="1"
+                                GridPane.rowIndex="6" />
+                            <Button focusTraversable="false" text="0" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="2"
+                                GridPane.rowIndex="6" />
+                            <Button focusTraversable="false" text="." styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="3"
+                                GridPane.rowIndex="6" />
+                            <Button focusTraversable="false" text="="
+                                styleClass="key-btn, action-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="4" GridPane.rowIndex="6" />
+                        </GridPane>
+
+                        <!-- Programmer Keypad -->
+                        <GridPane fx:id="programmerKeypad" hgap="8" vgap="8" visible="false"
+                            managed="false" styleClass="advanced-keypad">
+                            <columnConstraints>
+                                <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="16.6" />
+                                <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="16.6" />
+                                <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="16.6" />
+                                <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="16.6" />
+                                <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="16.6" />
+                                <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="17" />
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
+                            </rowConstraints>
+                            <Button focusTraversable="false" text="HEX"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                            <Button focusTraversable="false" text="DEC"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                            <Button focusTraversable="false" text="OCT"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                            <Button focusTraversable="false" text="BIN"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="3" GridPane.rowIndex="0" />
+                            <Button focusTraversable="false" text="⌫"
+                                styleClass="key-btn, action-btn" onAction="#backspace"
+                                GridPane.columnIndex="4" GridPane.rowIndex="0" />
+                            <Button focusTraversable="false" text="C" styleClass="key-btn, dark-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="5"
+                                GridPane.rowIndex="0" />
+
+                            <Button focusTraversable="false" text="A" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="0"
+                                GridPane.rowIndex="1" />
+                            <Button focusTraversable="false" text="B" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="1"
+                                GridPane.rowIndex="1" />
+                            <Button focusTraversable="false" text="7" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="2"
+                                GridPane.rowIndex="1" />
+                            <Button focusTraversable="false" text="8" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="3"
+                                GridPane.rowIndex="1" />
+                            <Button focusTraversable="false" text="9" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="4"
+                                GridPane.rowIndex="1" />
+                            <Button focusTraversable="false" text="÷" styleClass="key-btn, dark-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="5"
+                                GridPane.rowIndex="1" />
+
+                            <Button focusTraversable="false" text="C" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="0"
+                                GridPane.rowIndex="2" />
+                            <Button focusTraversable="false" text="D" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="1"
+                                GridPane.rowIndex="2" />
+                            <Button focusTraversable="false" text="4" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="2"
+                                GridPane.rowIndex="2" />
+                            <Button focusTraversable="false" text="5" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="3"
+                                GridPane.rowIndex="2" />
+                            <Button focusTraversable="false" text="6" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="4"
+                                GridPane.rowIndex="2" />
+                            <Button focusTraversable="false" text="×" styleClass="key-btn, dark-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="5"
+                                GridPane.rowIndex="2" />
+
+                            <Button focusTraversable="false" text="E" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="0"
+                                GridPane.rowIndex="3" />
+                            <Button focusTraversable="false" text="F" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="1"
+                                GridPane.rowIndex="3" />
+                            <Button focusTraversable="false" text="1" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="2"
+                                GridPane.rowIndex="3" />
+                            <Button focusTraversable="false" text="2" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="3"
+                                GridPane.rowIndex="3" />
+                            <Button focusTraversable="false" text="3" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="4"
+                                GridPane.rowIndex="3" />
+                            <Button focusTraversable="false" text="-" styleClass="key-btn, dark-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="5"
+                                GridPane.rowIndex="3" />
+
+                            <Button focusTraversable="false" text="AND"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                            <Button focusTraversable="false" text="OR"
+                                styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                            <Button focusTraversable="false" text="0" styleClass="key-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="2"
+                                GridPane.rowIndex="4" GridPane.columnSpan="2" />
+                            <Button focusTraversable="false" text="="
+                                styleClass="key-btn, action-btn" onAction="#handleAdvancedKey"
+                                GridPane.columnIndex="4" GridPane.rowIndex="4" />
+                            <Button focusTraversable="false" text="+" styleClass="key-btn, dark-btn"
+                                onAction="#handleAdvancedKey" GridPane.columnIndex="5"
+                                GridPane.rowIndex="4" />
+                        </GridPane>
+                    </StackPane>
                 </VBox>
-            </HBox>
+
+                <!-- Graphing Layout -->
+                <HBox fx:id="graphingLayout" spacing="10" styleClass="calculator-content"
+                    visible="false" managed="false">
+                    <padding>
+                        <Insets top="15" right="20" bottom="20" left="20" />
+                    </padding>
+
+                    <!-- Left Side: Graph WebView -->
+                    <VBox HBox.hgrow="ALWAYS" styleClass="working-area">
+                        <WebView fx:id="graphWebView" VBox.vgrow="ALWAYS"
+                            style="-fx-page-fill: transparent;" />
+                    </VBox>
+
+                    <!-- Right Side: Equations and Keypad -->
+                    <VBox spacing="10" minWidth="420" maxWidth="450" HBox.hgrow="NEVER">
+
+                        <!-- Mode Selector for Graphing Layout -->
+                        <ComboBox fx:id="graphModeComboBox" promptText="Graphing"
+                            styleClass="mode-combo" maxWidth="Infinity" />
+
+                        <!-- Equations List -->
+                        <ScrollPane VBox.vgrow="ALWAYS" minHeight="0" fitToWidth="true"
+                            style="-fx-background: transparent; -fx-background-color: transparent;">
+                            <VBox spacing="10">
+                                <VBox fx:id="equationsListContainer" spacing="10">
+                                    <!-- Dynamic equation cards will be added here -->
+                                </VBox>
+                                <Button focusTraversable="false" text="Clear Graph"
+                                    onAction="#clearGraph" styleClass="key-btn, dark-btn"
+                                    maxWidth="Infinity" />
+                            </VBox>
+                        </ScrollPane>
+
+                        <!-- Graphing Keypad Wrapper -->
+                        <VBox fx:id="graphingKeypad" spacing="0" VBox.vgrow="NEVER" minHeight="360">
+                            <!-- Top Menu Bar -->
+                            <HBox spacing="5" alignment="CENTER_LEFT" style="-fx-padding: 10 5;">
+                                <ToggleButton focusTraversable="false" fx:id="trigToggle"
+                                    styleClass="graph-menu-btn" onAction="#toggleTrigPopup"
+                                    minWidth="-Infinity">
+                                    <graphic>
+                                        <HBox alignment="CENTER" spacing="5">
+                                            <SVGPath
+                                                content="M 2 2 L 2 14 L 14 14 Z M 2 10 L 6 10 L 6 14"
+                                                stroke="white" strokeWidth="1" fill="transparent" />
+                                            <Label text="Trigonometry" minWidth="-Infinity"
+                                                style="-fx-text-fill: white; -fx-font-size: 13px; -fx-padding: 0 2 0 0;" />
+                                            <SVGPath content="M 0 0 L 4 4 L 8 0" stroke="white"
+                                                strokeWidth="1" fill="transparent" />
+                                        </HBox>
+                                    </graphic>
+                                </ToggleButton>
+                                <ToggleButton focusTraversable="false" fx:id="ineqToggle"
+                                    styleClass="graph-menu-btn" onAction="#toggleIneqPopup"
+                                    minWidth="-Infinity">
+                                    <graphic>
+                                        <HBox alignment="CENTER" spacing="5">
+                                            <SVGPath
+                                                content="M 2 14 L 2 8 L 7 8 L 7 14 Z M 7 14 L 7 4 L 14 4 L 14 14 Z"
+                                                stroke="white" strokeWidth="1" fill="transparent" />
+                                            <Label text="Inequalities" minWidth="-Infinity"
+                                                style="-fx-text-fill: white; -fx-font-size: 13px; -fx-padding: 0 2 0 0;" />
+                                            <SVGPath content="M 0 0 L 4 4 L 8 0" stroke="white"
+                                                strokeWidth="1" fill="transparent" />
+                                        </HBox>
+                                    </graphic>
+                                </ToggleButton>
+                                <ToggleButton focusTraversable="false" fx:id="funcToggle"
+                                    styleClass="graph-menu-btn" onAction="#toggleFuncPopup"
+                                    minWidth="-Infinity">
+                                    <graphic>
+                                        <HBox alignment="CENTER" spacing="5">
+                                            <Label text="ƒ" minWidth="-Infinity"
+                                                style="-fx-text-fill: white; -fx-font-size: 15px; -fx-font-style: italic; -fx-font-family: 'Georgia', serif;" />
+                                            <Label text="Function" minWidth="-Infinity"
+                                                style="-fx-text-fill: white; -fx-font-size: 13px; -fx-padding: 0 2 0 0;" />
+                                            <SVGPath content="M 0 0 L 4 4 L 8 0" stroke="white"
+                                                strokeWidth="1" fill="transparent" />
+                                        </HBox>
+                                    </graphic>
+                                </ToggleButton>
+                            </HBox>
+
+                            <StackPane VBox.vgrow="ALWAYS">
+                                <!-- Main Graphing Keypad -->
+                                <GridPane hgap="4" vgap="4" styleClass="advanced-keypad">
+                                    <columnConstraints>
+                                        <ColumnConstraints hgrow="ALWAYS" minWidth="40"
+                                            percentWidth="20" />
+                                        <ColumnConstraints hgrow="ALWAYS" minWidth="40"
+                                            percentWidth="20" />
+                                        <ColumnConstraints hgrow="ALWAYS" minWidth="40"
+                                            percentWidth="20" />
+                                        <ColumnConstraints hgrow="ALWAYS" minWidth="40"
+                                            percentWidth="20" />
+                                        <ColumnConstraints hgrow="ALWAYS" minWidth="40"
+                                            percentWidth="20" />
+                                    </columnConstraints>
+                                    <rowConstraints>
+                                        <RowConstraints vgrow="ALWAYS" minHeight="35" />
+                                        <RowConstraints vgrow="ALWAYS" minHeight="35" />
+                                        <RowConstraints vgrow="ALWAYS" minHeight="35" />
+                                        <RowConstraints vgrow="ALWAYS" minHeight="35" />
+                                        <RowConstraints vgrow="ALWAYS" minHeight="35" />
+                                        <RowConstraints vgrow="ALWAYS" minHeight="35" />
+                                        <RowConstraints vgrow="ALWAYS" minHeight="35" />
+                                    </rowConstraints>
+
+                                    <!-- Row 0 -->
+                                    <Button focusTraversable="false" text="2nd"
+                                        styleClass="key-btn, dark-btn" onAction="#handleGraphingKey"
+                                        GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                    <Button focusTraversable="false" text="π"
+                                        styleClass="key-btn, dark-btn" onAction="#handleGraphingKey"
+                                        GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                                    <Button focusTraversable="false" text="e"
+                                        styleClass="key-btn, dark-btn" onAction="#handleGraphingKey"
+                                        GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                                    <Button focusTraversable="false" text="C"
+                                        styleClass="key-btn, dark-btn" onAction="#handleGraphingKey"
+                                        GridPane.columnIndex="3" GridPane.rowIndex="0" />
+                                    <Button focusTraversable="false" text="⌫"
+                                        styleClass="key-btn, dark-btn" onAction="#handleGraphingKey"
+                                        GridPane.columnIndex="4" GridPane.rowIndex="0" />
+
+                                    <!-- Row 1 -->
+                                    <Button focusTraversable="false" text="x²"
+                                        styleClass="key-btn, dark-btn" onAction="#handleGraphingKey"
+                                        GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                    <Button focusTraversable="false" text="1/x"
+                                        styleClass="key-btn, dark-btn" onAction="#handleGraphingKey"
+                                        GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                    <Button focusTraversable="false" text="|x|"
+                                        styleClass="key-btn, dark-btn" onAction="#handleGraphingKey"
+                                        GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                                    <Button focusTraversable="false" text="x"
+                                        styleClass="key-btn, dark-btn" onAction="#handleGraphingKey"
+                                        GridPane.columnIndex="3" GridPane.rowIndex="1" />
+                                    <Button focusTraversable="false" text="y"
+                                        styleClass="key-btn, dark-btn" onAction="#handleGraphingKey"
+                                        GridPane.columnIndex="4" GridPane.rowIndex="1" />
+
+                                    <!-- Row 2 -->
+                                    <Button focusTraversable="false" text="∛x"
+                                        styleClass="key-btn, dark-btn" onAction="#handleGraphingKey"
+                                        GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                    <Button focusTraversable="false" text="("
+                                        styleClass="key-btn, dark-btn" onAction="#handleGraphingKey"
+                                        GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                    <Button focusTraversable="false" text=")"
+                                        styleClass="key-btn, dark-btn" onAction="#handleGraphingKey"
+                                        GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                                    <Button focusTraversable="false" text="="
+                                        styleClass="key-btn, dark-btn" onAction="#handleGraphingKey"
+                                        GridPane.columnIndex="3" GridPane.rowIndex="2" />
+                                    <Button focusTraversable="false" text="÷"
+                                        styleClass="key-btn, dark-btn" onAction="#handleGraphingKey"
+                                        GridPane.columnIndex="4" GridPane.rowIndex="2" />
+
+                                    <!-- Row 3 -->
+                                    <Button focusTraversable="false" text="xʸ"
+                                        styleClass="key-btn, dark-btn" onAction="#handleGraphingKey"
+                                        GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                                    <Button focusTraversable="false" text="7" styleClass="key-btn"
+                                        onAction="#handleGraphingKey" GridPane.columnIndex="1"
+                                        GridPane.rowIndex="3" />
+                                    <Button focusTraversable="false" text="8" styleClass="key-btn"
+                                        onAction="#handleGraphingKey" GridPane.columnIndex="2"
+                                        GridPane.rowIndex="3" />
+                                    <Button focusTraversable="false" text="9" styleClass="key-btn"
+                                        onAction="#handleGraphingKey" GridPane.columnIndex="3"
+                                        GridPane.rowIndex="3" />
+                                    <Button focusTraversable="false" text="×"
+                                        styleClass="key-btn, dark-btn" onAction="#handleGraphingKey"
+                                        GridPane.columnIndex="4" GridPane.rowIndex="3" />
+
+                                    <!-- Row 4 -->
+                                    <Button focusTraversable="false" text="10ˣ"
+                                        styleClass="key-btn, dark-btn" onAction="#handleGraphingKey"
+                                        GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                                    <Button focusTraversable="false" text="4" styleClass="key-btn"
+                                        onAction="#handleGraphingKey" GridPane.columnIndex="1"
+                                        GridPane.rowIndex="4" />
+                                    <Button focusTraversable="false" text="5" styleClass="key-btn"
+                                        onAction="#handleGraphingKey" GridPane.columnIndex="2"
+                                        GridPane.rowIndex="4" />
+                                    <Button focusTraversable="false" text="6" styleClass="key-btn"
+                                        onAction="#handleGraphingKey" GridPane.columnIndex="3"
+                                        GridPane.rowIndex="4" />
+                                    <Button focusTraversable="false" text="-"
+                                        styleClass="key-btn, dark-btn" onAction="#handleGraphingKey"
+                                        GridPane.columnIndex="4" GridPane.rowIndex="4" />
+
+                                    <!-- Row 5 -->
+                                    <Button focusTraversable="false" text="log"
+                                        styleClass="key-btn, dark-btn" onAction="#handleGraphingKey"
+                                        GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                                    <Button focusTraversable="false" text="1" styleClass="key-btn"
+                                        onAction="#handleGraphingKey" GridPane.columnIndex="1"
+                                        GridPane.rowIndex="5" />
+                                    <Button focusTraversable="false" text="2" styleClass="key-btn"
+                                        onAction="#handleGraphingKey" GridPane.columnIndex="2"
+                                        GridPane.rowIndex="5" />
+                                    <Button focusTraversable="false" text="3" styleClass="key-btn"
+                                        onAction="#handleGraphingKey" GridPane.columnIndex="3"
+                                        GridPane.rowIndex="5" />
+                                    <Button focusTraversable="false" text="+"
+                                        styleClass="key-btn, dark-btn" onAction="#handleGraphingKey"
+                                        GridPane.columnIndex="4" GridPane.rowIndex="5" />
+
+                                    <!-- Row 6 -->
+                                    <Button focusTraversable="false" text="ln"
+                                        styleClass="key-btn, dark-btn" onAction="#handleGraphingKey"
+                                        GridPane.columnIndex="0" GridPane.rowIndex="6" />
+                                    <Button focusTraversable="false" text="(-)" styleClass="key-btn"
+                                        onAction="#handleGraphingKey" GridPane.columnIndex="1"
+                                        GridPane.rowIndex="6" />
+                                    <Button focusTraversable="false" text="0" styleClass="key-btn"
+                                        onAction="#handleGraphingKey" GridPane.columnIndex="2"
+                                        GridPane.rowIndex="6" />
+                                    <Button focusTraversable="false" text="." styleClass="key-btn"
+                                        onAction="#handleGraphingKey" GridPane.columnIndex="3"
+                                        GridPane.rowIndex="6" />
+                                    <Button focusTraversable="false" text="⏎"
+                                        styleClass="key-btn, action-btn"
+                                        onAction="#handleGraphingKey" GridPane.columnIndex="4"
+                                        GridPane.rowIndex="6" />
+                                </GridPane>
+
+                                <!-- Trigonometry Overlay -->
+                                <GridPane fx:id="trigPopup" visible="false" managed="false"
+                                    StackPane.alignment="TOP_LEFT" maxWidth="-Infinity"
+                                    maxHeight="-Infinity" hgap="2" vgap="2"
+                                    styleClass="custom-popup" translateX="10" translateY="5">
+                                    <Button focusTraversable="false" text="2ⁿᵈ"
+                                        styleClass="key-btn, dark-btn, popup-key-btn"
+                                        onAction="#handleGraphingKey" GridPane.columnIndex="0"
+                                        GridPane.rowIndex="0" />
+                                    <Button focusTraversable="false" text="sin"
+                                        styleClass="key-btn, dark-btn, popup-key-btn"
+                                        onAction="#handleGraphingKey" GridPane.columnIndex="1"
+                                        GridPane.rowIndex="0" />
+                                    <Button focusTraversable="false" text="cos"
+                                        styleClass="key-btn, dark-btn, popup-key-btn"
+                                        onAction="#handleGraphingKey" GridPane.columnIndex="2"
+                                        GridPane.rowIndex="0" />
+                                    <Button focusTraversable="false" text="tan"
+                                        styleClass="key-btn, dark-btn, popup-key-btn"
+                                        onAction="#handleGraphingKey" GridPane.columnIndex="3"
+                                        GridPane.rowIndex="0" />
+                                    <Button focusTraversable="false" text="hyp"
+                                        styleClass="key-btn, dark-btn, popup-key-btn"
+                                        onAction="#handleGraphingKey" GridPane.columnIndex="0"
+                                        GridPane.rowIndex="1" />
+                                    <Button focusTraversable="false" text="sec"
+                                        styleClass="key-btn, dark-btn, popup-key-btn"
+                                        onAction="#handleGraphingKey" GridPane.columnIndex="1"
+                                        GridPane.rowIndex="1" />
+                                    <Button focusTraversable="false" text="csc"
+                                        styleClass="key-btn, dark-btn, popup-key-btn"
+                                        onAction="#handleGraphingKey" GridPane.columnIndex="2"
+                                        GridPane.rowIndex="1" />
+                                    <Button focusTraversable="false" text="cot"
+                                        styleClass="key-btn, dark-btn, popup-key-btn"
+                                        onAction="#handleGraphingKey" GridPane.columnIndex="3"
+                                        GridPane.rowIndex="1" />
+                                </GridPane>
+
+                                <!-- Inequalities Overlay -->
+                                <GridPane fx:id="ineqPopup" visible="false" managed="false"
+                                    StackPane.alignment="TOP_CENTER" maxWidth="-Infinity"
+                                    maxHeight="-Infinity" hgap="2" vgap="2"
+                                    styleClass="custom-popup" translateY="5">
+                                    <Button focusTraversable="false" text="&lt;"
+                                        styleClass="key-btn, dark-btn, popup-key-btn"
+                                        onAction="#handleGraphingKey" GridPane.columnIndex="0"
+                                        GridPane.rowIndex="0" />
+                                    <Button focusTraversable="false" text="≤"
+                                        styleClass="key-btn, dark-btn, popup-key-btn"
+                                        onAction="#handleGraphingKey" GridPane.columnIndex="1"
+                                        GridPane.rowIndex="0" />
+                                    <Button focusTraversable="false" text="="
+                                        styleClass="key-btn, dark-btn, popup-key-btn"
+                                        onAction="#handleGraphingKey" GridPane.columnIndex="2"
+                                        GridPane.rowIndex="0" />
+                                    <Button focusTraversable="false" text="≥"
+                                        styleClass="key-btn, dark-btn, popup-key-btn"
+                                        onAction="#handleGraphingKey" GridPane.columnIndex="3"
+                                        GridPane.rowIndex="0" />
+                                    <Button focusTraversable="false" text="&gt;"
+                                        styleClass="key-btn, dark-btn, popup-key-btn"
+                                        onAction="#handleGraphingKey" GridPane.columnIndex="4"
+                                        GridPane.rowIndex="0" />
+                                </GridPane>
+
+                                <!-- Function Overlay -->
+                                <GridPane fx:id="funcPopup" visible="false" managed="false"
+                                    StackPane.alignment="TOP_RIGHT" maxWidth="-Infinity"
+                                    maxHeight="-Infinity" hgap="2" vgap="2"
+                                    styleClass="custom-popup" translateX="-10" translateY="5">
+                                    <Button focusTraversable="false" text="|x|"
+                                        styleClass="key-btn, dark-btn, popup-key-btn"
+                                        onAction="#handleGraphingKey" GridPane.columnIndex="0"
+                                        GridPane.rowIndex="0" />
+                                    <Button focusTraversable="false" text="⌊x⌋"
+                                        styleClass="key-btn, dark-btn, popup-key-btn"
+                                        onAction="#handleGraphingKey" GridPane.columnIndex="1"
+                                        GridPane.rowIndex="0" />
+                                    <Button focusTraversable="false" text="⌈x⌉"
+                                        styleClass="key-btn, dark-btn, popup-key-btn"
+                                        onAction="#handleGraphingKey" GridPane.columnIndex="2"
+                                        GridPane.rowIndex="0" />
+                                </GridPane>
+                            </StackPane>
+                        </VBox>
+                    </VBox>
+                </HBox>
             </StackPane>
         </center>
     </BorderPane>
