@@ -680,13 +680,13 @@ public class CalculatorController {
                 insertText = text + "(";
                 break;
             case "√":
-                insertText = "√(";
+                insertText = "sqrt(";
                 break;
             case "∛x":
-                insertText = "∛(";
+                insertText = "cbrt(";
                 break;
             case "x²":
-                insertText = "²";
+                insertText = "^2";
                 break;
             case "xʸ":
             case "10ˣ":
@@ -703,10 +703,10 @@ public class CalculatorController {
                 insertText = "e";
                 break;
             case "÷":
-                insertText = "÷";
+                insertText = "/";
                 break;
             case "×":
-                insertText = "×";
+                insertText = "*";
                 break;
             case "⏎":
                 plotAllGraphs();
@@ -737,7 +737,7 @@ public class CalculatorController {
                 insertText = "-";
                 break;
             case "|x|":
-                insertText = "|";
+                insertText = "abs(";
                 break;
             case "⌊x⌋":
                 insertText = "floor(";
@@ -1121,61 +1121,7 @@ public class CalculatorController {
         return String.valueOf(rounded);
     }
 
-    private void selectOperator(String newOperator) {
 
-        if (display.getText().equals("Error")) {
-            clearDisplay();
-            return;
-        }
-
-        double currentNumber = Double.parseDouble(display.getText());
-
-        // If an operator is already selected and the user
-        // hasn't typed the next number yet, just replace it.
-        if (!operator.isEmpty() && startNewNumber) {
-
-            operator = newOperator;
-
-            expressionLabel.setText(
-                    formatNumber(firstNumber) + " " + operator
-            );
-
-            return;
-        }
-
-        // Chain calculations
-        if (!operator.isEmpty()) {
-
-            try {
-
-                double result = calculate(firstNumber, currentNumber, operator);
-
-                updateDisplay(result);
-
-                firstNumber = result;
-
-            } catch (ArithmeticException ex) {
-
-                display.setText("Error");
-                operator = "";
-                startNewNumber = true;
-                return;
-            }
-
-        } else {
-
-            firstNumber = currentNumber;
-
-        }
-
-        operator = newOperator;
-
-        expressionLabel.setText(
-                formatNumber(firstNumber) + " " + operator
-        );
-
-        startNewNumber = true;
-    }
 
     private double calculate(double first, double second, String operator) {
 
@@ -1263,9 +1209,42 @@ public class CalculatorController {
 
     @FXML
     private void operatorClicked(ActionEvent event) {
-
         Button button = (Button) event.getSource();
         selectOperator(button.getText());
+    }
+
+    private void selectOperator(String newOperator) {
+        if (display.getText().equals("Error") || display.getText().equals("Invalid expression")) {
+            clearDisplay();
+            return;
+        }
+
+        try {
+            double currentNumber = Double.parseDouble(display.getText());
+
+            if (!operator.isEmpty() && startNewNumber) {
+                operator = newOperator;
+                expressionLabel.setText(formatNumber(firstNumber) + " " + operator);
+                return;
+            }
+
+            if (!operator.isEmpty()) {
+                double result = calculate(firstNumber, currentNumber, operator);
+                updateDisplay(result);
+                firstNumber = result;
+            } else {
+                firstNumber = currentNumber;
+            }
+
+            operator = newOperator;
+            expressionLabel.setText(formatNumber(firstNumber) + " " + operator);
+            startNewNumber = true;
+
+        } catch (Exception ex) {
+            display.setText("Invalid expression");
+            operator = "";
+            startNewNumber = true;
+        }
     }
 
     @FXML
@@ -1295,7 +1274,7 @@ public class CalculatorController {
 
         String text = display.getText();
 
-        if (text.equals("Error")) {
+        if (text.equals("Error") || text.equals("Invalid expression")) {
             clearDisplay();
             return;
         }
@@ -1310,7 +1289,7 @@ public class CalculatorController {
     @FXML
     private void decimalClicked() {
 
-        if (display.getText().equals("Error")) {
+        if (display.getText().equals("Error") || display.getText().equals("Invalid expression")) {
             clearDisplay();
             return;
         }
@@ -1326,21 +1305,26 @@ public class CalculatorController {
     @FXML
     private void percentClicked() {
 
-        if (display.getText().equals("Error")) {
+        if (display.getText().equals("Error") || display.getText().equals("Invalid expression")) {
             clearDisplay();
             return;
         }
 
-        double number = Double.parseDouble(display.getText());
+        try {
+            double number = Double.parseDouble(display.getText());
 
-        if (operator.equals("+") || operator.equals("-")) {
-            number = firstNumber * number / 100;
-        } else {
-            number = number / 100;
+            if (operator.equals("+") || operator.equals("-")) {
+                number = firstNumber * number / 100;
+            } else {
+                number = number / 100;
+            }
+
+            updateDisplay(number);
+            expressionLabel.setText(formatNumber(number) + "%");
+        } catch (Exception ex) {
+            display.setText("Invalid expression");
+            startNewNumber = true;
         }
-
-        updateDisplay(number);
-        expressionLabel.setText(formatNumber(number) + "%");
     }
 
     @FXML
@@ -1412,9 +1396,9 @@ public class CalculatorController {
             expressionLabel.setText("");
             startNewNumber = true;
 
-        } catch (ArithmeticException ex) {
+        } catch (Exception ex) {
 
-            display.setText("Error");
+            display.setText("Invalid expression");
 
             operator = "";
             lastOperator = "";
@@ -1780,7 +1764,7 @@ public class CalculatorController {
         Button button = (Button) event.getSource();
         String func = button.getText();
 
-        if (display.getText().equals("Error")) {
+        if (display.getText().equals("Error") || display.getText().equals("Invalid expression")) {
             clearDisplay();
             return;
         }
@@ -1844,7 +1828,7 @@ public class CalculatorController {
                 firstNumber = result;
             }
         } catch (Exception ex) {
-            display.setText("Error");
+            display.setText("Invalid expression");
             operator = "";
             startNewNumber = true;
         }

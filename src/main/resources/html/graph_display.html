@@ -338,15 +338,20 @@
                 if (style === 'dashed') dashArray = '8,8';
                 else if (style === 'dotted') dashArray = '3,4';
                 
+                // Preprocess symbols for math.js using literal numbers to avoid undefined symbol errors
+                expr = expr.replace(/\u03C0/g, '(3.141592653589793)');
+                expr = expr.replace(/\bpi\b/gi, '(3.141592653589793)'); // catches both pi and PI
+                expr = expr.replace(/\be\b/g, '(2.718281828459045)'); // catches constant e
+                
                 // Extremely basic unit conversion for simple expressions
                 if (currentUnit === 'deg') {
-                    expr = expr.replace(/sin\(/g, "sin(PI/180*");
-                    expr = expr.replace(/cos\(/g, "cos(PI/180*");
-                    expr = expr.replace(/tan\(/g, "tan(PI/180*");
+                    expr = expr.replace(/sin\(/g, "sin((3.141592653589793)/180*");
+                    expr = expr.replace(/cos\(/g, "cos((3.141592653589793)/180*");
+                    expr = expr.replace(/tan\(/g, "tan((3.141592653589793)/180*");
                 } else if (currentUnit === 'grad') {
-                    expr = expr.replace(/sin\(/g, "sin(PI/200*");
-                    expr = expr.replace(/cos\(/g, "cos(PI/200*");
-                    expr = expr.replace(/tan\(/g, "tan(PI/200*");
+                    expr = expr.replace(/sin\(/g, "sin((3.141592653589793)/200*");
+                    expr = expr.replace(/cos\(/g, "cos((3.141592653589793)/200*");
+                    expr = expr.replace(/tan\(/g, "tan((3.141592653589793)/200*");
                 }
                 
                 data.push({
@@ -406,7 +411,12 @@
                 updateOptionsInputs();
             } catch (e) {
                 console.error("Partial expression, waiting for completion: ", e.message);
-                // We don't clear the screen or show an error so the user isn't interrupted while typing.
+                const toast = document.getElementById('toast');
+                if (toast) {
+                    toast.innerText = 'Graph Error: ' + e.message;
+                    toast.style.opacity = '1';
+                    setTimeout(() => { toast.style.opacity = '0'; }, 3000);
+                }
             }
         }
 

@@ -825,7 +825,7 @@
                                         GridPane.columnIndex="4" GridPane.rowIndex="1" />
 
                                     <!-- Row 2 -->
-                                    <Button focusTraversable="false" text="∛x"
+                                    <Button focusTraversable="false" text="√"
                                         styleClass="key-btn, dark-btn" onAction="#handleGraphingKey"
                                         GridPane.columnIndex="0" GridPane.rowIndex="2" />
                                     <Button focusTraversable="false" text="("
