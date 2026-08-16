@@ -66,6 +66,10 @@ public class CalculatorController {
     @FXML private HBox titleBar;
     private double xOffset = 0;
     private double yOffset = 0;
+    
+    // Toggles for trigonometry
+    private boolean is2ndActive = false;
+    private boolean isHypActive = false;
 
     @FXML
     public void handleTitleBarPressed(MouseEvent event) {
@@ -665,19 +669,44 @@ public class CalculatorController {
         Button btn = (Button) event.getSource();
         String text = btn.getText();
         
+        if (text.startsWith("2")) {
+            is2ndActive = !is2ndActive;
+            btn.setStyle(is2ndActive ? "-fx-background-color: #555555;" : "");
+            return;
+        } else if (text.equals("hyp")) {
+            isHypActive = !isHypActive;
+            btn.setStyle(isHypActive ? "-fx-background-color: #555555;" : "");
+            return;
+        }
+        
         String insertText = "";
         switch (text) {
             case "sin": case "cos": case "tan":
-                insertText = text + "(";
+            case "sec": case "csc": case "cot":
+                String func = text;
+                if (is2ndActive) func = "a" + func;
+                if (isHypActive) func = func + "h";
+                insertText = func + "(";
+                
+                // Reset toggles after use
+                is2ndActive = false;
+                isHypActive = false;
+                if (trigPopup != null) {
+                    for (var node : trigPopup.getChildren()) {
+                        if (node instanceof Button) {
+                            String t = ((Button) node).getText();
+                            if (t.startsWith("2") || t.equals("hyp")) {
+                                node.setStyle("");
+                            }
+                        }
+                    }
+                }
                 break;
             case "log":
                 insertText = "log10(";
                 break;
             case "ln":
                 insertText = "log(";
-                break;
-            case "hyp": case "sec": case "csc": case "cot":
-                insertText = text + "(";
                 break;
             case "√":
                 insertText = "sqrt(";
@@ -798,11 +827,30 @@ public class CalculatorController {
             return; // backspace handles the update
         }
 
+        if (text.startsWith("2")) {
+            is2ndActive = !is2ndActive;
+            // No button reference easily available here since processKeyInput is called with string,
+            // but it's fine for Advanced logic.
+            return;
+        } else if (text.equals("hyp")) {
+            isHypActive = !isHypActive;
+            return;
+        }
+
         history.push(currentLatexExpression.toString());
 
         switch (text) {
             case "sin": case "cos": case "tan":
             case "csc": case "sec": case "cot":
+                String func = text;
+                if (is2ndActive) func = "a" + func;
+                if (isHypActive) func = func + "h";
+                currentLatexExpression.append("\\").append(func).append("(");
+                
+                // Reset toggles
+                is2ndActive = false;
+                isHypActive = false;
+                break;
             case "sinh": case "cosh": case "tanh":
             case "log": case "ln":
                 currentLatexExpression.append("\\").append(text).append("(");

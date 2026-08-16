@@ -340,9 +340,14 @@
                 
                 // Preprocess symbols for math.js using literal numbers to avoid undefined symbol errors
                 expr = expr.replace(/\u03C0/g, '(3.141592653589793)');
-                expr = expr.replace(/\bpi\b/gi, '(3.141592653589793)'); // catches both pi and PI
+                expr = expr.replace(/pi/gi, '(3.141592653589793)'); // catches both pi and PI, even inside '2pi'
                 expr = expr.replace(/\be\b/g, '(2.718281828459045)'); // catches constant e
                 
+                // Convert sec, csc, cot to standard trigonometric functions (builtIn doesn't support them)
+                expr = expr.replace(/sec\(/g, "1/cos(");
+                expr = expr.replace(/csc\(/g, "1/sin(");
+                expr = expr.replace(/cot\(/g, "1/tan(");
+
                 // Extremely basic unit conversion for simple expressions
                 if (currentUnit === 'deg') {
                     expr = expr.replace(/sin\(/g, "sin((3.141592653589793)/180*");
@@ -354,15 +359,40 @@
                     expr = expr.replace(/tan\(/g, "tan((3.141592653589793)/200*");
                 }
                 
-                data.push({
+                // Handle implicit equations and inequalities
+                let isImplicit = /[<>=]/.test(expr);
+                if (isImplicit) {
+                    // If the expression starts with an operator (e.g. "< 5" or "= 5"), prepend "y "
+                    if (/^[<>=]/.test(expr.trim())) {
+                        expr = 'y ' + expr;
+                    }
+                    
+                    // function-plot implicit equalities (A = B) need to be rewritten as (A) - (B) = 0
+                    // We only do this for strict equality '=', not for inequalities '<=' or '>='
+                    if (expr.indexOf('=') !== -1 && expr.indexOf('<=') === -1 && expr.indexOf('>=') === -1) {
+                        let parts = expr.split('=');
+                        if (parts.length === 2) {
+                            expr = '(' + parts[0] + ') - (' + parts[1] + ')';
+                        }
+                    }
+                }
+
+                let eqData = {
                     fn: expr,
                     color: equations[id].color || '#0078D7',
-                    graphType: 'polyline',
                     attr: {
                         "stroke-dasharray": dashArray,
                         "stroke-width": thickness
                     }
-                });
+                };
+
+                if (isImplicit) {
+                    eqData.fnType = 'implicit';
+                } else {
+                    eqData.graphType = 'polyline';
+                }
+                
+                data.push(eqData);
             }
 
             try {
