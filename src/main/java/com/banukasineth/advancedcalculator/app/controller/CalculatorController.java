@@ -1581,7 +1581,7 @@ public class CalculatorController {
 
         // Initialize ComboBoxes
         if (modeComboBox != null) {
-            modeComboBox.getItems().addAll("Basic", "Advanced", "Scientific", "Programmer", "Graphing");
+            modeComboBox.getItems().addAll("Basic", "Advanced", "Scientific", "Programmer", "Graphing", "Unit Converter");
             modeComboBox.setValue("Advanced");
             
             modeComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
@@ -1590,6 +1590,9 @@ public class CalculatorController {
                 if (newVal.equals("Graphing")) {
                     if (standardLayout != null) { standardLayout.setVisible(false); standardLayout.setManaged(false); }
                     if (graphingLayout != null) { graphingLayout.setVisible(true); graphingLayout.setManaged(true); }
+                } else if (newVal.equals("Unit Converter")) {
+                    openUnitConverter();
+                    javafx.application.Platform.runLater(() -> modeComboBox.setValue(oldVal));
                 } else {
                     if (graphingLayout != null) { graphingLayout.setVisible(false); graphingLayout.setManaged(false); }
                     if (standardLayout != null) { standardLayout.setVisible(true); standardLayout.setManaged(true); }
@@ -1620,7 +1623,7 @@ public class CalculatorController {
         }
         
         if (graphModeComboBox != null) {
-            graphModeComboBox.getItems().addAll("Basic", "Advanced", "Scientific", "Programmer", "Graphing");
+            graphModeComboBox.getItems().addAll("Basic", "Advanced", "Scientific", "Programmer", "Graphing", "Unit Converter");
             graphModeComboBox.setValue("Graphing");
             graphModeComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
                 if (newVal != null && !newVal.equals("Graphing") && modeComboBox != null) {
@@ -1904,4 +1907,28 @@ public class CalculatorController {
         startNewNumber = false;
     }
 
+    private void openUnitConverter() {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/fxml/UnitConverter.fxml"));
+            javafx.scene.Parent root = loader.load();
+            
+            // Set dimensions to 1050x750 as requested
+            javafx.scene.Scene scene = new javafx.scene.Scene(root, 1050, 750);
+            
+            // Transparent scene for custom border radius and drop shadow
+            scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+            
+            javafx.stage.Stage stage = new javafx.stage.Stage();
+            stage.setTitle("Unit Converter");
+            stage.initStyle(javafx.stage.StageStyle.TRANSPARENT);
+            stage.setScene(scene);
+            
+            String cssPath = getClass().getResource("/css/style.css").toExternalForm();
+            scene.getStylesheets().add(cssPath);
+            
+            stage.show();
+        } catch (java.io.IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

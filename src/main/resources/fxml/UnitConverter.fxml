@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<StackPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1"
+    fx:controller="com.banukasineth.advancedcalculator.app.controller.UnitConverterController"
+    stylesheets="@../css/style.css"
+    styleClass="root-pane" prefHeight="750.0" prefWidth="1050.0">
+
+    <BorderPane fx:id="rootPane" focusTraversable="true" styleClass="main-border-pane">
+        
+        <!-- Custom Top Bar for Undecorated Window -->
+        <top>
+            <HBox fx:id="titleBar" alignment="CENTER_LEFT" styleClass="custom-title-bar"
+                onMousePressed="#handleTitleBarPressed" onMouseDragged="#handleTitleBarDragged">
+
+                <!-- App Tabs -->
+                <HBox alignment="CENTER_LEFT" spacing="5" styleClass="title-tabs">
+                    <HBox alignment="CENTER" styleClass="active-tab">
+                        <Label text="Unit Converter" styleClass="tab-text" />
+                    </HBox>
+                </HBox>
+
+                <Region HBox.hgrow="ALWAYS" />
+
+                <!-- Window Controls -->
+                <HBox alignment="CENTER_RIGHT" styleClass="window-controls">
+                    <Button text="🗕" styleClass="window-btn, minimize-btn"
+                        onAction="#minimizeWindow" />
+                    <Button text="🗖" styleClass="window-btn, maximize-btn"
+                        onAction="#maximizeWindow" />
+                    <Button text="🗙" styleClass="window-btn, close-btn" onAction="#closeWindow" />
+                </HBox>
+            </HBox>
+        </top>
+
+        <!-- Main Content (Sidebar + Converter) -->
+        <center>
+            <BorderPane>
+                <left>
+                    <VBox style="-fx-background-color: transparent;" prefWidth="220" spacing="5">
+                        <padding>
+                            <Insets top="20" right="0" bottom="20" left="0"/>
+                        </padding>
+                        <Label text="Converter" style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 0 0 10 20;"/>
+                        
+                        <ListView fx:id="menuList" VBox.vgrow="ALWAYS" 
+                                  style="-fx-background-color: transparent; -fx-control-inner-background: transparent; -fx-border-color: transparent; -fx-padding: 0;"/>
+                    </VBox>
+                </left>
+                
+                <center>
+                    <VBox alignment="CENTER" spacing="40" style="-fx-background-color: transparent;">
+                        <padding>
+                            <Insets top="40" right="60" bottom="40" left="60"/>
+                        </padding>
+                        
+                        <Label fx:id="titleLabel" text="Length" style="-fx-text-fill: white; -fx-font-size: 32px; -fx-font-weight: bold;"/>
+                        
+                        <VBox spacing="20" alignment="CENTER" maxWidth="400">
+                            <VBox spacing="10">
+                                <TextField fx:id="inputValueField" promptText="0" 
+                                           style="-fx-font-size: 36px; -fx-background-color: transparent; -fx-text-fill: white; -fx-border-color: transparent transparent #0078D7 transparent; -fx-border-width: 0 0 2 0; -fx-padding: 0 0 5 0;" />
+                                <ComboBox fx:id="fromUnitBox" styleClass="mode-combo" maxWidth="Infinity" style="-fx-font-size: 16px;" />
+                            </VBox>
+                            
+                            <Label text="=" style="-fx-text-fill: #0078D7; -fx-font-size: 36px; -fx-font-weight: bold;"/>
+                            
+                            <VBox spacing="10">
+                                <TextField fx:id="outputValueField" promptText="0" editable="false" 
+                                           style="-fx-font-size: 36px; -fx-background-color: transparent; -fx-text-fill: white; -fx-border-color: transparent transparent #555555 transparent; -fx-border-width: 0 0 2 0; -fx-padding: 0 0 5 0;" />
+                                <ComboBox fx:id="toUnitBox" styleClass="mode-combo" maxWidth="Infinity" style="-fx-font-size: 16px;" />
+                            </VBox>
+                        </VBox>
+                    </VBox>
+                </center>
+            </BorderPane>
+        </center>
+        
+    </BorderPane>
+
+</StackPane>

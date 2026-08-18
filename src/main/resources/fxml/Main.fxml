@@ -680,7 +680,7 @@
                                 GridPane.rowIndex="4" />
                         </GridPane>
                     </StackPane>
-                </VBox>
+                  </VBox>
 
                 <!-- Graphing Layout -->
                 <HBox fx:id="graphingLayout" spacing="10" styleClass="calculator-content"
