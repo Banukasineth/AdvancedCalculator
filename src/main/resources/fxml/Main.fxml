@@ -51,7 +51,7 @@
                     </padding>
 
                     <!-- Toolbar (Undo, Redo, Zoom, etc.) -->
-                    <HBox alignment="CENTER_LEFT" spacing="15" styleClass="toolbar">
+                    <HBox fx:id="toolbarHBox" alignment="CENTER_LEFT" spacing="15" styleClass="toolbar">
                         <Button text="◫" styleClass="toolbar-btn" />
                         <Button text="↩" styleClass="toolbar-btn" />
                         <Button text="↪" styleClass="toolbar-btn" />
@@ -82,7 +82,7 @@
                             <Label text="Working" styleClass="area-title" />
                             <VBox alignment="CENTER" VBox.vgrow="ALWAYS">
                                 <!-- Complex math rendering WebView -->
-                                <WebView fx:id="mathWebView" prefHeight="200" prefWidth="400"
+                                <WebView fx:id="mathWebView" prefHeight="200" minHeight="0" prefWidth="400"
                                     VBox.vgrow="ALWAYS" style="-fx-page-fill: transparent;" />
                                 <!-- Old display mapped here temporarily so controller doesn't break -->
                                 <TextField fx:id="display" editable="false" text="0" visible="false"
@@ -118,7 +118,7 @@
                     </HBox>
 
                     <!-- Input Field -->
-                    <HBox alignment="CENTER_LEFT" styleClass="input-area">
+                    <HBox fx:id="inputAreaHBox" alignment="CENTER_LEFT" styleClass="input-area">
                         <TextField promptText="Type Math equation here" HBox.hgrow="ALWAYS"
                             styleClass="math-input-field" />
                         <Button text="🎤" styleClass="input-icon-btn" />
@@ -126,7 +126,7 @@
                     </HBox>
 
                     <!-- Mode Selectors -->
-                    <HBox spacing="10" styleClass="mode-selectors">
+                    <HBox fx:id="modeSelectorsHBox" spacing="10" styleClass="mode-selectors">
                         <ComboBox fx:id="modeComboBox" promptText="Advanced" styleClass="mode-combo"
                             HBox.hgrow="ALWAYS" maxWidth="Infinity" />
                         <ComboBox fx:id="equationLibraryBox" promptText="Equation Library"
@@ -136,10 +136,10 @@
                     </HBox>
 
                     <!-- Keypad Container -->
-                    <StackPane VBox.vgrow="ALWAYS">
+                    <StackPane fx:id="keypadContainer" VBox.vgrow="ALWAYS">
                         <!-- Advanced Keypad (Default) -->
                         <GridPane fx:id="advancedKeypad" hgap="8" vgap="8"
-                            styleClass="advanced-keypad">
+                            styleClass="advanced-keypad" maxHeight="Infinity">
                             <columnConstraints>
                                 <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="9" />
                                 <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="9" />
@@ -154,15 +154,16 @@
                                 <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="9" />
                             </columnConstraints>
                             <rowConstraints>
-                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
-                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
-                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
-                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
-                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="25" percentHeight="20.0" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="25" percentHeight="20.0" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="25" percentHeight="20.0" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="25" percentHeight="20.0" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="25" percentHeight="20.0" />
                             </rowConstraints>
                             <!-- Row 0 -->
                             <Button focusTraversable="false" text="⌫"
                                 styleClass="key-btn, action-btn" onAction="#backspace"
+                                onMousePressed="#handleBackspacePressed" onMouseReleased="#handleBackspaceReleased" onMouseExited="#handleBackspaceExited"
                                 GridPane.columnIndex="0" GridPane.rowIndex="0" />
                             <Button focusTraversable="false" text="(" styleClass="key-btn, dark-btn"
                                 onAction="#handleAdvancedKey" GridPane.columnIndex="1"
@@ -328,7 +329,7 @@
 
                         <!-- Basic Keypad -->
                         <GridPane fx:id="basicKeypad" hgap="8" vgap="8" visible="false"
-                            managed="false" styleClass="advanced-keypad">
+                            managed="false" styleClass="advanced-keypad" maxHeight="Infinity">
                             <columnConstraints>
                                 <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="25" />
                                 <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="25" />
@@ -336,12 +337,12 @@
                                 <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="25" />
                             </columnConstraints>
                             <rowConstraints>
-                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
-                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
-                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
-                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
-                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
-                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="25" percentHeight="16.6666" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="25" percentHeight="16.6666" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="25" percentHeight="16.6666" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="25" percentHeight="16.6666" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="25" percentHeight="16.6666" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="25" percentHeight="16.6666" />
                             </rowConstraints>
 
                             <!-- Row 0 -->
@@ -356,6 +357,7 @@
                                 GridPane.rowIndex="0" />
                             <Button focusTraversable="false" text="⌫"
                                 styleClass="key-btn, action-btn" onAction="#backspace"
+                                onMousePressed="#handleBackspacePressed" onMouseReleased="#handleBackspaceReleased" onMouseExited="#handleBackspaceExited"
                                 GridPane.columnIndex="3" GridPane.rowIndex="0" />
 
                             <!-- Row 1 -->
@@ -431,7 +433,7 @@
 
                         <!-- Scientific Keypad -->
                         <GridPane fx:id="scientificKeypad" hgap="8" vgap="8" visible="false"
-                            managed="false" styleClass="advanced-keypad">
+                            managed="false" styleClass="advanced-keypad" maxHeight="Infinity">
                             <columnConstraints>
                                 <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="20" />
                                 <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="20" />
@@ -440,13 +442,13 @@
                                 <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="20" />
                             </columnConstraints>
                             <rowConstraints>
-                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
-                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
-                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
-                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
-                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
-                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
-                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="20" percentHeight="14.2857" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="20" percentHeight="14.2857" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="20" percentHeight="14.2857" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="20" percentHeight="14.2857" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="20" percentHeight="14.2857" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="20" percentHeight="14.2857" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="20" percentHeight="14.2857" />
                             </rowConstraints>
 
                             <!-- Row 0 -->
@@ -464,6 +466,7 @@
                                 GridPane.rowIndex="0" />
                             <Button focusTraversable="false" text="⌫"
                                 styleClass="key-btn, action-btn" onAction="#backspace"
+                                onMousePressed="#handleBackspacePressed" onMouseReleased="#handleBackspaceReleased" onMouseExited="#handleBackspaceExited"
                                 GridPane.columnIndex="4" GridPane.rowIndex="0" />
 
                             <!-- Row 1 -->
@@ -571,7 +574,7 @@
 
                         <!-- Programmer Keypad -->
                         <GridPane fx:id="programmerKeypad" hgap="8" vgap="8" visible="false"
-                            managed="false" styleClass="advanced-keypad">
+                            managed="false" styleClass="advanced-keypad" maxHeight="Infinity">
                             <columnConstraints>
                                 <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="16.6" />
                                 <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="16.6" />
@@ -581,11 +584,11 @@
                                 <ColumnConstraints hgrow="ALWAYS" minWidth="40" percentWidth="17" />
                             </columnConstraints>
                             <rowConstraints>
-                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
-                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
-                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
-                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
-                                <RowConstraints vgrow="ALWAYS" minHeight="40" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="25" percentHeight="20.0" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="25" percentHeight="20.0" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="25" percentHeight="20.0" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="25" percentHeight="20.0" />
+                                <RowConstraints vgrow="ALWAYS" minHeight="25" percentHeight="20.0" />
                             </rowConstraints>
                             <Button focusTraversable="false" text="HEX"
                                 styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
@@ -601,6 +604,7 @@
                                 GridPane.columnIndex="3" GridPane.rowIndex="0" />
                             <Button focusTraversable="false" text="⌫"
                                 styleClass="key-btn, action-btn" onAction="#backspace"
+                                onMousePressed="#handleBackspacePressed" onMouseReleased="#handleBackspaceReleased" onMouseExited="#handleBackspaceExited"
                                 GridPane.columnIndex="4" GridPane.rowIndex="0" />
                             <Button focusTraversable="false" text="C" styleClass="key-btn, dark-btn"
                                 onAction="#handleAdvancedKey" GridPane.columnIndex="5"
@@ -805,6 +809,7 @@
                                         GridPane.columnIndex="3" GridPane.rowIndex="0" />
                                     <Button focusTraversable="false" text="⌫"
                                         styleClass="key-btn, dark-btn" onAction="#handleGraphingKey"
+                                        onMousePressed="#handleBackspacePressed" onMouseReleased="#handleBackspaceReleased" onMouseExited="#handleBackspaceExited"
                                         GridPane.columnIndex="4" GridPane.rowIndex="0" />
 
                                     <!-- Row 1 -->

@@ -71,6 +71,11 @@ public class CalculatorController {
     private boolean is2ndActive = false;
     private boolean isHypActive = false;
 
+    // Backspace Long Press & Clear
+    private Button activeBackspaceBtn = null;
+    private javafx.animation.PauseTransition backspaceLongPressTimer;
+    private boolean isBackspaceLongPress = false;
+
     @FXML
     public void handleTitleBarPressed(MouseEvent event) {
         xOffset = event.getSceneX();
@@ -669,7 +674,7 @@ public class CalculatorController {
         Button btn = (Button) event.getSource();
         String text = btn.getText();
         
-        if (text.startsWith("2")) {
+        if (text.equals("2nd") || text.equals("2ⁿᵈ")) {
             is2ndActive = !is2ndActive;
             btn.setStyle(is2ndActive ? "-fx-background-color: #555555;" : "");
             return;
@@ -695,7 +700,7 @@ public class CalculatorController {
                     for (var node : trigPopup.getChildren()) {
                         if (node instanceof Button) {
                             String t = ((Button) node).getText();
-                            if (t.startsWith("2") || t.equals("hyp")) {
+                            if (t.equals("2nd") || t.equals("2ⁿᵈ") || t.equals("hyp")) {
                                 node.setStyle("");
                             }
                         }
@@ -741,6 +746,10 @@ public class CalculatorController {
                 plotAllGraphs();
                 return;
             case "⌫":
+                if (isBackspaceLongPress) {
+                    isBackspaceLongPress = false;
+                    return;
+                }
                 String currentText = activeField.getText();
                 javafx.scene.control.IndexRange selection = activeField.getSelection();
                 if (selection.getLength() > 0) {
@@ -827,7 +836,12 @@ public class CalculatorController {
             return; // backspace handles the update
         }
 
-        if (text.startsWith("2")) {
+        if (text.equals("C") || text.equals("CE")) {
+            clearDisplay();
+            return;
+        }
+
+        if (text.equals("2nd") || text.equals("2ⁿᵈ")) {
             is2ndActive = !is2ndActive;
             // No button reference easily available here since processKeyInput is called with string,
             // but it's fine for Advanced logic.
@@ -1207,6 +1221,10 @@ public class CalculatorController {
     @FXML private Region verticalDivider;
     
     @FXML private VBox standardLayout;
+    @FXML private HBox toolbarHBox;
+    @FXML private HBox inputAreaHBox;
+    @FXML private HBox modeSelectorsHBox;
+
     @FXML private HBox graphingLayout;
     @FXML private WebView graphWebView;
     @FXML private TextField equation1Field;
@@ -1312,6 +1330,11 @@ public class CalculatorController {
 
     @FXML
     private void backspace() {
+        if (isBackspaceLongPress) {
+            isBackspaceLongPress = false;
+            return;
+        }
+
         if (!history.isEmpty()) {
             currentLatexExpression.setLength(0);
             currentLatexExpression.append(history.pop());
@@ -1331,6 +1354,51 @@ public class CalculatorController {
             display.setText(text.substring(0, text.length() - 1));
         } else {
             display.setText("0");
+        }
+    }
+
+    @FXML
+    public void handleBackspacePressed(MouseEvent event) {
+        isBackspaceLongPress = false;
+        if (event.getSource() instanceof Button) {
+            activeBackspaceBtn = (Button) event.getSource();
+        }
+        if (backspaceLongPressTimer != null) {
+            backspaceLongPressTimer.setOnFinished(e -> {
+                isBackspaceLongPress = true;
+                if (activeBackspaceBtn != null && "handleGraphingKey".equals(
+                        activeBackspaceBtn.getOnAction() != null ? activeBackspaceBtn.getOnAction().toString() : "")) {
+                    if (activeField != null) {
+                        activeField.clear();
+                        activeField.requestFocus();
+                    }
+                } else {
+                    clearDisplay();
+                }
+                if (activeBackspaceBtn != null) {
+                    javafx.animation.ScaleTransition st = new javafx.animation.ScaleTransition(javafx.util.Duration.millis(120), activeBackspaceBtn);
+                    st.setFromX(1.0); st.setFromY(1.0);
+                    st.setToX(0.88); st.setToY(0.88);
+                    st.setAutoReverse(true);
+                    st.setCycleCount(2);
+                    st.play();
+                }
+            });
+            backspaceLongPressTimer.playFromStart();
+        }
+    }
+
+    @FXML
+    public void handleBackspaceReleased(MouseEvent event) {
+        if (backspaceLongPressTimer != null) {
+            backspaceLongPressTimer.stop();
+        }
+    }
+
+    @FXML
+    public void handleBackspaceExited(MouseEvent event) {
+        if (!isBackspaceLongPress && backspaceLongPressTimer != null) {
+            backspaceLongPressTimer.stop();
         }
     }
 
@@ -1538,6 +1606,8 @@ public class CalculatorController {
 
         rootPane.setFocusTraversable(true);
 
+        backspaceLongPressTimer = new javafx.animation.PauseTransition(javafx.util.Duration.millis(500));
+
         Platform.runLater(() -> {
             rootPane.requestFocus();
             if (rootPane.getScene() != null) {
@@ -1578,6 +1648,8 @@ public class CalculatorController {
             solutionArea.maxWidthProperty().bind(displaySplitArea.widthProperty().multiply(workingAreaFraction.subtract(1).multiply(-1)));
             solutionArea.prefWidthProperty().bind(solutionArea.maxWidthProperty());
         }
+
+        setupResponsiveLayout();
 
         // Initialize ComboBoxes
         if (modeComboBox != null) {
@@ -1628,6 +1700,53 @@ public class CalculatorController {
             graphModeComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
                 if (newVal != null && !newVal.equals("Graphing") && modeComboBox != null) {
                     modeComboBox.setValue(newVal);
+                }
+            });
+        }
+    }
+
+    private void setupResponsiveLayout() {
+        if (standardLayout != null && displaySplitArea != null && keypadContainer != null) {
+            standardLayout.heightProperty().addListener((obs, oldVal, newVal) -> {
+                double totalHeight = newVal.doubleValue();
+                if (totalHeight <= 0) return;
+                
+                double fixedOverhead = 195;
+                if (toolbarHBox != null && toolbarHBox.getHeight() > 0) {
+                    double tbH = toolbarHBox.getHeight();
+                    double inH = (inputAreaHBox != null && inputAreaHBox.getHeight() > 0) ? inputAreaHBox.getHeight() : 42;
+                    double selH = (modeSelectorsHBox != null && modeSelectorsHBox.getHeight() > 0) ? modeSelectorsHBox.getHeight() : 42;
+                    fixedOverhead = tbH + inH + selH + 75; // 35 padding + 40 spacing
+                }
+                
+                double available = Math.max(380, totalHeight - fixedOverhead);
+                
+                // Keypad share:
+                // Default unmaximized window has available ~440px -> 58% gives ~255px (matches Advanced mode default)
+                // When maximized or large screen (available > 550px) -> 62% gives buttons ~470px+ so button layout dominates
+                double keypadShare = (available > 550) ? 0.62 : 0.58;
+                
+                double keypadHeight = Math.round(available * keypadShare);
+                double displayHeight = available - keypadHeight;
+                
+                keypadContainer.setPrefHeight(keypadHeight);
+                keypadContainer.setMaxHeight(keypadHeight);
+                displaySplitArea.setPrefHeight(displayHeight);
+                displaySplitArea.setMaxHeight(displayHeight);
+            });
+            
+            Platform.runLater(() -> {
+                double h = standardLayout.getHeight();
+                if (h > 0) {
+                    double fixedOverhead = 195;
+                    double available = Math.max(380, h - fixedOverhead);
+                    double keypadShare = (available > 550) ? 0.62 : 0.58;
+                    double keypadHeight = Math.round(available * keypadShare);
+                    double displayHeight = available - keypadHeight;
+                    keypadContainer.setPrefHeight(keypadHeight);
+                    keypadContainer.setMaxHeight(keypadHeight);
+                    displaySplitArea.setPrefHeight(displayHeight);
+                    displaySplitArea.setMaxHeight(displayHeight);
                 }
             });
         }

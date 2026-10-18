@@ -24,6 +24,10 @@ public class UnitConverterController {
     private double xOffset = 0;
     private double yOffset = 0;
 
+    private javafx.animation.PauseTransition backspaceLongPressTimer;
+    private boolean isBackspaceLongPress = false;
+    private javafx.scene.control.Button activeBackspaceBtn = null;
+
     @FXML
     public void initialize() {
         String[] menuItems = {
@@ -49,6 +53,20 @@ public class UnitConverterController {
 
         // Select Length by default
         menuList.getSelectionModel().select("📏 Length");
+
+        backspaceLongPressTimer = new javafx.animation.PauseTransition(javafx.util.Duration.millis(500));
+        backspaceLongPressTimer.setOnFinished(e -> {
+            isBackspaceLongPress = true;
+            clearEntry();
+            if (activeBackspaceBtn != null) {
+                javafx.animation.ScaleTransition st = new javafx.animation.ScaleTransition(javafx.util.Duration.millis(120), activeBackspaceBtn);
+                st.setFromX(1.0); st.setFromY(1.0);
+                st.setToX(0.88); st.setToY(0.88);
+                st.setAutoReverse(true);
+                st.setCycleCount(2);
+                st.play();
+            }
+        });
     }
 
     private void updateUnits(String category) {
@@ -281,6 +299,10 @@ public class UnitConverterController {
 
     @FXML
     private void backspace() {
+        if (isBackspaceLongPress) {
+            isBackspaceLongPress = false;
+            return;
+        }
         String currentText = inputValueField.getText();
         if (currentText.length() > 1) {
             inputValueField.setText(currentText.substring(0, currentText.length() - 1));
@@ -288,6 +310,31 @@ public class UnitConverterController {
             inputValueField.setText("0");
         }
         convertUnits();
+    }
+
+    @FXML
+    public void handleBackspacePressed(MouseEvent event) {
+        isBackspaceLongPress = false;
+        if (event.getSource() instanceof javafx.scene.control.Button) {
+            activeBackspaceBtn = (javafx.scene.control.Button) event.getSource();
+        }
+        if (backspaceLongPressTimer != null) {
+            backspaceLongPressTimer.playFromStart();
+        }
+    }
+
+    @FXML
+    public void handleBackspaceReleased(MouseEvent event) {
+        if (backspaceLongPressTimer != null) {
+            backspaceLongPressTimer.stop();
+        }
+    }
+
+    @FXML
+    public void handleBackspaceExited(MouseEvent event) {
+        if (!isBackspaceLongPress && backspaceLongPressTimer != null) {
+            backspaceLongPressTimer.stop();
+        }
     }
 
     @FXML

@@ -99,7 +99,7 @@
                             </rowConstraints>
 
                             <Button text="CE" onAction="#clearEntry" GridPane.columnIndex="1" GridPane.rowIndex="0" style="-fx-background-color: #3b3b3b; -fx-text-fill: white; -fx-font-size: 24px; -fx-background-radius: 8; -fx-cursor: hand;" maxWidth="Infinity" maxHeight="Infinity"/>
-                            <Button text="⌫" onAction="#backspace" GridPane.columnIndex="2" GridPane.rowIndex="0" style="-fx-background-color: #3b3b3b; -fx-text-fill: white; -fx-font-size: 24px; -fx-background-radius: 8; -fx-cursor: hand;" maxWidth="Infinity" maxHeight="Infinity"/>
+                            <Button text="⌫" onAction="#backspace" onMousePressed="#handleBackspacePressed" onMouseReleased="#handleBackspaceReleased" onMouseExited="#handleBackspaceExited" GridPane.columnIndex="2" GridPane.rowIndex="0" style="-fx-background-color: #3b3b3b; -fx-text-fill: white; -fx-font-size: 24px; -fx-background-radius: 8; -fx-cursor: hand;" maxWidth="Infinity" maxHeight="Infinity"/>
 
                             <Button text="7" onAction="#appendNumber" GridPane.columnIndex="0" GridPane.rowIndex="1" style="-fx-background-color: #2b2b2b; -fx-text-fill: white; -fx-font-size: 28px; -fx-background-radius: 8; -fx-cursor: hand;" maxWidth="Infinity" maxHeight="Infinity"/>
                             <Button text="8" onAction="#appendNumber" GridPane.columnIndex="1" GridPane.rowIndex="1" style="-fx-background-color: #2b2b2b; -fx-text-fill: white; -fx-font-size: 28px; -fx-background-radius: 8; -fx-cursor: hand;" maxWidth="Infinity" maxHeight="Infinity"/>

@@ -37,7 +37,7 @@
             GridPane.rowIndex="0" GridPane.columnIndex="2" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
     <Button text="AC" onAction="#clearDisplay"
             GridPane.rowIndex="0" GridPane.columnIndex="3" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
-    <Button text="⌫" onAction="#backspace"
+    <Button text="⌫" onAction="#backspace" onMousePressed="#handleBackspacePressed" onMouseReleased="#handleBackspaceReleased" onMouseExited="#handleBackspaceExited"
             GridPane.rowIndex="0" GridPane.columnIndex="4" maxWidth="Infinity" maxHeight="Infinity" focusTraversable="false"/>
 
     <!-- Row 1 -->
