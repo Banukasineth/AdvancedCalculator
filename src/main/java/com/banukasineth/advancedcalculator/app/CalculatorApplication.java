@@ -12,8 +12,11 @@ public class CalculatorApplication extends Application {
     @Override
     public void start(Stage stage) throws Exception {
 
-        FXMLLoader loader = new FXMLLoader(
-                getClass().getResource("/fxml/Main.fxml"));
+        java.net.URL fxmlLocation = getClass().getResource("/fxml/Main.fxml");
+        if (fxmlLocation == null) {
+            throw new IllegalStateException("Cannot find /fxml/Main.fxml on classpath. Please ensure resources were copied to target/classes.");
+        }
+        FXMLLoader loader = new FXMLLoader(fxmlLocation);
 
         // Increase default size for new advanced layout
         Scene scene = new Scene(loader.load(), 1050, 750);

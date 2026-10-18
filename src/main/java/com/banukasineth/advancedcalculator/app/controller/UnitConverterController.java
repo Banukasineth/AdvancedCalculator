@@ -10,10 +10,14 @@ import javafx.stage.Stage;
 
 public class UnitConverterController {
 
+    @FXML private javafx.scene.layout.VBox sidebar;
+    @FXML private javafx.scene.layout.Pane visualizerPane;
+    private boolean sidebarVisible = true;
+    
     @FXML private ListView<String> menuList;
     @FXML private Label titleLabel;
-    @FXML private TextField inputValueField;
-    @FXML private TextField outputValueField;
+    @FXML private Label inputValueField;
+    @FXML private Label outputValueField;
     @FXML private ComboBox<String> fromUnitBox;
     @FXML private ComboBox<String> toUnitBox;
 
@@ -38,14 +42,7 @@ public class UnitConverterController {
             }
         });
 
-        // Listeners for conversion
-        inputValueField.textProperty().addListener((obs, oldVal, newVal) -> {
-            if (!newVal.matches("-?\\d*(\\.\\d*)?")) {
-                inputValueField.setText(oldVal);
-            } else {
-                convertUnits();
-            }
-        });
+        // (Removed TextField listener)
         
         fromUnitBox.valueProperty().addListener((obs, oldVal, newVal) -> convertUnits());
         toUnitBox.valueProperty().addListener((obs, oldVal, newVal) -> convertUnits());
@@ -138,10 +135,9 @@ public class UnitConverterController {
                 switch (from) {
                     case "Grams (g)": kg = input / 1000.0; break;
                     case "Milligrams (mg)": kg = input / 1000000.0; break;
-                    case "Pounds (lb)": kg = input * 0.45359237; break;
-                    case "Ounces (oz)": kg = input * 0.02834952; break;
+                    case "Pounds (lb)": kg = input * 0.453592; break;
+                    case "Ounces (oz)": kg = input * 0.0283495; break;
                 }
-                
                 switch (to) {
                     case "Kilograms (kg)": result = kg; break;
                     case "Grams (g)": result = kg * 1000.0; break;
@@ -183,9 +179,115 @@ public class UnitConverterController {
             }
             outputValueField.setText(res);
             
+            drawVisualizer(type, from, to, input, result);
+            
         } catch (NumberFormatException e) {
             outputValueField.setText("Invalid Input");
+            if (visualizerPane != null) {
+                visualizerPane.setVisible(false);
+                visualizerPane.setManaged(false);
+            }
         }
+    }
+
+    private void drawVisualizer(String type, String from, String to, double inputValue, double outputValue) {
+        if (visualizerPane == null) return;
+        visualizerPane.getChildren().clear();
+        
+        if (!type.equals("Length") || inputValue == 0) {
+            visualizerPane.setVisible(false);
+            visualizerPane.setManaged(false);
+            return;
+        }
+        
+        visualizerPane.setVisible(true);
+        visualizerPane.setManaged(true);
+        
+        double width = 450;
+        
+        javafx.scene.shape.Rectangle background = new javafx.scene.shape.Rectangle(width, 40);
+        background.setFill(javafx.scene.paint.Color.web("#2b2b2b"));
+        background.setArcWidth(10);
+        background.setArcHeight(10);
+        
+        javafx.scene.shape.Rectangle filled = new javafx.scene.shape.Rectangle(width, 40);
+        filled.setFill(javafx.scene.paint.Color.web("#0078D7"));
+        filled.setArcWidth(10);
+        filled.setArcHeight(10);
+        
+        javafx.scene.layout.Pane ticksPane = new javafx.scene.layout.Pane();
+        for (int i = 0; i <= 10; i++) {
+            double x = (width / 10.0) * i;
+            javafx.scene.shape.Line tick = new javafx.scene.shape.Line(x, 0, x, 40);
+            tick.setStroke(javafx.scene.paint.Color.web("#1E1C27"));
+            tick.setStrokeWidth(2);
+            ticksPane.getChildren().add(tick);
+        }
+        
+        String fromText = from.contains("(") ? from.split(" \\(")[0] : from;
+        String toText = to.contains("(") ? to.split(" \\(")[0] : to;
+        
+        javafx.scene.control.Label fromLabel = new javafx.scene.control.Label(String.format("%.2f %s", inputValue, fromText));
+        fromLabel.setStyle("-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;");
+        fromLabel.setLayoutX(10);
+        fromLabel.setLayoutY(5);
+        
+        javafx.scene.control.Label toLabel = new javafx.scene.control.Label(String.format("%.2f %s", outputValue, toText));
+        toLabel.setStyle("-fx-text-fill: white; -fx-font-size: 12px; -fx-opacity: 0.8;");
+        toLabel.setLayoutX(10);
+        toLabel.setLayoutY(22);
+        
+        visualizerPane.getChildren().addAll(background, filled, ticksPane, fromLabel, toLabel);
+    }
+
+    @FXML
+    private void toggleSidebar() {
+        if (sidebar == null) return;
+        sidebarVisible = !sidebarVisible;
+        javafx.animation.Timeline timeline = new javafx.animation.Timeline();
+        javafx.animation.KeyValue kv = new javafx.animation.KeyValue(sidebar.prefWidthProperty(), sidebarVisible ? 220 : 0);
+        javafx.animation.KeyValue kvOp = new javafx.animation.KeyValue(sidebar.opacityProperty(), sidebarVisible ? 1.0 : 0.0);
+        javafx.animation.KeyFrame kf = new javafx.animation.KeyFrame(javafx.util.Duration.millis(250), kv, kvOp);
+        timeline.getKeyFrames().add(kf);
+        timeline.play();
+    }
+
+    @FXML
+    private void appendNumber(javafx.event.ActionEvent event) {
+        javafx.scene.control.Button btn = (javafx.scene.control.Button) event.getSource();
+        String currentText = inputValueField.getText();
+        if (currentText.equals("0")) {
+            inputValueField.setText(btn.getText());
+        } else {
+            inputValueField.setText(currentText + btn.getText());
+        }
+        convertUnits();
+    }
+
+    @FXML
+    private void appendDecimal() {
+        String currentText = inputValueField.getText();
+        if (!currentText.contains(".")) {
+            inputValueField.setText(currentText + ".");
+            convertUnits();
+        }
+    }
+
+    @FXML
+    private void clearEntry() {
+        inputValueField.setText("0");
+        convertUnits();
+    }
+
+    @FXML
+    private void backspace() {
+        String currentText = inputValueField.getText();
+        if (currentText.length() > 1) {
+            inputValueField.setText(currentText.substring(0, currentText.length() - 1));
+        } else {
+            inputValueField.setText("0");
+        }
+        convertUnits();
     }
 
     @FXML
