@@ -8,6 +8,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.control.Slider;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
@@ -1717,6 +1718,8 @@ public class CalculatorController {
     
     @FXML private VBox standardLayout;
     @FXML private HBox toolbarHBox;
+    @FXML private Slider zoomSlider;
+    @FXML private Label zoomLabel;
     @FXML private HBox inputAreaHBox;
     @FXML private HBox modeSelectorsHBox;
 
@@ -2239,6 +2242,24 @@ public class CalculatorController {
             graphModeComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
                 if (newVal != null && !newVal.equals("Graphing") && modeComboBox != null) {
                     modeComboBox.setValue(newVal);
+                }
+            });
+        }
+
+        if (zoomSlider != null) {
+            zoomSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+                double val = newVal.doubleValue();
+                if (zoomLabel != null) {
+                    zoomLabel.setText("+ " + Math.round(val) + "%");
+                }
+                double min = zoomSlider.getMin();
+                double max = zoomSlider.getMax();
+                double pct = Math.max(0.0, Math.min(100.0, ((val - min) / (max - min)) * 100.0));
+                javafx.scene.Node track = zoomSlider.lookup(".track");
+                if (track != null) {
+                    track.setStyle(String.format(java.util.Locale.US,
+                        "-fx-background-color: linear-gradient(to right, #E82E88 0%%, #E82E88 %.1f%%, #353242 %.1f%%, #353242 100%%);",
+                        pct, pct));
                 }
             });
         }
