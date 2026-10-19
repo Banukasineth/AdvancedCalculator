@@ -147,10 +147,10 @@
                         <!-- Working Area (Left) -->
                         <VBox fx:id="workingArea" HBox.hgrow="ALWAYS" styleClass="working-area">
                             <Label text="Working" styleClass="area-title" />
-                            <VBox alignment="CENTER" VBox.vgrow="ALWAYS">
+                            <VBox alignment="TOP_LEFT" VBox.vgrow="ALWAYS">
                                 <!-- Complex math rendering WebView -->
-                                <WebView fx:id="mathWebView" prefHeight="200" minHeight="0" prefWidth="400"
-                                    VBox.vgrow="ALWAYS" style="-fx-page-fill: transparent;" />
+                                <WebView fx:id="mathWebView" minHeight="0" maxWidth="Infinity" maxHeight="Infinity"
+                                    VBox.vgrow="ALWAYS" style="-fx-page-fill: transparent; -fx-background-color: transparent;" />
                                 <!-- Old display mapped here temporarily so controller doesn't break -->
                                 <TextField fx:id="display" editable="false" text="0" visible="false"
                                     managed="false" />

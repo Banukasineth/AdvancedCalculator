@@ -5,6 +5,8 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Robust, offline mathematical expression evaluator supporting:
@@ -32,12 +34,14 @@ public class MathEvaluator {
         private final double value;
         private final String formattedResult;
         private final String errorMessage;
+        private List<String> steps;
 
         private EvaluationResult(double value, String formattedResult) {
             this.success = true;
             this.value = value;
             this.formattedResult = formattedResult;
             this.errorMessage = null;
+            this.steps = new ArrayList<>();
         }
 
         private EvaluationResult(String errorMessage) {
@@ -45,6 +49,7 @@ public class MathEvaluator {
             this.value = Double.NaN;
             this.formattedResult = errorMessage;
             this.errorMessage = errorMessage;
+            this.steps = new ArrayList<>();
         }
 
         public static EvaluationResult ok(double value) {
@@ -74,6 +79,38 @@ public class MathEvaluator {
         public String getErrorMessage() {
             return errorMessage;
         }
+
+        public List<String> getSteps() {
+            return steps;
+        }
+
+        public void setSteps(List<String> steps) {
+            this.steps = steps;
+        }
+
+        public String getFormattedAlignedLatex(String rawExpr) {
+            List<String> stepList = (steps != null && !steps.isEmpty()) ? steps : generateSteps(rawExpr, formattedResult);
+            if (stepList.isEmpty()) {
+                return formattedResult;
+            }
+            if (stepList.size() == 1) {
+                return stepList.get(0);
+            }
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("\\begin{aligned}\n");
+            sb.append("& ").append(stepList.get(0)).append(" \\\\\n");
+            for (int i = 1; i < stepList.size(); i++) {
+                sb.append("&= ").append(stepList.get(i));
+                if (i < stepList.size() - 1) {
+                    sb.append(" \\\\\n");
+                } else {
+                    sb.append("\n");
+                }
+            }
+            sb.append("\\end{aligned}");
+            return sb.toString();
+        }
     }
 
     public static EvaluationResult evaluate(String rawExpression) {
@@ -90,12 +127,195 @@ public class MathEvaluator {
 
             Parser parser = new Parser(tokens);
             double result = parser.parse();
-            return EvaluationResult.ok(result);
+            String formatted = formatNumber(result);
+            EvaluationResult evalRes = EvaluationResult.ok(result, formatted);
+            evalRes.setSteps(generateSteps(rawExpression, formatted));
+            return evalRes;
         } catch (ArithmeticException ex) {
             return EvaluationResult.error(ex.getMessage());
         } catch (Exception ex) {
             return EvaluationResult.error("Invalid expression");
         }
+    }
+
+    public static List<String> generateSteps(String rawExpression, String finalResult) {
+        List<String> steps = new ArrayList<>();
+        if (rawExpression == null || rawExpression.trim().isEmpty()) {
+            return steps;
+        }
+
+        String current = rawExpression.trim();
+        if (current.endsWith("=")) {
+            current = current.substring(0, current.length() - 1).trim();
+        }
+
+        steps.add(current);
+
+        if (isSingleNumber(current) || current.equals(finalResult)) {
+            return steps;
+        }
+
+        try {
+            int maxSteps = 8;
+            while (maxSteps-- > 0) {
+                String next = reduceOneStep(current);
+                if (next == null || next.trim().equals(current.trim()) || next.trim().equals(finalResult.trim())) {
+                    break;
+                }
+                if (!next.trim().equals(steps.get(steps.size() - 1).trim())) {
+                    steps.add(next.trim());
+                }
+                current = next.trim();
+            }
+        } catch (Exception ignored) {
+        }
+
+        if (steps.isEmpty() || !steps.get(steps.size() - 1).trim().equals(finalResult.trim())) {
+            steps.add(finalResult.trim());
+        }
+
+        return steps;
+    }
+
+    private static boolean isSingleNumber(String s) {
+        if (s == null) return false;
+        return s.trim().matches("^-?[0-9]+(?:\\.[0-9]+)?$");
+    }
+
+    private static String reduceOneStep(String expr) {
+        if (expr == null || expr.trim().isEmpty()) return null;
+        String s = expr.trim();
+
+        // 1. Parentheses: find innermost parentheses
+        Pattern pParen = Pattern.compile("\\(([^()]+)\\)");
+        Matcher mParen = pParen.matcher(s);
+        if (mParen.find()) {
+            String inner = mParen.group(1).trim();
+            if (isSingleNumber(inner)) {
+                return s.substring(0, mParen.start()) + inner + s.substring(mParen.end());
+            }
+            String reducedInner = reduceOneStep(inner);
+            if (reducedInner != null && !reducedInner.equals(inner)) {
+                if (isSingleNumber(reducedInner)) {
+                    return s.substring(0, mParen.start()) + reducedInner + s.substring(mParen.end());
+                }
+                return s.substring(0, mParen.start()) + "(" + reducedInner + ")" + s.substring(mParen.end());
+            } else {
+                try {
+                    EvaluationResult innerRes = evaluate(inner);
+                    if (innerRes.isSuccess()) {
+                        return s.substring(0, mParen.start()) + innerRes.getFormattedResult() + s.substring(mParen.end());
+                    }
+                } catch (Exception ignored) {}
+            }
+        }
+
+        // 2. Square roots: \sqrt{N} or \sqrt(N)
+        Pattern pSqrt = Pattern.compile("\\\\sqrt\\{([0-9.]+)\\}|\\\\sqrt\\(([0-9.]+)\\)");
+        Matcher mSqrt = pSqrt.matcher(s);
+        if (mSqrt.find()) {
+            String numStr = mSqrt.group(1) != null ? mSqrt.group(1) : mSqrt.group(2);
+            double val = Math.sqrt(Double.parseDouble(numStr));
+            return s.substring(0, mSqrt.start()) + formatNumber(val) + s.substring(mSqrt.end());
+        }
+
+        // 3. Powers: N^{M} or N^M or N^2
+        Pattern pPow = Pattern.compile("(-?[0-9.]+)\\^\\{?([0-9.]+)\\}?|(-?[0-9.]+)\\^2");
+        Matcher mPow = pPow.matcher(s);
+        if (mPow.find()) {
+            if (mPow.group(3) != null) {
+                double b = Double.parseDouble(mPow.group(3));
+                return s.substring(0, mPow.start()) + formatNumber(b * b) + s.substring(mPow.end());
+            } else {
+                double b = Double.parseDouble(mPow.group(1));
+                double e = Double.parseDouble(mPow.group(2));
+                return s.substring(0, mPow.start()) + formatNumber(Math.pow(b, e)) + s.substring(mPow.end());
+            }
+        }
+
+        // 4. Factorial: N!
+        Pattern pFact = Pattern.compile("([0-9]+)!");
+        Matcher mFact = pFact.matcher(s);
+        if (mFact.find()) {
+            long n = Long.parseLong(mFact.group(1));
+            return s.substring(0, mFact.start()) + formatNumber((double) factorial(n)) + s.substring(mFact.end());
+        }
+
+        // 5. Trig functions
+        Pattern pTrig = Pattern.compile("\\\\(sin|cos|tan|cot|sec|csc)\\s*(?:\\{([0-9.]+)\\}|\\(([0-9.]+)\\))");
+        Matcher mTrig = pTrig.matcher(s);
+        if (mTrig.find()) {
+            String func = mTrig.group(1);
+            String numStr = mTrig.group(2) != null ? mTrig.group(2) : mTrig.group(3);
+            double v = Double.parseDouble(numStr);
+            double res = evalTrig(func, v, isDegreeMode);
+            return s.substring(0, mTrig.start()) + formatNumber(res) + s.substring(mTrig.end());
+        }
+
+        // 6. Absolute value: |N|
+        Pattern pAbs = Pattern.compile("\\|([0-9.]+)\\|");
+        Matcher mAbs = pAbs.matcher(s);
+        if (mAbs.find()) {
+            double v = Math.abs(Double.parseDouble(mAbs.group(1)));
+            return s.substring(0, mAbs.start()) + formatNumber(v) + s.substring(mAbs.end());
+        }
+
+        // 7. Multiplication, Division, Modulo
+        Pattern pMulDiv = Pattern.compile("(-?[0-9.]+(?:[eE][+-]?[0-9]+)?)\\s*(\\\\times|\\\\div|\\\\bmod|\\*|\\/|%)\\s*(-?[0-9.]+(?:[eE][+-]?[0-9]+)?)");
+        Matcher mMulDiv = pMulDiv.matcher(s);
+        if (mMulDiv.find()) {
+            try {
+                double left = Double.parseDouble(mMulDiv.group(1));
+                String op = mMulDiv.group(2);
+                double right = Double.parseDouble(mMulDiv.group(3));
+                double res = 0;
+                if (op.equals("\\times") || op.equals("*")) {
+                    res = left * right;
+                } else if (op.equals("\\div") || op.equals("/")) {
+                    if (right == 0) return null;
+                    res = left / right;
+                } else if (op.equals("\\bmod") || op.equals("%")) {
+                    if (right == 0) return null;
+                    res = left % right;
+                }
+                return s.substring(0, mMulDiv.start()) + formatNumber(res) + s.substring(mMulDiv.end());
+            } catch (Exception ignored) {}
+        }
+
+        // 8. Addition and Subtraction
+        Pattern pAddSub = Pattern.compile("(?<=^|[^0-9.])(-?[0-9.]+(?:[eE][+-]?[0-9]+)?)\\s*([+\\-])\\s*([0-9.]+(?:[eE][+-]?[0-9]+)?)");
+        Matcher mAddSub = pAddSub.matcher(s);
+        if (mAddSub.find()) {
+            try {
+                double left = Double.parseDouble(mAddSub.group(1));
+                String op = mAddSub.group(2);
+                double right = Double.parseDouble(mAddSub.group(3));
+                double res = op.equals("+") ? (left + right) : (left - right);
+                return s.substring(0, mAddSub.start()) + formatNumber(res) + s.substring(mAddSub.end());
+            } catch (Exception ignored) {}
+        }
+
+        return null;
+    }
+
+    private static double evalTrig(String func, double val, boolean deg) {
+        double rad = deg ? Math.toRadians(val) : val;
+        switch (func.toLowerCase()) {
+            case "sin": return Math.sin(rad);
+            case "cos": return Math.cos(rad);
+            case "tan": return Math.tan(rad);
+            case "cot": return 1.0 / Math.tan(rad);
+            case "sec": return 1.0 / Math.cos(rad);
+            case "csc": return 1.0 / Math.sin(rad);
+            default: return val;
+        }
+    }
+
+    private static long factorial(long n) {
+        if (n < 0 || n > 20) return 0;
+        long f = 1;
+        for (long i = 2; i <= n; i++) f *= i;
+        return f;
     }
 
     /**
@@ -860,5 +1080,14 @@ public class MathEvaluator {
         System.out.println("OCT 7 + 1 => " + evaluateProgrammer("7 + 1", 8).getFormattedResult());
         System.out.println("Convert 16 from DEC to HEX => " + convertBase("16", 10, 16));
         System.out.println("Convert 16 from DEC to BIN => " + convertBase("16", 10, 2));
+
+        System.out.println("\n-- Step Generation Tests --");
+        String[] stepTests = {"2 + 3", "5 + 3 \\times 2", "\\sqrt{16} + 5", "(4 + 2) \\times 3 - 5", "10 + 20 + 30"};
+        for (String st : stepTests) {
+            EvaluationResult r = evaluate(st);
+            System.out.println("Input: " + st);
+            System.out.println("Aligned LaTeX:\n" + r.getFormattedAlignedLatex(st));
+            System.out.println("-------------");
+        }
     }
 }

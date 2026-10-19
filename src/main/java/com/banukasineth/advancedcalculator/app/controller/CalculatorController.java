@@ -675,8 +675,12 @@ public class CalculatorController {
                 openCurly--;
             }
 
-            // Escape backslashes for JavaScript execution
-            String jsSafeLatex = renderLatex.replace("\\", "\\\\");
+            // Escape backslashes, newlines, and quotes for JavaScript execution
+            String jsSafeLatex = renderLatex
+                    .replace("\\", "\\\\")
+                    .replace("\n", "\\n")
+                    .replace("\r", "")
+                    .replace("'", "\\'");
             Platform.runLater(() -> {
                 try {
                     mathWebView.getEngine().executeScript("updateMath('" + jsSafeLatex + "')");
@@ -1151,10 +1155,11 @@ public class CalculatorController {
             if (result.isSuccess()) {
                 history.push(currentLatexExpression.toString());
                 String formatted = result.getFormattedResult();
+                String alignedDisplay = "\\begin{aligned}\n& " + expr + " \\\\\n&= " + formatted + "\n\\end{aligned}";
                 currentLatexExpression.setLength(0);
                 currentLatexExpression.append(formatted);
                 hasEvaluated = true;
-                setMathExpression(formatted);
+                setMathExpression(alignedDisplay);
                 hideSolutionArea();
                 display.setText(formatted);
             } else {
@@ -1172,10 +1177,11 @@ public class CalculatorController {
         if (result.isSuccess()) {
             history.push(currentLatexExpression.toString());
             String formatted = result.getFormattedResult();
+            String alignedDisplay = result.getFormattedAlignedLatex(expr);
             currentLatexExpression.setLength(0);
             currentLatexExpression.append(formatted);
             hasEvaluated = true;
-            setMathExpression(formatted);
+            setMathExpression(alignedDisplay);
             hideSolutionArea();
             display.setText(formatted);
         } else {
