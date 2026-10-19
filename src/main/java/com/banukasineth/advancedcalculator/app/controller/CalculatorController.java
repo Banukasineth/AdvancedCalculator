@@ -45,6 +45,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import com.banukasineth.advancedcalculator.app.service.AISolverService;
+import com.banukasineth.advancedcalculator.app.util.MathEvaluator;
 
 
 public class CalculatorController {
@@ -510,6 +511,45 @@ public class CalculatorController {
     // Phase 3: Track the current LaTeX string for KaTeX
     private StringBuilder currentLatexExpression = new StringBuilder();
     private java.util.Stack<String> history = new java.util.Stack<>();
+    private java.util.Stack<String> redoStack = new java.util.Stack<>();
+    private boolean hasEvaluated = false;
+
+    @FXML
+    private TextField mathInputField;
+
+    @FXML
+    public void handleUndo() {
+        if (!history.isEmpty()) {
+            redoStack.push(currentLatexExpression.toString());
+            currentLatexExpression.setLength(0);
+            currentLatexExpression.append(history.pop());
+            setMathExpression(currentLatexExpression.toString());
+        }
+    }
+
+    @FXML
+    public void handleRedo() {
+        if (!redoStack.isEmpty()) {
+            history.push(currentLatexExpression.toString());
+            currentLatexExpression.setLength(0);
+            currentLatexExpression.append(redoStack.pop());
+            setMathExpression(currentLatexExpression.toString());
+        }
+    }
+
+    @FXML
+    public void handleMathInputSubmit() {
+        if (mathInputField == null) return;
+        String text = mathInputField.getText();
+        if (text != null && !text.trim().isEmpty()) {
+            history.push(currentLatexExpression.toString());
+            currentLatexExpression.setLength(0);
+            currentLatexExpression.append(text.trim());
+            setMathExpression(currentLatexExpression.toString());
+            evaluateCurrentExpression();
+            mathInputField.clear();
+        }
+    }
 
     /**
      * Updates the KaTeX math expression in the WebView.
@@ -826,6 +866,210 @@ public class CalculatorController {
         processKeyInput(btn.getText());
     }
 
+    private boolean isOperator(String text) {
+        return text.equals("+") || text.equals("-") || text.equals("×")
+                || text.equals("÷") || text.equals("mod") || text.equals("\\times")
+                || text.equals("\\div") || text.equals("\\bmod");
+    }
+
+    private void appendOperator(String opLatex) {
+        String cur = currentLatexExpression.toString();
+        if (cur.isEmpty()) {
+            if (opLatex.equals(" - ")) {
+                currentLatexExpression.append("-");
+            } else {
+                currentLatexExpression.append("0").append(opLatex);
+            }
+            return;
+        }
+
+        if (cur.endsWith(" + ")) {
+            currentLatexExpression.setLength(cur.length() - 3);
+        } else if (cur.endsWith(" - ")) {
+            currentLatexExpression.setLength(cur.length() - 3);
+        } else if (cur.endsWith(" \\times ")) {
+            currentLatexExpression.setLength(cur.length() - 9);
+        } else if (cur.endsWith(" \\div ")) {
+            currentLatexExpression.setLength(cur.length() - 7);
+        } else if (cur.endsWith(" \\bmod ")) {
+            currentLatexExpression.setLength(cur.length() - 8);
+        }
+        currentLatexExpression.append(opLatex);
+    }
+
+    private void toggleSign() {
+        String expr = currentLatexExpression.toString();
+        if (expr.isEmpty()) {
+            currentLatexExpression.append("-");
+            setMathExpression(currentLatexExpression.toString());
+            return;
+        }
+
+        // 1. If ends with "(-<num>)" -> replace with "<num>"
+        if (expr.matches(".*\\(-[0-9.]+(?:\\^2|\\^\\{-1\\}|\\\\%)?\\)$")) {
+            int idx = expr.lastIndexOf("(-");
+            String prefix = expr.substring(0, idx);
+            String num = expr.substring(idx + 2, expr.length() - 1);
+            currentLatexExpression.setLength(0);
+            currentLatexExpression.append(prefix).append(num);
+            setMathExpression(currentLatexExpression.toString());
+            return;
+        }
+
+        // 2. If ends with " - <num>" -> change to " + <num>"
+        java.util.regex.Pattern pMinus = java.util.regex.Pattern.compile("(.*) - ([0-9.]+(?:\\^2|\\^\\{-1\\}|\\\\%)?)$");
+        java.util.regex.Matcher mMinus = pMinus.matcher(expr);
+        if (mMinus.matches()) {
+            currentLatexExpression.setLength(0);
+            currentLatexExpression.append(mMinus.group(1)).append(" + ").append(mMinus.group(2));
+            setMathExpression(currentLatexExpression.toString());
+            return;
+        }
+
+        // 3. If ends with " + <num>" -> change to " - <num>"
+        java.util.regex.Pattern pPlus = java.util.regex.Pattern.compile("(.*) \\+ ([0-9.]+(?:\\^2|\\^\\{-1\\}|\\\\%)?)$");
+        java.util.regex.Matcher mPlus = pPlus.matcher(expr);
+        if (mPlus.matches()) {
+            currentLatexExpression.setLength(0);
+            currentLatexExpression.append(mPlus.group(1)).append(" - ").append(mPlus.group(2));
+            setMathExpression(currentLatexExpression.toString());
+            return;
+        }
+
+        // 4. If ends with "( \times | \div )<num>" -> change to "( \times | \div )(-<num>)"
+        java.util.regex.Pattern pMulDiv = java.util.regex.Pattern.compile("(.* (?:\\\\times|\\\\div) )([0-9.]+(?:\\^2|\\^\\{-1\\}|\\\\%)?)$");
+        java.util.regex.Matcher mMulDiv = pMulDiv.matcher(expr);
+        if (mMulDiv.matches()) {
+            currentLatexExpression.setLength(0);
+            currentLatexExpression.append(mMulDiv.group(1)).append("(-").append(mMulDiv.group(2)).append(")");
+            setMathExpression(currentLatexExpression.toString());
+            return;
+        }
+
+        // 5. If entire expression starts with "-" followed by a number -> remove "-"
+        if (expr.matches("^-[0-9.]+(?:\\^2|\\^\\{-1\\}|\\\\%)?$")) {
+            currentLatexExpression.setLength(0);
+            currentLatexExpression.append(expr.substring(1));
+            setMathExpression(currentLatexExpression.toString());
+            return;
+        }
+
+        // 6. If entire expression is just a number -> prepend "-"
+        if (expr.matches("^[0-9.]+(?:\\^2|\\^\\{-1\\}|\\\\%)?$")) {
+            currentLatexExpression.setLength(0);
+            currentLatexExpression.append("-").append(expr);
+            setMathExpression(currentLatexExpression.toString());
+            return;
+        }
+
+        // Fallback: if ends in a number, wrap with (-...)
+        java.util.regex.Pattern pTrailing = java.util.regex.Pattern.compile("(.*?)([0-9.]+(?:\\^2|\\^\\{-1\\}|\\\\%)?)$");
+        java.util.regex.Matcher mTrailing = pTrailing.matcher(expr);
+        if (mTrailing.matches()) {
+            currentLatexExpression.setLength(0);
+            currentLatexExpression.append(mTrailing.group(1)).append("(-").append(mTrailing.group(2)).append(")");
+            setMathExpression(currentLatexExpression.toString());
+            return;
+        }
+
+        currentLatexExpression.append("-");
+        setMathExpression(currentLatexExpression.toString());
+    }
+
+    private void clearEntry() {
+        if (hasEvaluated) {
+            clearDisplay();
+            return;
+        }
+        String expr = currentLatexExpression.toString();
+        if (expr.isEmpty()) return;
+
+        // If ends with "(-<num>)"
+        if (expr.matches(".*\\(-[0-9.]+(?:\\^2|\\^\\{-1\\}|\\\\%)?\\)$")) {
+            int idx = expr.lastIndexOf("(-");
+            currentLatexExpression.setLength(idx);
+            setMathExpression(currentLatexExpression.toString());
+            return;
+        }
+
+        // If ends with a number (e.g. "12 + 34" or "34")
+        java.util.regex.Pattern p = java.util.regex.Pattern.compile("(.*?)[0-9.]+(?:\\^2|\\^\\{-1\\}|\\\\%)?$");
+        java.util.regex.Matcher m = p.matcher(expr);
+        if (m.matches()) {
+            currentLatexExpression.setLength(0);
+            currentLatexExpression.append(m.group(1));
+            setMathExpression(currentLatexExpression.toString());
+            return;
+        }
+
+        if (!history.isEmpty()) {
+            currentLatexExpression.setLength(0);
+            currentLatexExpression.append(history.pop());
+            setMathExpression(currentLatexExpression.toString());
+        } else {
+            clearDisplay();
+        }
+    }
+
+    private void evaluateCurrentExpression() {
+        String expr = currentLatexExpression.toString().trim();
+        if (expr.isEmpty()) return;
+
+        // Auto-trim trailing operator if user pressed e.g. "5 + ="
+        if (expr.endsWith(" + ")) {
+            expr = expr.substring(0, expr.length() - 3).trim();
+        } else if (expr.endsWith(" - ")) {
+            expr = expr.substring(0, expr.length() - 3).trim();
+        } else if (expr.endsWith(" \\times ")) {
+            expr = expr.substring(0, expr.length() - 9).trim();
+        } else if (expr.endsWith(" \\div ")) {
+            expr = expr.substring(0, expr.length() - 7).trim();
+        } else if (expr.endsWith(" \\bmod ")) {
+            expr = expr.substring(0, expr.length() - 8).trim();
+        }
+
+        if (expr.isEmpty()) return;
+
+        MathEvaluator.EvaluationResult result = MathEvaluator.evaluate(expr);
+        if (result.isSuccess()) {
+            history.push(currentLatexExpression.toString());
+            String formatted = result.getFormattedResult();
+            currentLatexExpression.setLength(0);
+            currentLatexExpression.append(formatted);
+            hasEvaluated = true;
+            setMathExpression(formatted);
+            hideSolutionArea();
+            display.setText(formatted);
+        } else {
+            // Check if symbolic or calculus expression with variables
+            if (expr.contains("x") || expr.contains("y") || expr.contains("\\frac{d}{d") || expr.contains("=")) {
+                showSolutionArea();
+                loadingBox.setVisible(true);
+                solutionWebView.setVisible(false);
+                aiSolverService.solveMathExpression(expr)
+                    .thenAccept(solutionLatex -> {
+                        Platform.runLater(() -> {
+                            loadingBox.setVisible(false);
+                            solutionWebView.setVisible(true);
+                            String jsSafeLatex = solutionLatex.replace("\\", "\\\\").replace("\n", "\\n").replace("'", "\\'");
+                            try {
+                                solutionWebView.getEngine().executeScript("updateSolution('" + jsSafeLatex + "')");
+                            } catch (Exception e) {
+                                System.err.println("Error rendering solution: " + e.getMessage());
+                            }
+                        });
+                    });
+            } else {
+                history.push(currentLatexExpression.toString());
+                String errorMsg = result.getErrorMessage();
+                setMathExpression("\\text{" + errorMsg + "}");
+                currentLatexExpression.setLength(0);
+                hasEvaluated = true;
+                display.setText(errorMsg);
+            }
+        }
+    }
+
     private void processKeyInput(String text) {
         if (!text.equals("=")) {
             hideSolutionArea();
@@ -833,24 +1077,44 @@ public class CalculatorController {
 
         if (text.equals("⌫")) {
             backspace();
-            return; // backspace handles the update
+            return;
         }
 
-        if (text.equals("C") || text.equals("CE")) {
+        if (text.equals("CE")) {
+            clearEntry();
+            return;
+        }
+
+        if (text.equals("C")) {
             clearDisplay();
+            return;
+        }
+
+        if (text.equals("±")) {
+            toggleSign();
             return;
         }
 
         if (text.equals("2nd") || text.equals("2ⁿᵈ")) {
             is2ndActive = !is2ndActive;
-            // No button reference easily available here since processKeyInput is called with string,
-            // but it's fine for Advanced logic.
             return;
         } else if (text.equals("hyp")) {
             isHypActive = !isHypActive;
             return;
         }
 
+        if (hasEvaluated) {
+            hasEvaluated = false;
+            if (isOperator(text) || text.equals("x²") || text.equals("x⁻¹") || text.equals("%") || text.equals("\\%") || text.equals("x!")) {
+                // Keep current result and continue calculation
+            } else {
+                // Number or function: start fresh calculation
+                history.push(currentLatexExpression.toString());
+                currentLatexExpression.setLength(0);
+            }
+        }
+
+        redoStack.clear();
         history.push(currentLatexExpression.toString());
 
         switch (text) {
@@ -860,8 +1124,6 @@ public class CalculatorController {
                 if (is2ndActive) func = "a" + func;
                 if (isHypActive) func = func + "h";
                 currentLatexExpression.append("\\").append(func).append("(");
-                
-                // Reset toggles
                 is2ndActive = false;
                 isHypActive = false;
                 break;
@@ -873,7 +1135,7 @@ public class CalculatorController {
                 currentLatexExpression.append("\\pi");
                 break;
             case "mod":
-                currentLatexExpression.append(" \\bmod ");
+                appendOperator(" \\bmod ");
                 break;
             case "↑n":
                 currentLatexExpression.append("^{n}");
@@ -885,13 +1147,17 @@ public class CalculatorController {
                 currentLatexExpression.append("\\sqrt{");
                 break;
             case "x²":
-                currentLatexExpression.append("^2");
+                if (!currentLatexExpression.toString().isEmpty() && !currentLatexExpression.toString().endsWith(" ")) {
+                    currentLatexExpression.append("^2");
+                }
                 break;
             case "xʸ":
                 currentLatexExpression.append("^{");
                 break;
             case "x⁻¹":
-                currentLatexExpression.append("^{-1}");
+                if (!currentLatexExpression.toString().isEmpty() && !currentLatexExpression.toString().endsWith(" ")) {
+                    currentLatexExpression.append("^{-1}");
+                }
                 break;
             case "x10ⁿ":
                 currentLatexExpression.append("\\times 10^{");
@@ -927,20 +1193,41 @@ public class CalculatorController {
                 currentLatexExpression.append("=");
                 break;
             case "÷":
-                currentLatexExpression.append(" \\div ");
+                appendOperator(" \\div ");
                 break;
             case "×":
-                currentLatexExpression.append(" \\times ");
+                appendOperator(" \\times ");
                 break;
             case "-":
-                currentLatexExpression.append(" - ");
+                appendOperator(" - ");
                 break;
             case "+":
-                currentLatexExpression.append(" + ");
+                appendOperator(" + ");
                 break;
             case "%":
-                // In LaTeX, % is a comment, so we must escape it as \%
-                currentLatexExpression.append("\\%");
+            case "\\%":
+                if (!currentLatexExpression.toString().isEmpty() && !currentLatexExpression.toString().endsWith(" ") && !currentLatexExpression.toString().endsWith("{") && !currentLatexExpression.toString().endsWith("(")) {
+                    currentLatexExpression.append("\\%");
+                }
+                break;
+            case ".":
+                String curDot = currentLatexExpression.toString();
+                if (curDot.isEmpty() || curDot.endsWith(" ") || curDot.endsWith("{") || curDot.endsWith("(")) {
+                    currentLatexExpression.append("0.");
+                } else {
+                    String[] tokens = curDot.split("[ \\{\\}\\(\\)\\+\\-\\*/]|\\\\times|\\\\div|\\\\bmod");
+                    String lastToken = tokens.length > 0 ? tokens[tokens.length - 1] : "";
+                    if (!lastToken.contains(".")) {
+                        currentLatexExpression.append(".");
+                    }
+                }
+                break;
+            case "0": case "1": case "2": case "3": case "4":
+            case "5": case "6": case "7": case "8": case "9":
+                if (currentLatexExpression.toString().equals("0")) {
+                    currentLatexExpression.setLength(0);
+                }
+                currentLatexExpression.append(text);
                 break;
             case ")":
                 java.util.Stack<Character> brackets = new java.util.Stack<>();
@@ -961,32 +1248,13 @@ public class CalculatorController {
                 }
                 break;
             case "=":
-                // Phase 4: Ask AI to solve it
-                showSolutionArea();
-                loadingBox.setVisible(true);
-                solutionWebView.setVisible(false);
-                aiSolverService.solveMathExpression(currentLatexExpression.toString())
-                    .thenAccept(solutionLatex -> {
-                        Platform.runLater(() -> {
-                            loadingBox.setVisible(false);
-                            solutionWebView.setVisible(true);
-                            String jsSafeLatex = solutionLatex.replace("\\", "\\\\").replace("\n", "\\n").replace("'", "\\'");
-                            try {
-                                solutionWebView.getEngine().executeScript("updateSolution('" + jsSafeLatex + "')");
-                            } catch (Exception e) {
-                                System.err.println("Error rendering solution: " + e.getMessage());
-                            }
-                        });
-                    });
-                history.pop(); // Revert the history push since '=' doesn't modify the expression
-                break;
+                evaluateCurrentExpression();
+                return;
             default:
-                // For numbers or standard symbols like (, )
                 currentLatexExpression.append(text);
                 break;
         }
-        
-        // Instantly update the KaTeX display
+
         setMathExpression(currentLatexExpression.toString());
     }
 
@@ -1317,6 +1585,8 @@ public class CalculatorController {
     private void clearDisplay() {
         hideSolutionArea();
         history.clear();
+        redoStack.clear();
+        hasEvaluated = false;
         currentLatexExpression.setLength(0);
         setMathExpression("");
 
@@ -1335,9 +1605,34 @@ public class CalculatorController {
             return;
         }
 
+        if (hasEvaluated) {
+            hasEvaluated = false;
+        }
+
         if (!history.isEmpty()) {
             currentLatexExpression.setLength(0);
             currentLatexExpression.append(history.pop());
+        } else if (currentLatexExpression.length() > 0) {
+            String expr = currentLatexExpression.toString();
+            if (expr.endsWith(" \\times ")) {
+                currentLatexExpression.setLength(expr.length() - 9);
+            } else if (expr.endsWith(" \\div ")) {
+                currentLatexExpression.setLength(expr.length() - 7);
+            } else if (expr.endsWith(" \\bmod ")) {
+                currentLatexExpression.setLength(expr.length() - 8);
+            } else if (expr.endsWith(" + ") || expr.endsWith(" - ")) {
+                currentLatexExpression.setLength(expr.length() - 3);
+            } else if (expr.endsWith("^{-1}")) {
+                currentLatexExpression.setLength(expr.length() - 5);
+            } else if (expr.endsWith("^2")) {
+                currentLatexExpression.setLength(expr.length() - 2);
+            } else if (expr.endsWith("\\%")) {
+                currentLatexExpression.setLength(expr.length() - 2);
+            } else if (expr.endsWith("\\sqrt{")) {
+                currentLatexExpression.setLength(expr.length() - 6);
+            } else {
+                currentLatexExpression.setLength(expr.length() - 1);
+            }
         } else {
             currentLatexExpression.setLength(0);
         }
@@ -1345,7 +1640,7 @@ public class CalculatorController {
 
         String text = display.getText();
 
-        if (text.equals("Error") || text.equals("Invalid expression")) {
+        if (text.equals("Error") || text.equals("Invalid expression") || text.equals("Cannot divide by zero")) {
             clearDisplay();
             return;
         }
@@ -1838,7 +2133,7 @@ public class CalculatorController {
             // Wait for page to load before setting initial expression
             mathWebView.getEngine().getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
                 if (newState == javafx.concurrent.Worker.State.SUCCEEDED) {
-                    setMathExpression("\\\\frac{d}{dx}(dy) + \\\\frac{d}{dy}(3y) = 5");
+                    setMathExpression("");
                 }
             });
             

@@ -53,9 +53,9 @@
                     <!-- Toolbar (Undo, Redo, Zoom, etc.) -->
                     <HBox fx:id="toolbarHBox" alignment="CENTER_LEFT" spacing="15" styleClass="toolbar">
                         <Button text="◫" styleClass="toolbar-btn" />
-                        <Button text="↩" styleClass="toolbar-btn" />
-                        <Button text="↪" styleClass="toolbar-btn" />
-                        <Button text="🗑" styleClass="toolbar-btn" />
+                        <Button text="↩" styleClass="toolbar-btn" onAction="#handleUndo" />
+                        <Button text="↪" styleClass="toolbar-btn" onAction="#handleRedo" />
+                        <Button text="🗑" styleClass="toolbar-btn" onAction="#clearDisplay" />
 
                         <Region HBox.hgrow="ALWAYS" />
 
@@ -68,7 +68,7 @@
 
                         <Region HBox.hgrow="ALWAYS" />
 
-                        <Button text="🗑" styleClass="toolbar-btn" />
+                        <Button text="🗑" styleClass="toolbar-btn" onAction="#clearDisplay" />
                         <Button text="✎" styleClass="toolbar-btn" />
                         <Button text="⚙" styleClass="toolbar-btn" />
                     </HBox>
@@ -119,8 +119,8 @@
 
                     <!-- Input Field -->
                     <HBox fx:id="inputAreaHBox" alignment="CENTER_LEFT" styleClass="input-area">
-                        <TextField promptText="Type Math equation here" HBox.hgrow="ALWAYS"
-                            styleClass="math-input-field" />
+                        <TextField fx:id="mathInputField" promptText="Type Math equation here" HBox.hgrow="ALWAYS"
+                            styleClass="math-input-field" onAction="#handleMathInputSubmit" />
                         <Button text="🎤" styleClass="input-icon-btn" />
                         <Button text="📷" styleClass="input-icon-btn" />
                     </HBox>
