@@ -88,11 +88,11 @@ public class CalculatorController {
     @FXML private Button btnAdvRad;
 
     private void updateDegRadState() {
-        if (btnAdvDeg != null && btnAdvRad != null) {
-            String activeStyle = "-fx-background-color: #d63384; -fx-text-fill: white;";
-            String normalStyle = "";
-            btnAdvDeg.setStyle(MathEvaluator.isDegreeMode ? activeStyle : normalStyle);
-            btnAdvRad.setStyle(!MathEvaluator.isDegreeMode ? activeStyle : normalStyle);
+        if (btnAdvDeg != null) {
+            btnAdvDeg.setStyle("");
+        }
+        if (btnAdvRad != null) {
+            btnAdvRad.setStyle("");
         }
     }
 
@@ -130,7 +130,7 @@ public class CalculatorController {
     private void updateProgrammerKeypadState() {
         if (programmerKeypad == null) return;
 
-        String activeBaseStyle = "-fx-background-color: #d63384; -fx-text-fill: white;";
+        String activeBaseStyle = "-fx-background-color: rgba(255, 255, 255, 0.28), linear-gradient(to bottom, #E82E88, #D01D76); -fx-background-insets: 0, 1; -fx-background-radius: 8, 7; -fx-text-fill: white;";
         String normalBaseStyle = "";
 
         if (btnProgHex != null) btnProgHex.setStyle(currentProgrammerBase == 16 ? activeBaseStyle : normalBaseStyle);
@@ -138,25 +138,23 @@ public class CalculatorController {
         if (btnProgOct != null) btnProgOct.setStyle(currentProgrammerBase == 8 ? activeBaseStyle : normalBaseStyle);
         if (btnProgBin != null) btnProgBin.setStyle(currentProgrammerBase == 2 ? activeBaseStyle : normalBaseStyle);
 
-        boolean hexEnabled = (currentProgrammerBase == 16);
-        setButtonEnabled(btnProgA, hexEnabled);
-        setButtonEnabled(btnProgB, hexEnabled);
-        setButtonEnabled(btnProgC, hexEnabled);
-        setButtonEnabled(btnProgD, hexEnabled);
-        setButtonEnabled(btnProgE, hexEnabled);
-        setButtonEnabled(btnProgF, hexEnabled);
+        // Keep all programmer buttons fully clickable
+        setButtonEnabled(btnProgA, true);
+        setButtonEnabled(btnProgB, true);
+        setButtonEnabled(btnProgC, true);
+        setButtonEnabled(btnProgD, true);
+        setButtonEnabled(btnProgE, true);
+        setButtonEnabled(btnProgF, true);
 
-        boolean decEnabled = (currentProgrammerBase == 16 || currentProgrammerBase == 10);
-        setButtonEnabled(btnProg8, decEnabled);
-        setButtonEnabled(btnProg9, decEnabled);
+        setButtonEnabled(btnProg8, true);
+        setButtonEnabled(btnProg9, true);
 
-        boolean octEnabled = (currentProgrammerBase != 2);
-        setButtonEnabled(btnProg2, octEnabled);
-        setButtonEnabled(btnProg3, octEnabled);
-        setButtonEnabled(btnProg4, octEnabled);
-        setButtonEnabled(btnProg5, octEnabled);
-        setButtonEnabled(btnProg6, octEnabled);
-        setButtonEnabled(btnProg7, octEnabled);
+        setButtonEnabled(btnProg2, true);
+        setButtonEnabled(btnProg3, true);
+        setButtonEnabled(btnProg4, true);
+        setButtonEnabled(btnProg5, true);
+        setButtonEnabled(btnProg6, true);
+        setButtonEnabled(btnProg7, true);
 
         setButtonEnabled(btnProg0, true);
         setButtonEnabled(btnProg1, true);
@@ -1287,14 +1285,17 @@ public class CalculatorController {
             case "OR":
                 appendOperator(" \\operatorname{OR} ");
                 break;
-            case "A": case "B": case "D": case "E": case "F":
+            case "A": case "B": case "C": case "D": case "E": case "F":
+            case "a": case "b": case "c": case "d": case "e": case "f":
+                String hexChar = text.toUpperCase();
                 if (modeComboBox != null && "Programmer".equals(modeComboBox.getValue())) {
-                    if (currentProgrammerBase == 16) {
-                        if (currentLatexExpression.toString().equals("0")) {
-                            currentLatexExpression.setLength(0);
-                        }
-                        currentLatexExpression.append(text);
+                    if (currentProgrammerBase != 16) {
+                        setProgrammerBase(16);
                     }
+                    if (currentLatexExpression.toString().equals("0")) {
+                        currentLatexExpression.setLength(0);
+                    }
+                    currentLatexExpression.append(hexChar);
                 } else {
                     currentLatexExpression.append(text);
                 }
@@ -1393,6 +1394,7 @@ public class CalculatorController {
                 MathEvaluator.isDegreeMode = false;
                 updateDegRadState();
                 return;
+            case "fx":
             case "f(x)":
                 currentLatexExpression.append("f(");
                 break;
@@ -1480,12 +1482,19 @@ public class CalculatorController {
             @Override
             protected void updateItem(T item, boolean empty) {
                 super.updateItem(item, empty);
+                javafx.scene.shape.SVGPath chevron = new javafx.scene.shape.SVGPath();
+                chevron.setContent("M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z");
+                chevron.setFill(javafx.scene.paint.Color.web("#9D9AA8"));
+                chevron.setScaleX(0.7);
+                chevron.setScaleY(0.7);
+                setGraphic(chevron);
+                setGraphicTextGap(8);
                 if (empty || item == null) {
                     setText(comboBox.getPromptText());
-                    setStyle("-fx-text-fill: rgba(255, 255, 255, 0.7);"); // Dimmer for prompt
+                    setStyle("-fx-text-fill: rgba(255, 255, 255, 0.75); -fx-font-size: 13px;");
                 } else {
                     setText(item.toString());
-                    setStyle("-fx-text-fill: white;");
+                    setStyle("-fx-text-fill: white; -fx-font-size: 13px;");
                 }
             }
         });

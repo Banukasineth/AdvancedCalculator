@@ -21,24 +21,56 @@
             <HBox fx:id="titleBar" alignment="CENTER_LEFT" styleClass="custom-title-bar"
                 onMousePressed="#handleTitleBarPressed" onMouseDragged="#handleTitleBarDragged">
 
+                <!-- Far-left sidebar toggle -->
+                <Button styleClass="toolbar-btn" focusTraversable="false">
+                    <graphic>
+                        <SVGPath content="M19 4H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-12 14H5V6h2v12zm12 0H9V6h10v12z"
+                                 styleClass="svg-icon" scaleX="0.7" scaleY="0.7" />
+                    </graphic>
+                </Button>
+
                 <!-- App Tabs -->
-                <HBox alignment="CENTER_LEFT" spacing="5" styleClass="title-tabs">
-                    <HBox alignment="CENTER" styleClass="active-tab">
-                        <Label text="🖩 Calculator" styleClass="tab-text" />
-                        <Button text="×" styleClass="tab-close-btn" />
+                <HBox alignment="CENTER_LEFT" spacing="6" styleClass="title-tabs">
+                    <HBox alignment="CENTER" spacing="7" styleClass="active-tab">
+                        <SVGPath content="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h2v2H7v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2zm-8 4h2v2H7v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2z"
+                                 fill="#8C889B" scaleX="0.65" scaleY="0.65" />
+                        <Label text="Calculator" styleClass="tab-text" />
+                        <Button styleClass="tab-close-btn" focusTraversable="false">
+                            <graphic>
+                                <SVGPath content="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+                                         styleClass="svg-icon" scaleX="0.45" scaleY="0.45" />
+                            </graphic>
+                        </Button>
                     </HBox>
-                    <Button text="+" styleClass="new-tab-btn" />
+                    <Button styleClass="new-tab-btn" focusTraversable="false">
+                        <graphic>
+                            <SVGPath content="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                                     styleClass="svg-icon" scaleX="0.55" scaleY="0.55" />
+                        </graphic>
+                    </Button>
                 </HBox>
 
                 <Region HBox.hgrow="ALWAYS" />
 
                 <!-- Window Controls -->
                 <HBox alignment="CENTER_RIGHT" styleClass="window-controls">
-                    <Button text="—" styleClass="window-btn, minimize-btn"
-                        onAction="#minimizeWindow" />
-                    <Button text="□" styleClass="window-btn, maximize-btn"
-                        onAction="#maximizeWindow" />
-                    <Button text="✕" styleClass="window-btn, close-btn" onAction="#closeWindow" />
+                    <Button styleClass="window-btn, minimize-btn" onAction="#minimizeWindow" focusTraversable="false">
+                        <graphic>
+                            <SVGPath content="M6 12h12v2H6z" styleClass="svg-icon" scaleX="0.75" scaleY="0.75" />
+                        </graphic>
+                    </Button>
+                    <Button styleClass="window-btn, maximize-btn" onAction="#maximizeWindow" focusTraversable="false">
+                        <graphic>
+                            <SVGPath content="M3 3h6v2H5v4H3V3zm18 0v6h-2V5h-4V3h6zm0 18h-6v-2h4v-4h2v6zM3 21v-6h2v4h4v2H3z"
+                                     styleClass="svg-icon" scaleX="0.7" scaleY="0.7" />
+                        </graphic>
+                    </Button>
+                    <Button styleClass="window-btn, close-btn" onAction="#closeWindow" focusTraversable="false">
+                        <graphic>
+                            <SVGPath content="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+                                     styleClass="svg-icon" scaleX="0.6" scaleY="0.6" />
+                        </graphic>
+                    </Button>
                 </HBox>
             </HBox>
         </top>
@@ -51,16 +83,36 @@
                     </padding>
 
                     <!-- Toolbar (Undo, Redo, Zoom, etc.) -->
-                    <HBox fx:id="toolbarHBox" alignment="CENTER_LEFT" spacing="15" styleClass="toolbar">
-                        <Button text="◫" styleClass="toolbar-btn" />
-                        <Button text="↩" styleClass="toolbar-btn" onAction="#handleUndo" />
-                        <Button text="↪" styleClass="toolbar-btn" onAction="#handleRedo" />
-                        <Button text="🗑" styleClass="toolbar-btn" onAction="#clearDisplay" />
+                    <HBox fx:id="toolbarHBox" alignment="CENTER_LEFT" spacing="12" styleClass="toolbar">
+                        <Button styleClass="toolbar-btn" focusTraversable="false">
+                            <graphic>
+                                <SVGPath content="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zm0 2v12h5V6H4zm7 12h9V6h-9v12z"
+                                         styleClass="svg-icon" scaleX="0.75" scaleY="0.75" />
+                            </graphic>
+                        </Button>
+                        <Button styleClass="toolbar-btn" onAction="#handleUndo" focusTraversable="false">
+                            <graphic>
+                                <SVGPath content="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"
+                                         styleClass="svg-icon" scaleX="0.75" scaleY="0.75" />
+                            </graphic>
+                        </Button>
+                        <Button styleClass="toolbar-btn" onAction="#handleRedo" focusTraversable="false">
+                            <graphic>
+                                <SVGPath content="M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z"
+                                         styleClass="svg-icon" scaleX="0.75" scaleY="0.75" />
+                            </graphic>
+                        </Button>
+                        <Button styleClass="toolbar-btn" focusTraversable="false">
+                            <graphic>
+                                <SVGPath content="M3 5h10v12H3V5zm2 2v8h6V7H5zm12 3l3 3 3-3-1.4-1.4-1.6 1.6-1.6-1.6L17 10z"
+                                         styleClass="svg-icon" scaleX="0.75" scaleY="0.75" />
+                            </graphic>
+                        </Button>
 
                         <Region HBox.hgrow="ALWAYS" />
 
-                        <!-- Zoom Slider placeholder -->
-                        <HBox alignment="CENTER" spacing="5" styleClass="zoom-container">
+                        <!-- Zoom Slider -->
+                        <HBox alignment="CENTER" spacing="8" styleClass="zoom-container">
                             <Label text="−" styleClass="zoom-icon" />
                             <Slider value="100" min="50" max="200" styleClass="zoom-slider" />
                             <Label text="+ 100%" styleClass="zoom-text" />
@@ -68,9 +120,24 @@
 
                         <Region HBox.hgrow="ALWAYS" />
 
-                        <Button text="🗑" styleClass="toolbar-btn" onAction="#clearDisplay" />
-                        <Button text="✎" styleClass="toolbar-btn" />
-                        <Button text="⚙" styleClass="toolbar-btn" />
+                        <Button styleClass="toolbar-btn" onAction="#clearDisplay" focusTraversable="false">
+                            <graphic>
+                                <SVGPath content="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1zM18 7H6v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7z"
+                                         styleClass="svg-icon" scaleX="0.75" scaleY="0.75" />
+                            </graphic>
+                        </Button>
+                        <Button styleClass="toolbar-btn" focusTraversable="false">
+                            <graphic>
+                                <SVGPath content="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+                                         styleClass="svg-icon" scaleX="0.75" scaleY="0.75" />
+                            </graphic>
+                        </Button>
+                        <Button styleClass="toolbar-btn" focusTraversable="false">
+                            <graphic>
+                                <SVGPath content="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0 0 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 0 0 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3zm0-5c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"
+                                         styleClass="svg-icon" scaleX="0.75" scaleY="0.75" />
+                            </graphic>
+                        </Button>
                     </HBox>
 
                     <!-- Display Area -->
@@ -121,8 +188,18 @@
                     <HBox fx:id="inputAreaHBox" alignment="CENTER_LEFT" styleClass="input-area">
                         <TextField fx:id="mathInputField" promptText="Type Math equation here" HBox.hgrow="ALWAYS"
                             styleClass="math-input-field" onAction="#handleMathInputSubmit" />
-                        <Button text="🎤" styleClass="input-icon-btn" />
-                        <Button text="📷" styleClass="input-icon-btn" />
+                        <Button styleClass="input-icon-btn" focusTraversable="false">
+                            <graphic>
+                                <SVGPath content="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"
+                                         styleClass="svg-icon" scaleX="0.75" scaleY="0.75" />
+                            </graphic>
+                        </Button>
+                        <Button styleClass="input-icon-btn" focusTraversable="false">
+                            <graphic>
+                                <SVGPath content="M9.4 4l-.6 1H5C3.9 5 3 5.9 3 7v10c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2h-3.8l-.6-1h-5.2zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
+                                         styleClass="svg-icon" scaleX="0.75" scaleY="0.75" />
+                            </graphic>
+                        </Button>
                     </HBox>
 
                     <!-- Mode Selectors -->
@@ -161,10 +238,15 @@
                                 <RowConstraints vgrow="ALWAYS" minHeight="25" percentHeight="20.0" />
                             </rowConstraints>
                             <!-- Row 0 -->
-                            <Button focusTraversable="false" text="⌫"
+                            <Button focusTraversable="false"
                                 styleClass="key-btn, action-btn" onAction="#backspace"
                                 onMousePressed="#handleBackspacePressed" onMouseReleased="#handleBackspaceReleased" onMouseExited="#handleBackspaceExited"
-                                GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                <graphic>
+                                    <SVGPath content="M22 3H7c-.69 0-1.32.35-1.67.94l-5 8.33a1.99 1.99 0 0 0 0 2.06l5 8.33c.35.59.98.94 1.67.94h15a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 18H7.38l-4.5-7.5 4.5-7.5H22v15zm-13.41-4L12 13.59l3.41 3.41 1.41-1.41L13.41 12l3.41-3.41-1.41-1.41L12 10.59 8.59 7.18 7.18 8.59 10.59 12l-3.41 3.41 1.41 1.41z"
+                                             styleClass="svg-icon-white" scaleX="0.85" scaleY="0.85" />
+                                </graphic>
+                            </Button>
                             <Button focusTraversable="false" text="(" styleClass="key-btn, dark-btn"
                                 onAction="#handleAdvancedKey" GridPane.columnIndex="1"
                                 GridPane.rowIndex="0" />
@@ -313,7 +395,7 @@
                             <Button focusTraversable="false" text="x" styleClass="key-btn, dark-btn"
                                 onAction="#handleAdvancedKey" GridPane.columnIndex="5"
                                 GridPane.rowIndex="4" GridPane.columnSpan="2" />
-                            <Button focusTraversable="false" text="f(x)"
+                            <Button focusTraversable="false" text="fx"
                                 styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
                                 GridPane.columnIndex="7" GridPane.rowIndex="4" />
                             <Button focusTraversable="false" text="conj"
@@ -355,10 +437,15 @@
                             <Button focusTraversable="false" text="C" styleClass="key-btn, dark-btn"
                                 onAction="#clearDisplay" GridPane.columnIndex="2"
                                 GridPane.rowIndex="0" />
-                            <Button focusTraversable="false" text="⌫"
+                            <Button focusTraversable="false"
                                 styleClass="key-btn, action-btn" onAction="#backspace"
                                 onMousePressed="#handleBackspacePressed" onMouseReleased="#handleBackspaceReleased" onMouseExited="#handleBackspaceExited"
-                                GridPane.columnIndex="3" GridPane.rowIndex="0" />
+                                GridPane.columnIndex="3" GridPane.rowIndex="0">
+                                <graphic>
+                                    <SVGPath content="M22 3H7c-.69 0-1.32.35-1.67.94l-5 8.33a1.99 1.99 0 0 0 0 2.06l5 8.33c.35.59.98.94 1.67.94h15a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 18H7.38l-4.5-7.5 4.5-7.5H22v15zm-13.41-4L12 13.59l3.41 3.41 1.41-1.41L13.41 12l3.41-3.41-1.41-1.41L12 10.59 8.59 7.18 7.18 8.59 10.59 12l-3.41 3.41 1.41 1.41z"
+                                             styleClass="svg-icon-white" scaleX="0.85" scaleY="0.85" />
+                                </graphic>
+                            </Button>
 
                             <!-- Row 1 -->
                             <Button focusTraversable="false" text="x⁻¹"
@@ -464,10 +551,15 @@
                             <Button focusTraversable="false" text="C" styleClass="key-btn, dark-btn"
                                 onAction="#clearDisplay" GridPane.columnIndex="3"
                                 GridPane.rowIndex="0" />
-                            <Button focusTraversable="false" text="⌫"
+                            <Button focusTraversable="false"
                                 styleClass="key-btn, action-btn" onAction="#backspace"
                                 onMousePressed="#handleBackspacePressed" onMouseReleased="#handleBackspaceReleased" onMouseExited="#handleBackspaceExited"
-                                GridPane.columnIndex="4" GridPane.rowIndex="0" />
+                                GridPane.columnIndex="4" GridPane.rowIndex="0">
+                                <graphic>
+                                    <SVGPath content="M22 3H7c-.69 0-1.32.35-1.67.94l-5 8.33a1.99 1.99 0 0 0 0 2.06l5 8.33c.35.59.98.94 1.67.94h15a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 18H7.38l-4.5-7.5 4.5-7.5H22v15zm-13.41-4L12 13.59l3.41 3.41 1.41-1.41L13.41 12l3.41-3.41-1.41-1.41L12 10.59 8.59 7.18 7.18 8.59 10.59 12l-3.41 3.41 1.41 1.41z"
+                                             styleClass="svg-icon-white" scaleX="0.85" scaleY="0.85" />
+                                </graphic>
+                            </Button>
 
                             <!-- Row 1 -->
                             <Button focusTraversable="false" text="x²"
@@ -602,10 +694,15 @@
                             <Button focusTraversable="false" fx:id="btnProgBin" text="BIN"
                                 styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
                                 GridPane.columnIndex="3" GridPane.rowIndex="0" />
-                            <Button focusTraversable="false" text="⌫"
+                            <Button focusTraversable="false"
                                 styleClass="key-btn, action-btn" onAction="#backspace"
                                 onMousePressed="#handleBackspacePressed" onMouseReleased="#handleBackspaceReleased" onMouseExited="#handleBackspaceExited"
-                                GridPane.columnIndex="4" GridPane.rowIndex="0" />
+                                GridPane.columnIndex="4" GridPane.rowIndex="0">
+                                <graphic>
+                                    <SVGPath content="M22 3H7c-.69 0-1.32.35-1.67.94l-5 8.33a1.99 1.99 0 0 0 0 2.06l5 8.33c.35.59.98.94 1.67.94h15a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 18H7.38l-4.5-7.5 4.5-7.5H22v15zm-13.41-4L12 13.59l3.41 3.41 1.41-1.41L13.41 12l3.41-3.41-1.41-1.41L12 10.59 8.59 7.18 7.18 8.59 10.59 12l-3.41 3.41 1.41 1.41z"
+                                             styleClass="svg-icon-white" scaleX="0.85" scaleY="0.85" />
+                                </graphic>
+                            </Button>
                             <Button focusTraversable="false" text="C" styleClass="key-btn, dark-btn"
                                 onAction="#clearDisplay" GridPane.columnIndex="5"
                                 GridPane.rowIndex="0" />
