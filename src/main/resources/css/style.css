@@ -85,70 +85,102 @@
     -fx-padding: 0 0 2 0;
 }
 
-/* Individual Toolbar Floating Pills */
-.toolbar-pill {
+/* Individual Toolbar Tile Buttons (Each Icon is a Separate Tile) */
+.toolbar-tile-btn {
     -fx-background-color: #24212F;
     -fx-background-radius: 8;
     -fx-border-radius: 8;
     -fx-border-color: rgba(255, 255, 255, 0.05);
     -fx-border-width: 1;
-    -fx-padding: 3 6;
-    -fx-alignment: center;
+    -fx-min-width: 34;
+    -fx-min-height: 34;
+    -fx-padding: 5 7;
+    -fx-cursor: hand;
+}
+.toolbar-tile-btn:hover {
+    -fx-background-color: #322D42;
+    -fx-border-color: rgba(255, 255, 255, 0.12);
+}
+.toolbar-tile-btn .svg-icon {
+    -fx-fill: rgba(197, 194, 210, 0.22);
+    -fx-stroke: #C5C2D2;
+    -fx-stroke-width: 2.3;
+    -fx-stroke-line-cap: round;
+    -fx-stroke-line-join: round;
+}
+.toolbar-tile-btn:hover .svg-icon {
+    -fx-stroke: #FFFFFF;
+    -fx-fill: rgba(255, 255, 255, 0.35);
 }
 
-.zoom-pill {
-    -fx-padding: 3 14;
-    -fx-alignment: center;
-}
-
+/* Backward compatibility for toolbar-btn */
 .toolbar-btn {
-    -fx-background-color: transparent;
-    -fx-background-radius: 6;
-    -fx-padding: 5 6;
+    -fx-background-color: #24212F;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-color: rgba(255, 255, 255, 0.05);
+    -fx-border-width: 1;
+    -fx-min-width: 34;
+    -fx-min-height: 34;
+    -fx-padding: 5 7;
     -fx-cursor: hand;
 }
 .toolbar-btn .svg-icon {
-    -fx-fill: transparent;
-    -fx-stroke: #9D9AA8;
-    -fx-stroke-width: 1.8;
+    -fx-fill: rgba(197, 194, 210, 0.22);
+    -fx-stroke: #C5C2D2;
+    -fx-stroke-width: 2.3;
     -fx-stroke-line-cap: round;
     -fx-stroke-line-join: round;
 }
 .toolbar-btn:hover {
-    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-background-color: #322D42;
+    -fx-border-color: rgba(255, 255, 255, 0.12);
 }
 .toolbar-btn:hover .svg-icon {
     -fx-stroke: #FFFFFF;
+    -fx-fill: rgba(255, 255, 255, 0.35);
+}
+
+/* Wide Zoom Pill */
+.zoom-pill {
+    -fx-background-color: #24212F;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-color: rgba(255, 255, 255, 0.05);
+    -fx-border-width: 1;
+    -fx-padding: 4 18;
+    -fx-alignment: center;
 }
 
 .zoom-icon {
-    -fx-text-fill: #9D9AA8;
-    -fx-font-size: 14px;
+    -fx-text-fill: #C5C2D2;
+    -fx-font-size: 18px;
     -fx-font-weight: bold;
-    -fx-padding: 0 2 0 0;
+    -fx-padding: 0 4 0 0;
 }
 .zoom-text {
-    -fx-text-fill: #9D9AA8;
-    -fx-font-size: 11px;
-    -fx-font-weight: 500;
-    -fx-padding: 0 0 0 2;
+    -fx-text-fill: #C5C2D2;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 0 4;
+    -fx-min-width: 60px;
 }
 .zoom-slider {
-    -fx-pref-width: 95;
-    -fx-max-width: 100;
+    -fx-pref-width: 220;
+    -fx-min-width: 120;
 }
 /* Style slider track */
 .zoom-slider .track {
     -fx-background-color: linear-gradient(to right, #E82E88 0%, #E82E88 50%, #353242 50%, #353242 100%);
     -fx-background-radius: 4;
-    -fx-pref-height: 5;
+    -fx-pref-height: 8;
 }
 .zoom-slider .thumb {
     -fx-background-color: #E82E88;
     -fx-background-radius: 10;
-    -fx-pref-width: 14;
-    -fx-pref-height: 14;
-    -fx-effect: dropshadow(gaussian, rgba(232, 46, 136, 0.65), 8, 0.35, 0, 0);
+    -fx-pref-width: 16;
+    -fx-pref-height: 16;
+    -fx-effect: dropshadow(gaussian, rgba(232, 46, 136, 0.7), 8, 0.35, 0, 0);
 }
 .zoom-slider .thumb:hover {
     -fx-background-color: #F7449E;
