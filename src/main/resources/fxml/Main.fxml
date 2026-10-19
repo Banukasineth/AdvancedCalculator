@@ -294,7 +294,7 @@
                             <Button focusTraversable="false" text="Im"
                                 styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
                                 GridPane.columnIndex="9" GridPane.rowIndex="3" />
-                            <Button focusTraversable="false" text="deg"
+                            <Button focusTraversable="false" fx:id="btnAdvDeg" text="deg"
                                 styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
                                 GridPane.columnIndex="10" GridPane.rowIndex="3" />
                             <!-- Row 4 -->
@@ -322,7 +322,7 @@
                             <Button focusTraversable="false" text="arg"
                                 styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
                                 GridPane.columnIndex="9" GridPane.rowIndex="4" />
-                            <Button focusTraversable="false" text="rad"
+                            <Button focusTraversable="false" fx:id="btnAdvRad" text="rad"
                                 styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
                                 GridPane.columnIndex="10" GridPane.rowIndex="4" />
                         </GridPane>
@@ -353,7 +353,7 @@
                                 styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
                                 GridPane.columnIndex="1" GridPane.rowIndex="0" />
                             <Button focusTraversable="false" text="C" styleClass="key-btn, dark-btn"
-                                onAction="#handleAdvancedKey" GridPane.columnIndex="2"
+                                onAction="#clearDisplay" GridPane.columnIndex="2"
                                 GridPane.rowIndex="0" />
                             <Button focusTraversable="false" text="⌫"
                                 styleClass="key-btn, action-btn" onAction="#backspace"
@@ -462,7 +462,7 @@
                                 onAction="#handleAdvancedKey" GridPane.columnIndex="2"
                                 GridPane.rowIndex="0" />
                             <Button focusTraversable="false" text="C" styleClass="key-btn, dark-btn"
-                                onAction="#handleAdvancedKey" GridPane.columnIndex="3"
+                                onAction="#clearDisplay" GridPane.columnIndex="3"
                                 GridPane.rowIndex="0" />
                             <Button focusTraversable="false" text="⌫"
                                 styleClass="key-btn, action-btn" onAction="#backspace"
@@ -590,16 +590,16 @@
                                 <RowConstraints vgrow="ALWAYS" minHeight="25" percentHeight="20.0" />
                                 <RowConstraints vgrow="ALWAYS" minHeight="25" percentHeight="20.0" />
                             </rowConstraints>
-                            <Button focusTraversable="false" text="HEX"
+                            <Button focusTraversable="false" fx:id="btnProgHex" text="HEX"
                                 styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
                                 GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                            <Button focusTraversable="false" text="DEC"
+                            <Button focusTraversable="false" fx:id="btnProgDec" text="DEC"
                                 styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
                                 GridPane.columnIndex="1" GridPane.rowIndex="0" />
-                            <Button focusTraversable="false" text="OCT"
+                            <Button focusTraversable="false" fx:id="btnProgOct" text="OCT"
                                 styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
                                 GridPane.columnIndex="2" GridPane.rowIndex="0" />
-                            <Button focusTraversable="false" text="BIN"
+                            <Button focusTraversable="false" fx:id="btnProgBin" text="BIN"
                                 styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
                                 GridPane.columnIndex="3" GridPane.rowIndex="0" />
                             <Button focusTraversable="false" text="⌫"
@@ -607,60 +607,60 @@
                                 onMousePressed="#handleBackspacePressed" onMouseReleased="#handleBackspaceReleased" onMouseExited="#handleBackspaceExited"
                                 GridPane.columnIndex="4" GridPane.rowIndex="0" />
                             <Button focusTraversable="false" text="C" styleClass="key-btn, dark-btn"
-                                onAction="#handleAdvancedKey" GridPane.columnIndex="5"
+                                onAction="#clearDisplay" GridPane.columnIndex="5"
                                 GridPane.rowIndex="0" />
 
-                            <Button focusTraversable="false" text="A" styleClass="key-btn"
+                            <Button focusTraversable="false" fx:id="btnProgA" text="A" styleClass="key-btn"
                                 onAction="#handleAdvancedKey" GridPane.columnIndex="0"
                                 GridPane.rowIndex="1" />
-                            <Button focusTraversable="false" text="B" styleClass="key-btn"
+                            <Button focusTraversable="false" fx:id="btnProgB" text="B" styleClass="key-btn"
                                 onAction="#handleAdvancedKey" GridPane.columnIndex="1"
                                 GridPane.rowIndex="1" />
-                            <Button focusTraversable="false" text="7" styleClass="key-btn"
+                            <Button focusTraversable="false" fx:id="btnProg7" text="7" styleClass="key-btn"
                                 onAction="#handleAdvancedKey" GridPane.columnIndex="2"
                                 GridPane.rowIndex="1" />
-                            <Button focusTraversable="false" text="8" styleClass="key-btn"
+                            <Button focusTraversable="false" fx:id="btnProg8" text="8" styleClass="key-btn"
                                 onAction="#handleAdvancedKey" GridPane.columnIndex="3"
                                 GridPane.rowIndex="1" />
-                            <Button focusTraversable="false" text="9" styleClass="key-btn"
+                            <Button focusTraversable="false" fx:id="btnProg9" text="9" styleClass="key-btn"
                                 onAction="#handleAdvancedKey" GridPane.columnIndex="4"
                                 GridPane.rowIndex="1" />
                             <Button focusTraversable="false" text="÷" styleClass="key-btn, dark-btn"
                                 onAction="#handleAdvancedKey" GridPane.columnIndex="5"
                                 GridPane.rowIndex="1" />
 
-                            <Button focusTraversable="false" text="C" styleClass="key-btn"
+                            <Button focusTraversable="false" fx:id="btnProgC" text="C" styleClass="key-btn"
                                 onAction="#handleAdvancedKey" GridPane.columnIndex="0"
                                 GridPane.rowIndex="2" />
-                            <Button focusTraversable="false" text="D" styleClass="key-btn"
+                            <Button focusTraversable="false" fx:id="btnProgD" text="D" styleClass="key-btn"
                                 onAction="#handleAdvancedKey" GridPane.columnIndex="1"
                                 GridPane.rowIndex="2" />
-                            <Button focusTraversable="false" text="4" styleClass="key-btn"
+                            <Button focusTraversable="false" fx:id="btnProg4" text="4" styleClass="key-btn"
                                 onAction="#handleAdvancedKey" GridPane.columnIndex="2"
                                 GridPane.rowIndex="2" />
-                            <Button focusTraversable="false" text="5" styleClass="key-btn"
+                            <Button focusTraversable="false" fx:id="btnProg5" text="5" styleClass="key-btn"
                                 onAction="#handleAdvancedKey" GridPane.columnIndex="3"
                                 GridPane.rowIndex="2" />
-                            <Button focusTraversable="false" text="6" styleClass="key-btn"
+                            <Button focusTraversable="false" fx:id="btnProg6" text="6" styleClass="key-btn"
                                 onAction="#handleAdvancedKey" GridPane.columnIndex="4"
                                 GridPane.rowIndex="2" />
                             <Button focusTraversable="false" text="×" styleClass="key-btn, dark-btn"
                                 onAction="#handleAdvancedKey" GridPane.columnIndex="5"
                                 GridPane.rowIndex="2" />
 
-                            <Button focusTraversable="false" text="E" styleClass="key-btn"
+                            <Button focusTraversable="false" fx:id="btnProgE" text="E" styleClass="key-btn"
                                 onAction="#handleAdvancedKey" GridPane.columnIndex="0"
                                 GridPane.rowIndex="3" />
-                            <Button focusTraversable="false" text="F" styleClass="key-btn"
+                            <Button focusTraversable="false" fx:id="btnProgF" text="F" styleClass="key-btn"
                                 onAction="#handleAdvancedKey" GridPane.columnIndex="1"
                                 GridPane.rowIndex="3" />
-                            <Button focusTraversable="false" text="1" styleClass="key-btn"
+                            <Button focusTraversable="false" fx:id="btnProg1" text="1" styleClass="key-btn"
                                 onAction="#handleAdvancedKey" GridPane.columnIndex="2"
                                 GridPane.rowIndex="3" />
-                            <Button focusTraversable="false" text="2" styleClass="key-btn"
+                            <Button focusTraversable="false" fx:id="btnProg2" text="2" styleClass="key-btn"
                                 onAction="#handleAdvancedKey" GridPane.columnIndex="3"
                                 GridPane.rowIndex="3" />
-                            <Button focusTraversable="false" text="3" styleClass="key-btn"
+                            <Button focusTraversable="false" fx:id="btnProg3" text="3" styleClass="key-btn"
                                 onAction="#handleAdvancedKey" GridPane.columnIndex="4"
                                 GridPane.rowIndex="3" />
                             <Button focusTraversable="false" text="-" styleClass="key-btn, dark-btn"
@@ -673,7 +673,7 @@
                             <Button focusTraversable="false" text="OR"
                                 styleClass="key-btn, dark-btn" onAction="#handleAdvancedKey"
                                 GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                            <Button focusTraversable="false" text="0" styleClass="key-btn"
+                            <Button focusTraversable="false" fx:id="btnProg0" text="0" styleClass="key-btn"
                                 onAction="#handleAdvancedKey" GridPane.columnIndex="2"
                                 GridPane.rowIndex="4" GridPane.columnSpan="2" />
                             <Button focusTraversable="false" text="="

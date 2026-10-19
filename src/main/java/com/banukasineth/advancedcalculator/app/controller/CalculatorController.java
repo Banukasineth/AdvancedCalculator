@@ -61,6 +61,114 @@ public class CalculatorController {
     @FXML private GridPane scientificKeypad;
     @FXML private GridPane programmerKeypad;
 
+    // Programmer Mode Keypad and Base
+    private int currentProgrammerBase = 10;
+    @FXML private Button btnProgHex;
+    @FXML private Button btnProgDec;
+    @FXML private Button btnProgOct;
+    @FXML private Button btnProgBin;
+    @FXML private Button btnProgA;
+    @FXML private Button btnProgB;
+    @FXML private Button btnProgC;
+    @FXML private Button btnProgD;
+    @FXML private Button btnProgE;
+    @FXML private Button btnProgF;
+    @FXML private Button btnProg0;
+    @FXML private Button btnProg1;
+    @FXML private Button btnProg2;
+    @FXML private Button btnProg3;
+    @FXML private Button btnProg4;
+    @FXML private Button btnProg5;
+    @FXML private Button btnProg6;
+    @FXML private Button btnProg7;
+    @FXML private Button btnProg8;
+    @FXML private Button btnProg9;
+
+    @FXML private Button btnAdvDeg;
+    @FXML private Button btnAdvRad;
+
+    private void updateDegRadState() {
+        if (btnAdvDeg != null && btnAdvRad != null) {
+            String activeStyle = "-fx-background-color: #d63384; -fx-text-fill: white;";
+            String normalStyle = "";
+            btnAdvDeg.setStyle(MathEvaluator.isDegreeMode ? activeStyle : normalStyle);
+            btnAdvRad.setStyle(!MathEvaluator.isDegreeMode ? activeStyle : normalStyle);
+        }
+    }
+
+    private void setProgrammerBase(int newBase) {
+        if (currentProgrammerBase == newBase) return;
+        
+        String cur = currentLatexExpression.toString().trim();
+        if (!cur.isEmpty()) {
+            if (isBaseNumber(cur, currentProgrammerBase)) {
+                String converted = MathEvaluator.convertBase(cur, currentProgrammerBase, newBase);
+                currentLatexExpression.setLength(0);
+                currentLatexExpression.append(converted);
+                setMathExpression(converted);
+                display.setText(converted);
+            }
+        }
+        currentProgrammerBase = newBase;
+        updateProgrammerKeypadState();
+    }
+
+    private boolean isBaseNumber(String s, int base) {
+        if (s == null || s.isEmpty()) return false;
+        String clean = s.startsWith("-") ? s.substring(1) : s;
+        if (clean.isEmpty()) return false;
+        for (char c : clean.toCharArray()) {
+            char u = Character.toUpperCase(c);
+            if (base == 2 && u != '0' && u != '1') return false;
+            if (base == 8 && (u < '0' || u > '7')) return false;
+            if (base == 10 && (u < '0' || u > '9')) return false;
+            if (base == 16 && !((u >= '0' && u <= '9') || (u >= 'A' && u <= 'F'))) return false;
+        }
+        return true;
+    }
+
+    private void updateProgrammerKeypadState() {
+        if (programmerKeypad == null) return;
+
+        String activeBaseStyle = "-fx-background-color: #d63384; -fx-text-fill: white;";
+        String normalBaseStyle = "";
+
+        if (btnProgHex != null) btnProgHex.setStyle(currentProgrammerBase == 16 ? activeBaseStyle : normalBaseStyle);
+        if (btnProgDec != null) btnProgDec.setStyle(currentProgrammerBase == 10 ? activeBaseStyle : normalBaseStyle);
+        if (btnProgOct != null) btnProgOct.setStyle(currentProgrammerBase == 8 ? activeBaseStyle : normalBaseStyle);
+        if (btnProgBin != null) btnProgBin.setStyle(currentProgrammerBase == 2 ? activeBaseStyle : normalBaseStyle);
+
+        boolean hexEnabled = (currentProgrammerBase == 16);
+        setButtonEnabled(btnProgA, hexEnabled);
+        setButtonEnabled(btnProgB, hexEnabled);
+        setButtonEnabled(btnProgC, hexEnabled);
+        setButtonEnabled(btnProgD, hexEnabled);
+        setButtonEnabled(btnProgE, hexEnabled);
+        setButtonEnabled(btnProgF, hexEnabled);
+
+        boolean decEnabled = (currentProgrammerBase == 16 || currentProgrammerBase == 10);
+        setButtonEnabled(btnProg8, decEnabled);
+        setButtonEnabled(btnProg9, decEnabled);
+
+        boolean octEnabled = (currentProgrammerBase != 2);
+        setButtonEnabled(btnProg2, octEnabled);
+        setButtonEnabled(btnProg3, octEnabled);
+        setButtonEnabled(btnProg4, octEnabled);
+        setButtonEnabled(btnProg5, octEnabled);
+        setButtonEnabled(btnProg6, octEnabled);
+        setButtonEnabled(btnProg7, octEnabled);
+
+        setButtonEnabled(btnProg0, true);
+        setButtonEnabled(btnProg1, true);
+    }
+
+    private void setButtonEnabled(Button btn, boolean enabled) {
+        if (btn != null) {
+            btn.setDisable(!enabled);
+            btn.setOpacity(enabled ? 1.0 : 0.35);
+        }
+    }
+
     private final Map<String, String> equationMap = new LinkedHashMap<>();
     private final Map<String, String> calculusMap = new LinkedHashMap<>();
 
@@ -869,7 +977,9 @@ public class CalculatorController {
     private boolean isOperator(String text) {
         return text.equals("+") || text.equals("-") || text.equals("×")
                 || text.equals("÷") || text.equals("mod") || text.equals("\\times")
-                || text.equals("\\div") || text.equals("\\bmod");
+                || text.equals("\\div") || text.equals("\\bmod")
+                || text.equals("AND") || text.equals("OR")
+                || text.equals("\\operatorname{AND}") || text.equals("\\operatorname{OR}");
     }
 
     private void appendOperator(String opLatex) {
@@ -893,6 +1003,10 @@ public class CalculatorController {
             currentLatexExpression.setLength(cur.length() - 7);
         } else if (cur.endsWith(" \\bmod ")) {
             currentLatexExpression.setLength(cur.length() - 8);
+        } else if (cur.endsWith(" \\operatorname{AND} ")) {
+            currentLatexExpression.setLength(cur.length() - 20);
+        } else if (cur.endsWith(" \\operatorname{OR} ")) {
+            currentLatexExpression.setLength(cur.length() - 19);
         }
         currentLatexExpression.append(opLatex);
     }
@@ -1026,9 +1140,35 @@ public class CalculatorController {
             expr = expr.substring(0, expr.length() - 7).trim();
         } else if (expr.endsWith(" \\bmod ")) {
             expr = expr.substring(0, expr.length() - 8).trim();
+        } else if (expr.endsWith(" \\operatorname{AND} ")) {
+            expr = expr.substring(0, expr.length() - 20).trim();
+        } else if (expr.endsWith(" \\operatorname{OR} ")) {
+            expr = expr.substring(0, expr.length() - 19).trim();
         }
 
         if (expr.isEmpty()) return;
+
+        if (modeComboBox != null && "Programmer".equals(modeComboBox.getValue())) {
+            MathEvaluator.EvaluationResult result = MathEvaluator.evaluateProgrammer(expr, currentProgrammerBase);
+            if (result.isSuccess()) {
+                history.push(currentLatexExpression.toString());
+                String formatted = result.getFormattedResult();
+                currentLatexExpression.setLength(0);
+                currentLatexExpression.append(formatted);
+                hasEvaluated = true;
+                setMathExpression(formatted);
+                hideSolutionArea();
+                display.setText(formatted);
+            } else {
+                history.push(currentLatexExpression.toString());
+                String errorMsg = result.getErrorMessage();
+                setMathExpression("\\text{" + errorMsg + "}");
+                currentLatexExpression.setLength(0);
+                hasEvaluated = true;
+                display.setText(errorMsg);
+            }
+            return;
+        }
 
         MathEvaluator.EvaluationResult result = MathEvaluator.evaluate(expr);
         if (result.isSuccess()) {
@@ -1086,8 +1226,19 @@ public class CalculatorController {
         }
 
         if (text.equals("C")) {
-            clearDisplay();
-            return;
+            if (modeComboBox != null && "Programmer".equals(modeComboBox.getValue())) {
+                if (currentProgrammerBase == 16) {
+                    if (currentLatexExpression.toString().equals("0")) {
+                        currentLatexExpression.setLength(0);
+                    }
+                    currentLatexExpression.append("C");
+                    setMathExpression(currentLatexExpression.toString());
+                }
+                return;
+            } else {
+                clearDisplay();
+                return;
+            }
         }
 
         if (text.equals("±")) {
@@ -1105,7 +1256,7 @@ public class CalculatorController {
 
         if (hasEvaluated) {
             hasEvaluated = false;
-            if (isOperator(text) || text.equals("x²") || text.equals("x⁻¹") || text.equals("%") || text.equals("\\%") || text.equals("x!")) {
+            if (isOperator(text) || text.equals("x²") || text.equals("x⁻¹") || text.equals("%") || text.equals("\\%") || text.equals("x!") || text.equals("n!")) {
                 // Keep current result and continue calculation
             } else {
                 // Number or function: start fresh calculation
@@ -1118,6 +1269,36 @@ public class CalculatorController {
         history.push(currentLatexExpression.toString());
 
         switch (text) {
+            case "HEX":
+                setProgrammerBase(16);
+                return;
+            case "DEC":
+                setProgrammerBase(10);
+                return;
+            case "OCT":
+                setProgrammerBase(8);
+                return;
+            case "BIN":
+                setProgrammerBase(2);
+                return;
+            case "AND":
+                appendOperator(" \\operatorname{AND} ");
+                break;
+            case "OR":
+                appendOperator(" \\operatorname{OR} ");
+                break;
+            case "A": case "B": case "D": case "E": case "F":
+                if (modeComboBox != null && "Programmer".equals(modeComboBox.getValue())) {
+                    if (currentProgrammerBase == 16) {
+                        if (currentLatexExpression.toString().equals("0")) {
+                            currentLatexExpression.setLength(0);
+                        }
+                        currentLatexExpression.append(text);
+                    }
+                } else {
+                    currentLatexExpression.append(text);
+                }
+                break;
             case "sin": case "cos": case "tan":
             case "csc": case "sec": case "cot":
                 String func = text;
@@ -1131,6 +1312,9 @@ public class CalculatorController {
             case "log": case "ln":
                 currentLatexExpression.append("\\").append(text).append("(");
                 break;
+            case "exp":
+                currentLatexExpression.append("\\exp(");
+                break;
             case "π":
                 currentLatexExpression.append("\\pi");
                 break;
@@ -1138,10 +1322,10 @@ public class CalculatorController {
                 appendOperator(" \\bmod ");
                 break;
             case "↑n":
-                currentLatexExpression.append("^{n}");
+                currentLatexExpression.append("^{");
                 break;
             case "n↓":
-                currentLatexExpression.append("_{n}");
+                currentLatexExpression.append("_{");
                 break;
             case "√":
                 currentLatexExpression.append("\\sqrt{");
@@ -1159,14 +1343,35 @@ public class CalculatorController {
                     currentLatexExpression.append("^{-1}");
                 }
                 break;
+            case "10ˣ":
+                currentLatexExpression.append("10^{");
+                break;
             case "x10ⁿ":
                 currentLatexExpression.append("\\times 10^{");
                 break;
             case "x!":
+            case "n!":
                 currentLatexExpression.append("!");
                 break;
             case "|x|":
-                currentLatexExpression.append("|");
+                long pipeCount = currentLatexExpression.chars().filter(ch -> ch == '|').count();
+                if (pipeCount % 2 != 0) {
+                    currentLatexExpression.append("|");
+                } else {
+                    String curPipe = currentLatexExpression.toString();
+                    if (curPipe.matches(".*[0-9.]+$")) {
+                        java.util.regex.Pattern p = java.util.regex.Pattern.compile("(.*?)([0-9.]+)$");
+                        java.util.regex.Matcher m = p.matcher(curPipe);
+                        if (m.matches()) {
+                            currentLatexExpression.setLength(0);
+                            currentLatexExpression.append(m.group(1)).append("|").append(m.group(2)).append("|");
+                        } else {
+                            currentLatexExpression.append("|");
+                        }
+                    } else {
+                        currentLatexExpression.append("|");
+                    }
+                }
                 break;
             case "Re":
                 currentLatexExpression.append("\\operatorname{Re}(");
@@ -1181,11 +1386,13 @@ public class CalculatorController {
                 currentLatexExpression.append("\\arg(");
                 break;
             case "deg":
-                currentLatexExpression.append("^{\\circ}");
-                break;
+                MathEvaluator.isDegreeMode = true;
+                updateDegRadState();
+                return;
             case "rad":
-                currentLatexExpression.append("\\text{rad}");
-                break;
+                MathEvaluator.isDegreeMode = false;
+                updateDegRadState();
+                return;
             case "f(x)":
                 currentLatexExpression.append("f(");
                 break;
@@ -1224,6 +1431,11 @@ public class CalculatorController {
                 break;
             case "0": case "1": case "2": case "3": case "4":
             case "5": case "6": case "7": case "8": case "9":
+                if (modeComboBox != null && "Programmer".equals(modeComboBox.getValue())) {
+                    int d = Integer.parseInt(text);
+                    if (currentProgrammerBase == 2 && d > 1) return;
+                    if (currentProgrammerBase == 8 && d > 7) return;
+                }
                 if (currentLatexExpression.toString().equals("0")) {
                     currentLatexExpression.setLength(0);
                 }
@@ -1620,6 +1832,10 @@ public class CalculatorController {
                 currentLatexExpression.setLength(expr.length() - 7);
             } else if (expr.endsWith(" \\bmod ")) {
                 currentLatexExpression.setLength(expr.length() - 8);
+            } else if (expr.endsWith(" \\operatorname{AND} ")) {
+                currentLatexExpression.setLength(expr.length() - 20);
+            } else if (expr.endsWith(" \\operatorname{OR} ")) {
+                currentLatexExpression.setLength(expr.length() - 19);
             } else if (expr.endsWith(" + ") || expr.endsWith(" - ")) {
                 currentLatexExpression.setLength(expr.length() - 3);
             } else if (expr.endsWith("^{-1}")) {
@@ -1630,6 +1846,10 @@ public class CalculatorController {
                 currentLatexExpression.setLength(expr.length() - 2);
             } else if (expr.endsWith("\\sqrt{")) {
                 currentLatexExpression.setLength(expr.length() - 6);
+            } else if (expr.endsWith("\\exp(")) {
+                currentLatexExpression.setLength(expr.length() - 5);
+            } else if (expr.endsWith("10^{")) {
+                currentLatexExpression.setLength(expr.length() - 4);
             } else {
                 currentLatexExpression.setLength(expr.length() - 1);
             }
@@ -1945,6 +2165,7 @@ public class CalculatorController {
         }
 
         setupResponsiveLayout();
+        updateDegRadState();
 
         // Initialize ComboBoxes
         if (modeComboBox != null) {
@@ -1976,13 +2197,21 @@ public class CalculatorController {
                             if (basicKeypad != null) { basicKeypad.setVisible(true); basicKeypad.setManaged(true); }
                             break;
                         case "Advanced":
-                            if (advancedKeypad != null) { advancedKeypad.setVisible(true); advancedKeypad.setManaged(true); }
+                            if (advancedKeypad != null) {
+                                advancedKeypad.setVisible(true);
+                                advancedKeypad.setManaged(true);
+                                updateDegRadState();
+                            }
                             break;
                         case "Scientific":
                             if (scientificKeypad != null) { scientificKeypad.setVisible(true); scientificKeypad.setManaged(true); }
                             break;
                         case "Programmer":
-                            if (programmerKeypad != null) { programmerKeypad.setVisible(true); programmerKeypad.setManaged(true); }
+                            if (programmerKeypad != null) {
+                                programmerKeypad.setVisible(true);
+                                programmerKeypad.setManaged(true);
+                                updateProgrammerKeypadState();
+                            }
                             break;
                     }
                 }
