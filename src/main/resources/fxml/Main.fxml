@@ -187,7 +187,7 @@
                                 <!-- Loading Orb State -->
                                 <VBox fx:id="loadingBox" alignment="CENTER" visible="true">
                                     <Region VBox.vgrow="ALWAYS" />
-                                    <Circle radius="30" styleClass="solution-orb" />
+                                    <StackPane fx:id="orbContainer" minWidth="110" minHeight="110" maxWidth="110" maxHeight="110" />
                                     <Label text="Generating a&#10;solution..."
                                         textAlignment="CENTER" styleClass="solution-text" />
                                     <Region VBox.vgrow="ALWAYS" />

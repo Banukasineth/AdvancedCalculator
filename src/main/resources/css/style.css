@@ -236,7 +236,9 @@
 .solution-text {
     -fx-text-fill: #A09EAA;
     -fx-font-size: 13px;
-    -fx-padding: 15 0 0 0;
+    -fx-font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    -fx-padding: 12 0 0 0;
+    -fx-line-spacing: 3px;
 }
 
 /* Input Area */

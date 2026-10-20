@@ -125,16 +125,66 @@ public class AISolverService {
                 Thread.currentThread().interrupt();
             }
 
-            // A beautiful step-by-step mock LaTeX response
+            String clean = inputLatex != null ? inputLatex : "";
+
+            if (clean.contains("\\frac{d}{d") || clean.contains("dy")) {
+                return "\\begin{aligned}\n" +
+                        "& \\text{Differential Equation:} \\\\\n" +
+                        "& " + clean + " \\\\\n" +
+                        "& \\\\\n" +
+                        "& \\text{Step 1: Compute partial derivatives} \\\\\n" +
+                        "& \\frac{\\partial}{\\partial y}(3y) = 3 \\\\\n" +
+                        "& \\\\\n" +
+                        "& \\text{Step 2: Substitute and simplify} \\\\\n" +
+                        "& \\frac{d^2 y}{dx^2} + 3 = 5 \\implies \\frac{d^2 y}{dx^2} = 2 \\\\\n" +
+                        "& \\\\\n" +
+                        "& \\text{Step 3: Integrate twice with respect to } x \\\\\n" +
+                        "& \\frac{dy}{dx} = 2x + C_1 \\\\\n" +
+                        "& y(x) = x^2 + C_1 x + C_2 \\\\\n" +
+                        "& \\\\\n" +
+                        "& \\text{Final Solution:} \\\\\n" +
+                        "& \\mathbf{y(x) = x^2 + C_1 x + C_2}\n" +
+                        "\\end{aligned}";
+            } else if (clean.contains("\\int")) {
+                return "\\begin{aligned}\n" +
+                        "& \\text{Integration Problem:} \\\\\n" +
+                        "& " + clean + " \\\\\n" +
+                        "& \\\\\n" +
+                        "& \\text{Step 1: Apply integration rules} \\\\\n" +
+                        "& \\int 2x\\,dx + \\int \\sin(x)\\,dx \\\\\n" +
+                        "& \\\\\n" +
+                        "& \\text{Step 2: Compute antiderivatives} \\\\\n" +
+                        "& = x^2 - \\cos(x) + C \\\\\n" +
+                        "& \\\\\n" +
+                        "& \\text{Final Answer:} \\\\\n" +
+                        "& \\mathbf{x^2 - \\cos(x) + C}\n" +
+                        "\\end{aligned}";
+            } else if (clean.contains("=") && (clean.contains("x") || clean.contains("y"))) {
+                return "\\begin{aligned}\n" +
+                        "& \\text{Equation to Solve:} \\\\\n" +
+                        "& " + clean + " \\\\\n" +
+                        "& \\\\\n" +
+                        "& \\text{Step 1: Isolate variable terms} \\\\\n" +
+                        "& \\text{Subtract constants from both sides} \\\\\n" +
+                        "& \\\\\n" +
+                        "& \\text{Step 2: Solve for } x \\\\\n" +
+                        "& x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a} \\\\\n" +
+                        "& \\\\\n" +
+                        "& \\text{Roots:} \\\\\n" +
+                        "& \\mathbf{x_1 = 2, \\quad x_2 = -3}\n" +
+                        "\\end{aligned}";
+            }
+
+            // Default rich step-by-step mock LaTeX response
             return "\\begin{aligned}\n" +
                     "& \\text{Analyzing Expression:} \\\\\n" +
-                    "& " + inputLatex + " \\\\\n" +
+                    "& " + clean + " \\\\\n" +
                     "& \\\\\n" +
-                    "& \\text{Step 1: Simplify terms} \\\\\n" +
+                    "& \\text{Step 1: Simplify algebraic terms} \\\\\n" +
                     "& \\Rightarrow f'(x) = 2x + \\sin(x) \\\\\n" +
                     "& \\\\\n" +
-                    "& \\text{Step 2: Apply chain rule} \\\\\n" +
-                    "& \\Rightarrow \\int (2x + \\sin(x)) dx \\\\\n" +
+                    "& \\text{Step 2: Evaluate critical points} \\\\\n" +
+                    "& \\Rightarrow \\int (2x + \\sin(x))\\,dx \\\\\n" +
                     "& \\\\\n" +
                     "& \\text{Final Answer:} \\\\\n" +
                     "& \\mathbf{x^2 - \\cos(x) + C}\n" +

@@ -9,17 +9,32 @@
     <style>
         body {
             background-color: transparent;
-            color: white;
+            color: #EDEAF5;
             display: flex;
             justify-content: flex-start;
             align-items: flex-start;
-            padding: 20px;
+            padding: 8px 12px;
             margin: 0;
-            font-size: 18px; /* Slightly smaller than main display for multiline steps */
+            font-size: 15px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            overflow-x: hidden;
         }
         #solution-content {
             text-align: left;
             width: 100%;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        #solution-content::-webkit-scrollbar {
+            display: none;
+        }
+        .katex-display {
+            text-align: left !important;
+            margin: 0.3em 0 !important;
+        }
+        .katex-display > .katex {
+            text-align: left !important;
+            white-space: normal;
         }
     </style>
 </head>

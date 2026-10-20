@@ -46,6 +46,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import com.banukasineth.advancedcalculator.app.service.AISolverService;
+import com.banukasineth.advancedcalculator.app.ui.AIOrbView;
 import com.banukasineth.advancedcalculator.app.util.MathEvaluator;
 
 
@@ -613,6 +614,11 @@ public class CalculatorController {
     @FXML
     private VBox loadingBox;
 
+    @FXML
+    private StackPane orbContainer;
+
+    private AIOrbView aiOrbView;
+
     private AISolverService aiSolverService = new AISolverService();
 
     // Phase 3: Track the current LaTeX string for KaTeX
@@ -1174,6 +1180,54 @@ public class CalculatorController {
             return;
         }
 
+        if (isAdvancedExpression(expr)) {
+            history.push(currentLatexExpression.toString());
+            hasEvaluated = true;
+            setMathExpression(expr);
+
+            showSolutionArea();
+            loadingBox.setOpacity(1.0);
+            loadingBox.setVisible(true);
+            loadingBox.setManaged(true);
+            solutionWebView.setVisible(false);
+            solutionWebView.setManaged(false);
+            if (aiOrbView != null) {
+                aiOrbView.start();
+            }
+
+            aiSolverService.solveMathExpression(expr)
+                .thenAccept(solutionLatex -> {
+                    Platform.runLater(() -> {
+                        FadeTransition fadeOut = new FadeTransition(Duration.millis(250), loadingBox);
+                        fadeOut.setFromValue(1.0);
+                        fadeOut.setToValue(0.0);
+                        fadeOut.setOnFinished(ev -> {
+                            if (aiOrbView != null) {
+                                aiOrbView.stop();
+                            }
+                            loadingBox.setVisible(false);
+                            loadingBox.setManaged(false);
+                            solutionWebView.setOpacity(0.0);
+                            solutionWebView.setVisible(true);
+                            solutionWebView.setManaged(true);
+                            FadeTransition fadeIn = new FadeTransition(Duration.millis(300), solutionWebView);
+                            fadeIn.setFromValue(0.0);
+                            fadeIn.setToValue(1.0);
+                            fadeIn.play();
+                        });
+                        fadeOut.play();
+
+                        String jsSafeLatex = solutionLatex.replace("\\", "\\\\").replace("\n", "\\n").replace("'", "\\'");
+                        try {
+                            solutionWebView.getEngine().executeScript("updateSolution('" + jsSafeLatex + "')");
+                        } catch (Exception e) {
+                            System.err.println("Error rendering solution: " + e.getMessage());
+                        }
+                    });
+                });
+            return;
+        }
+
         MathEvaluator.EvaluationResult result = MathEvaluator.evaluate(expr);
         if (result.isSuccess()) {
             history.push(currentLatexExpression.toString());
@@ -1186,33 +1240,28 @@ public class CalculatorController {
             hideSolutionArea();
             display.setText(formatted);
         } else {
-            // Check if symbolic or calculus expression with variables
-            if (expr.contains("x") || expr.contains("y") || expr.contains("\\frac{d}{d") || expr.contains("=")) {
-                showSolutionArea();
-                loadingBox.setVisible(true);
-                solutionWebView.setVisible(false);
-                aiSolverService.solveMathExpression(expr)
-                    .thenAccept(solutionLatex -> {
-                        Platform.runLater(() -> {
-                            loadingBox.setVisible(false);
-                            solutionWebView.setVisible(true);
-                            String jsSafeLatex = solutionLatex.replace("\\", "\\\\").replace("\n", "\\n").replace("'", "\\'");
-                            try {
-                                solutionWebView.getEngine().executeScript("updateSolution('" + jsSafeLatex + "')");
-                            } catch (Exception e) {
-                                System.err.println("Error rendering solution: " + e.getMessage());
-                            }
-                        });
-                    });
-            } else {
-                history.push(currentLatexExpression.toString());
-                String errorMsg = result.getErrorMessage();
-                setMathExpression("\\text{" + errorMsg + "}");
-                currentLatexExpression.setLength(0);
-                hasEvaluated = true;
-                display.setText(errorMsg);
-            }
+            history.push(currentLatexExpression.toString());
+            String errorMsg = result.getErrorMessage();
+            setMathExpression("\\text{" + errorMsg + "}");
+            currentLatexExpression.setLength(0);
+            hasEvaluated = true;
+            display.setText(errorMsg);
         }
+    }
+
+    private boolean isAdvancedExpression(String expr) {
+        if (expr == null || expr.trim().isEmpty()) return false;
+        String clean = expr.trim();
+        return clean.contains("x") || clean.contains("y") || clean.contains("z")
+                || clean.contains("t") || clean.contains("n")
+                || clean.contains("=")
+                || clean.contains("\\frac{d}{d") || clean.contains("\\frac{\\partial}{\\partial")
+                || clean.contains("\\partial") || clean.contains("\\int")
+                || clean.contains("\\iint") || clean.contains("\\lim")
+                || clean.contains("\\sum") || clean.contains("\\prod")
+                || clean.contains("f(") || clean.contains("g(")
+                || clean.contains("\\to") || clean.contains("\\infty")
+                || (modeComboBox != null && "Advanced".equals(modeComboBox.getValue()) && (clean.contains("\\") || clean.length() > 5));
     }
 
     private void processKeyInput(String text) {
@@ -1728,26 +1777,32 @@ public class CalculatorController {
     @FXML private TextField equation1Field;
     @FXML private TextField equation2Field;
     @FXML private ComboBox<String> graphModeComboBox;
-
+    private static final double WORKING_SPLIT_FRACTION = 0.67;
     private DoubleProperty workingAreaFraction = new SimpleDoubleProperty(1.0);
 
     private void showSolutionArea() {
-        if (workingAreaFraction.get() == 0.0) return;
-        
         verticalDivider.setVisible(true);
         verticalDivider.setManaged(true);
-        
+
+        if (aiOrbView != null) {
+            aiOrbView.start();
+        }
+
+        if (Math.abs(workingAreaFraction.get() - WORKING_SPLIT_FRACTION) < 0.01) {
+            return;
+        }
+
         Timeline timeline = new Timeline(
                 new KeyFrame(Duration.millis(350),
-                        new KeyValue(workingAreaFraction, 0.0, Interpolator.EASE_BOTH)
+                        new KeyValue(workingAreaFraction, WORKING_SPLIT_FRACTION, Interpolator.EASE_BOTH)
                 )
         );
         timeline.play();
     }
 
     private void hideSolutionArea() {
-        if (workingAreaFraction.get() == 1.0) return;
-        
+        if (workingAreaFraction.get() >= 0.99) return;
+
         Timeline timeline = new Timeline(
                 new KeyFrame(Duration.millis(350),
                         new KeyValue(workingAreaFraction, 1.0, Interpolator.EASE_BOTH)
@@ -1756,6 +1811,9 @@ public class CalculatorController {
         timeline.setOnFinished(e -> {
             verticalDivider.setVisible(false);
             verticalDivider.setManaged(false);
+            if (aiOrbView != null) {
+                aiOrbView.stop();
+            }
         });
         timeline.play();
     }
@@ -2138,6 +2196,11 @@ public class CalculatorController {
         isInitialized = true;
 
         rootPane.setFocusTraversable(true);
+
+        if (orbContainer != null) {
+            aiOrbView = new AIOrbView();
+            orbContainer.getChildren().add(aiOrbView);
+        }
 
         backspaceLongPressTimer = new javafx.animation.PauseTransition(javafx.util.Duration.millis(500));
 
