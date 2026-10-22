@@ -225,19 +225,19 @@ public class EquationSubstitutionDialog {
                     if (Double.isNaN(c) && !Double.isNaN(a) && !Double.isNaN(b)) {
                         double ans = Math.sqrt(a * a + b * b);
                         String aStr = fmt(a), bStr = fmt(b), cStr = fmt(ans);
-                        String working = "\\begin{aligned} & a^2 + b^2 = c^2 \\\\ & " + aStr + "^2 + " + bStr + "^2 = c^2 \\\\ & c = \\sqrt{" + fmt(a * a) + " + " + fmt(b * b) + "} = " + cStr + " \\end{aligned}";
+                        String working = aStr + "^2 + " + bStr + "^2 = c^2";
                         String solution = "\\begin{aligned} & \\text{Pythagorean Theorem:} \\\\ & a^2 + b^2 = c^2 \\\\ & \\\\ & \\text{Substitute: } a = " + aStr + ", \\; b = " + bStr + " \\\\ & c = \\sqrt{" + aStr + "^2 + " + bStr + "^2} \\\\ & c = \\sqrt{" + fmt(a * a + b * b) + "} \\\\ & \\mathbf{c = " + cStr + "} \\end{aligned}";
                         return SubstitutionResult.solved(working, solution);
                     } else if (Double.isNaN(a) && !Double.isNaN(b) && !Double.isNaN(c)) {
                         double ans = Math.sqrt(Math.max(0, c * c - b * b));
                         String bStr = fmt(b), cStr = fmt(c), aStr = fmt(ans);
-                        String working = aStr + "^2 + " + bStr + "^2 = " + cStr + "^2 \\implies a = " + aStr;
+                        String working = "a^2 + " + bStr + "^2 = " + cStr + "^2";
                         String solution = "\\begin{aligned} & a = \\sqrt{c^2 - b^2} = \\sqrt{" + cStr + "^2 - " + bStr + "^2} \\\\ & \\mathbf{a = " + aStr + "} \\end{aligned}";
                         return SubstitutionResult.solved(working, solution);
                     } else if (Double.isNaN(b) && !Double.isNaN(a) && !Double.isNaN(c)) {
                         double ans = Math.sqrt(Math.max(0, c * c - a * a));
                         String aStr = fmt(a), cStr = fmt(c), bStr = fmt(ans);
-                        String working = aStr + "^2 + " + bStr + "^2 = " + cStr + "^2 \\implies b = " + bStr;
+                        String working = aStr + "^2 + b^2 = " + cStr + "^2";
                         String solution = "\\begin{aligned} & b = \\sqrt{c^2 - a^2} = \\sqrt{" + cStr + "^2 - " + aStr + "^2} \\\\ & \\mathbf{b = " + bStr + "} \\end{aligned}";
                         return SubstitutionResult.solved(working, solution);
                     }
@@ -250,20 +250,18 @@ public class EquationSubstitutionDialog {
                     double disc = b * b - 4 * a * c;
 
                     String aStr = fmt(a), bStr = fmt(b), cStr = fmt(c);
-                    String eqStr = (a == 1 ? "" : aStr) + "x^2 " + (b >= 0 ? "+ " + bStr : "- " + fmt(Math.abs(b))) + "x " + (c >= 0 ? "+ " + cStr : "- " + fmt(Math.abs(c))) + " = 0";
+                    String working = "x = \\frac{-(" + bStr + ") \\pm \\sqrt{(" + bStr + ")^2 - 4(" + aStr + ")(" + cStr + ")}}{2(" + aStr + ")}";
 
                     if (disc >= 0) {
                         double x1 = (-b + Math.sqrt(disc)) / (2 * a);
                         double x2 = (-b - Math.sqrt(disc)) / (2 * a);
                         String x1Str = fmt(x1), x2Str = fmt(x2);
-                        String working = "\\begin{aligned} & " + eqStr + " \\\\ & x_1 = " + x1Str + ", \\; x_2 = " + x2Str + " \\end{aligned}";
                         String solution = "\\begin{aligned} & \\text{Quadratic Formula: } x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a} \\\\ & \\text{Discriminant } D = " + bStr + "^2 - 4(" + aStr + ")(" + cStr + ") = " + fmt(disc) + " \\\\ & x = \\frac{-(" + bStr + ") \\pm \\sqrt{" + fmt(disc) + "}}{2(" + aStr + ")} \\\\ & \\mathbf{x_1 = " + x1Str + ", \\quad x_2 = " + x2Str + "} \\end{aligned}";
                         return SubstitutionResult.solved(working, solution);
                     } else {
                         double realPart = -b / (2 * a);
                         double imagPart = Math.sqrt(-disc) / (2 * a);
                         String realStr = fmt(realPart), imagStr = fmt(imagPart);
-                        String working = eqStr + " \\implies x = " + realStr + " \\pm " + imagStr + "i";
                         String solution = "\\begin{aligned} & D = " + fmt(disc) + " < 0 \\text{ (Complex Roots)} \\\\ & \\mathbf{x = " + realStr + " \\pm " + imagStr + "i} \\end{aligned}";
                         return SubstitutionResult.solved(working, solution);
                     }
@@ -275,12 +273,12 @@ public class EquationSubstitutionDialog {
 
                     if (Double.isNaN(F) && !Double.isNaN(m) && !Double.isNaN(a)) {
                         double ans = m * a;
-                        String working = "F = (" + fmt(m) + "\\text{ kg}) \\times (" + fmt(a) + "\\text{ m/s}^2) = " + fmt(ans) + "\\text{ N}";
+                        String working = "F = (" + fmt(m) + ")(" + fmt(a) + ")";
                         String solution = "\\begin{aligned} & \\text{Formula: } F = m \\cdot a \\\\ & F = " + fmt(m) + " \\times " + fmt(a) + " \\\\ & \\mathbf{F = " + fmt(ans) + "\\text{ N}} \\end{aligned}";
                         return SubstitutionResult.solved(working, solution);
                     } else if (Double.isNaN(a) && !Double.isNaN(F) && !Double.isNaN(m) && m != 0) {
                         double ans = F / m;
-                        String working = "a = \\frac{" + fmt(F) + "}{" + fmt(m) + "} = " + fmt(ans) + "\\text{ m/s}^2";
+                        String working = "a = \\frac{" + fmt(F) + "}{" + fmt(m) + "}";
                         String solution = "\\begin{aligned} & a = \\frac{F}{m} = \\frac{" + fmt(F) + "}{" + fmt(m) + "} \\\\ & \\mathbf{a = " + fmt(ans) + "\\text{ m/s}^2} \\end{aligned}";
                         return SubstitutionResult.solved(working, solution);
                     }
@@ -292,12 +290,12 @@ public class EquationSubstitutionDialog {
 
                     if (Double.isNaN(A) && !Double.isNaN(r)) {
                         double ans = Math.PI * r * r;
-                        String working = "A = \\pi \\times " + fmt(r) + "^2 = " + fmt(ans);
+                        String working = "A = \\pi \\times (" + fmt(r) + ")^2";
                         String solution = "\\begin{aligned} & \\text{Formula: } A = \\pi r^2 \\\\ & A = \\pi \\times (" + fmt(r) + ")^2 \\\\ & A = " + fmt(r * r) + "\\pi \\approx " + fmt(ans) + " \\\\ & \\mathbf{A = " + fmt(ans) + "} \\end{aligned}";
                         return SubstitutionResult.solved(working, solution);
                     } else if (Double.isNaN(r) && !Double.isNaN(A) && A >= 0) {
                         double ans = Math.sqrt(A / Math.PI);
-                        String working = "r = \\sqrt{\\frac{" + fmt(A) + "}{\\pi}} = " + fmt(ans);
+                        String working = "r = \\sqrt{\\frac{" + fmt(A) + "}{\\pi}}";
                         String solution = "\\begin{aligned} & r = \\sqrt{\\frac{A}{\\pi}} = \\sqrt{\\frac{" + fmt(A) + "}{\\pi}} \\\\ & \\mathbf{r = " + fmt(ans) + "} \\end{aligned}";
                         return SubstitutionResult.solved(working, solution);
                     }
@@ -307,7 +305,7 @@ public class EquationSubstitutionDialog {
                     double r = vals.getOrDefault("r", Double.NaN);
                     if (!Double.isNaN(r)) {
                         double ans = (4.0 / 3.0) * Math.PI * Math.pow(r, 3);
-                        String working = "V = \\frac{4}{3}\\pi (" + fmt(r) + ")^3 = " + fmt(ans);
+                        String working = "V = \\frac{4}{3}\\pi (" + fmt(r) + ")^3";
                         String solution = "\\begin{aligned} & \\text{Formula: } V = \\frac{4}{3}\\pi r^3 \\\\ & V = \\frac{4}{3}\\pi \\times (" + fmt(Math.pow(r, 3)) + ") \\\\ & \\mathbf{V = " + fmt(ans) + "} \\end{aligned}";
                         return SubstitutionResult.solved(working, solution);
                     }
@@ -318,7 +316,7 @@ public class EquationSubstitutionDialog {
                     if (!Double.isNaN(m)) {
                         double c = 299792458.0;
                         double ans = m * c * c;
-                        String working = "E = (" + fmt(m) + "\\text{ kg}) \\times c^2 = " + String.format(Locale.US, "%.4e", ans) + "\\text{ J}";
+                        String working = "E = (" + fmt(m) + ") \\times c^2";
                         String solution = "\\begin{aligned} & E = m \\cdot c^2 \\\\ & c = 2.99792 \\times 10^8 \\text{ m/s} \\\\ & E = " + fmt(m) + " \\times (2.99792 \\times 10^8)^2 \\\\ & \\mathbf{E = " + String.format(Locale.US, "%.4e", ans) + "\\text{ J}} \\end{aligned}";
                         return SubstitutionResult.solved(working, solution);
                     }
@@ -333,7 +331,7 @@ public class EquationSubstitutionDialog {
 
                     if (Double.isNaN(T) && !Double.isNaN(P) && !Double.isNaN(V) && !Double.isNaN(n) && n > 0) {
                         double ans = (P * V) / (n * R);
-                        String working = "T = \\frac{PV}{nR} = \\frac{" + fmt(P) + " \\times " + fmt(V) + "}{" + fmt(n) + " \\times 8.314} = " + fmt(ans) + "\\text{ K}";
+                        String working = "T = \\frac{(" + fmt(P) + ")(" + fmt(V) + ")}{(" + fmt(n) + ")(8.314)}";
                         String solution = "\\begin{aligned} & PV = nRT \\implies T = \\frac{PV}{nR} \\\\ & T = \\frac{" + fmt(P * V) + "}{" + fmt(n * R) + "} \\\\ & \\mathbf{T = " + fmt(ans) + "\\text{ K}} \\end{aligned}";
                         return SubstitutionResult.solved(working, solution);
                     }
@@ -348,7 +346,7 @@ public class EquationSubstitutionDialog {
                         double rad = Math.toRadians(Cdeg);
                         double c2 = a * a + b * b - 2 * a * b * Math.cos(rad);
                         double ans = Math.sqrt(Math.max(0, c2));
-                        String working = "c = \\sqrt{" + fmt(a) + "^2 + " + fmt(b) + "^2 - 2(" + fmt(a) + ")(" + fmt(b) + ")\\cos(" + fmt(Cdeg) + "^\\circ)} = " + fmt(ans);
+                        String working = "c = \\sqrt{(" + fmt(a) + ")^2 + (" + fmt(b) + ")^2 - 2(" + fmt(a) + ")(" + fmt(b) + ")\\cos(" + fmt(Cdeg) + "^\\circ)}";
                         String solution = "\\begin{aligned} & c^2 = a^2 + b^2 - 2ab\\cos(C) \\\\ & c^2 = " + fmt(a * a) + " + " + fmt(b * b) + " - " + fmt(2 * a * b * Math.cos(rad)) + " \\\\ & c = \\sqrt{" + fmt(c2) + "} \\\\ & \\mathbf{c = " + fmt(ans) + "} \\end{aligned}";
                         return SubstitutionResult.solved(working, solution);
                     }
@@ -359,7 +357,7 @@ public class EquationSubstitutionDialog {
                     double rad = Math.toRadians(theta);
                     double s = Math.sin(rad);
                     double c = Math.cos(rad);
-                    String working = "\\sin^2(" + fmt(theta) + "^\\circ) + \\cos^2(" + fmt(theta) + "^\\circ) = (" + fmt(s) + ")^2 + (" + fmt(c) + ")^2 = 1";
+                    String working = "\\sin^2(" + fmt(theta) + "^\\circ) + \\cos^2(" + fmt(theta) + "^\\circ)";
                     String solution = "\\begin{aligned} & \\text{Identity: } \\sin^2\\theta + \\cos^2\\theta = 1 \\\\ & \\theta = " + fmt(theta) + "^\\circ \\\\ & \\sin(" + fmt(theta) + "^\\circ) = " + fmt(s) + " \\implies \\sin^2 = " + fmt(s * s) + " \\\\ & \\cos(" + fmt(theta) + "^\\circ) = " + fmt(c) + " \\implies \\cos^2 = " + fmt(c * c) + " \\\\ & " + fmt(s * s) + " + " + fmt(c * c) + " = 1 \\\\ & \\mathbf{\\text{Verified: } 1 = 1} \\end{aligned}";
                     return SubstitutionResult.solved(working, solution);
                 }

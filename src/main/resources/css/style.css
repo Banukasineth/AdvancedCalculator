@@ -85,40 +85,198 @@
     -fx-padding: 0 0 2 0;
 }
 
-/* Individual Toolbar Tile Buttons (Each Icon is a Separate Tile) */
+/* Individual Toolbar Tile Buttons (Eye-Catching Jewel Tones) */
 .toolbar-tile-btn {
-    -fx-background-color: #24212F;
-    -fx-background-radius: 8;
-    -fx-border-radius: 8;
-    -fx-border-color: rgba(255, 255, 255, 0.05);
+    -fx-background-radius: 9;
+    -fx-border-radius: 9;
     -fx-border-width: 1;
-    -fx-min-width: 34;
-    -fx-min-height: 34;
-    -fx-padding: 5 7;
+    -fx-min-width: 36;
+    -fx-min-height: 36;
+    -fx-max-width: 36;
+    -fx-max-height: 36;
+    -fx-padding: 5;
+    -fx-alignment: center;
     -fx-cursor: hand;
 }
-.toolbar-tile-btn:hover {
-    -fx-background-color: #322D42;
-    -fx-border-color: rgba(255, 255, 255, 0.12);
+
+/* 1. Sidebar Panel Toggle - Electric Cyan */
+.tb-panel-btn {
+    -fx-background-color: rgba(0, 210, 255, 0.12);
+    -fx-border-color: rgba(0, 210, 255, 0.35);
 }
-.toolbar-tile-btn .svg-icon {
-    -fx-fill: rgba(197, 194, 210, 0.22);
-    -fx-stroke: #C5C2D2;
-    -fx-stroke-width: 2.3;
+.tb-panel-btn .svg-icon {
+    -fx-stroke: #00D2FF;
+    -fx-fill: rgba(0, 210, 255, 0.22);
+    -fx-stroke-width: 2.2;
     -fx-stroke-line-cap: round;
     -fx-stroke-line-join: round;
 }
-.toolbar-tile-btn:hover .svg-icon {
+.tb-panel-btn:hover {
+    -fx-background-color: rgba(0, 210, 255, 0.30);
+    -fx-border-color: #00D2FF;
+    -fx-effect: dropshadow(gaussian, rgba(0, 210, 255, 0.65), 12, 0.4, 0, 0);
+    -fx-scale-x: 1.09;
+    -fx-scale-y: 1.09;
+}
+.tb-panel-btn:hover .svg-icon {
     -fx-stroke: #FFFFFF;
-    -fx-fill: rgba(255, 255, 255, 0.35);
+    -fx-fill: rgba(0, 210, 255, 0.45);
+}
+
+/* 2. Undo Button - Vibrant Neon Violet */
+.tb-undo-btn {
+    -fx-background-color: rgba(168, 85, 247, 0.12);
+    -fx-border-color: rgba(168, 85, 247, 0.35);
+}
+.tb-undo-btn .svg-icon {
+    -fx-stroke: #C084FC;
+    -fx-fill: rgba(168, 85, 247, 0.22);
+    -fx-stroke-width: 2.2;
+    -fx-stroke-line-cap: round;
+    -fx-stroke-line-join: round;
+}
+.tb-undo-btn:hover {
+    -fx-background-color: rgba(168, 85, 247, 0.30);
+    -fx-border-color: #C084FC;
+    -fx-effect: dropshadow(gaussian, rgba(168, 85, 247, 0.65), 12, 0.4, 0, 0);
+    -fx-scale-x: 1.09;
+    -fx-scale-y: 1.09;
+}
+.tb-undo-btn:hover .svg-icon {
+    -fx-stroke: #FFFFFF;
+    -fx-fill: rgba(168, 85, 247, 0.45);
+}
+
+/* 3. Redo Button - Vibrant Neon Violet */
+.tb-redo-btn {
+    -fx-background-color: rgba(168, 85, 247, 0.12);
+    -fx-border-color: rgba(168, 85, 247, 0.35);
+}
+.tb-redo-btn .svg-icon {
+    -fx-stroke: #C084FC;
+    -fx-fill: rgba(168, 85, 247, 0.22);
+    -fx-stroke-width: 2.2;
+    -fx-stroke-line-cap: round;
+    -fx-stroke-line-join: round;
+}
+.tb-redo-btn:hover {
+    -fx-background-color: rgba(168, 85, 247, 0.30);
+    -fx-border-color: #C084FC;
+    -fx-effect: dropshadow(gaussian, rgba(168, 85, 247, 0.65), 12, 0.4, 0, 0);
+    -fx-scale-x: 1.09;
+    -fx-scale-y: 1.09;
+}
+.tb-redo-btn:hover .svg-icon {
+    -fx-stroke: #FFFFFF;
+    -fx-fill: rgba(168, 85, 247, 0.45);
+}
+
+/* 4. Clipboard Button - Radiant Amber / Gold */
+.tb-clipboard-btn {
+    -fx-background-color: rgba(245, 158, 11, 0.12);
+    -fx-border-color: rgba(245, 158, 11, 0.35);
+    -fx-min-width: 44;
+    -fx-max-width: 46;
+    -fx-pref-width: 44;
+    -fx-padding: 4 6;
+}
+.tb-clipboard-btn .svg-icon {
+    -fx-stroke: #FBBF24;
+    -fx-fill: rgba(245, 158, 11, 0.22);
+    -fx-stroke-width: 2.0;
+    -fx-stroke-line-cap: round;
+    -fx-stroke-line-join: round;
+}
+.tb-clipboard-btn:hover {
+    -fx-background-color: rgba(245, 158, 11, 0.30);
+    -fx-border-color: #FBBF24;
+    -fx-effect: dropshadow(gaussian, rgba(245, 158, 11, 0.65), 12, 0.4, 0, 0);
+    -fx-scale-x: 1.09;
+    -fx-scale-y: 1.09;
+}
+.tb-clipboard-btn:hover .svg-icon {
+    -fx-stroke: #FFFFFF;
+    -fx-fill: rgba(245, 158, 11, 0.45);
+}
+
+/* 5. Trash / Clear Button - Vibrant Neon Crimson / Coral */
+.tb-trash-btn {
+    -fx-background-color: rgba(255, 77, 109, 0.14);
+    -fx-border-color: rgba(255, 77, 109, 0.4);
+}
+.tb-trash-btn .svg-icon {
+    -fx-stroke: #FF4D6D;
+    -fx-fill: rgba(255, 77, 109, 0.22);
+    -fx-stroke-width: 2.2;
+    -fx-stroke-line-cap: round;
+    -fx-stroke-line-join: round;
+}
+.tb-trash-btn:hover {
+    -fx-background-color: rgba(255, 77, 109, 0.32);
+    -fx-border-color: #FF4D6D;
+    -fx-effect: dropshadow(gaussian, rgba(255, 77, 109, 0.65), 12, 0.4, 0, 0);
+    -fx-scale-x: 1.09;
+    -fx-scale-y: 1.09;
+}
+.tb-trash-btn:hover .svg-icon {
+    -fx-stroke: #FFFFFF;
+    -fx-fill: rgba(255, 77, 109, 0.45);
+}
+
+/* 6. Pencil / Edit Button - Radiant Emerald / Neon Mint */
+.tb-edit-btn {
+    -fx-background-color: rgba(0, 245, 212, 0.12);
+    -fx-border-color: rgba(0, 245, 212, 0.35);
+}
+.tb-edit-btn .svg-icon {
+    -fx-stroke: #00F5D4;
+    -fx-fill: rgba(0, 245, 212, 0.22);
+    -fx-stroke-width: 2.2;
+    -fx-stroke-line-cap: round;
+    -fx-stroke-line-join: round;
+}
+.tb-edit-btn:hover {
+    -fx-background-color: rgba(0, 245, 212, 0.30);
+    -fx-border-color: #00F5D4;
+    -fx-effect: dropshadow(gaussian, rgba(0, 245, 212, 0.65), 12, 0.4, 0, 0);
+    -fx-scale-x: 1.09;
+    -fx-scale-y: 1.09;
+}
+.tb-edit-btn:hover .svg-icon {
+    -fx-stroke: #FFFFFF;
+    -fx-fill: rgba(0, 245, 212, 0.45);
+}
+
+/* 7. Rotation Lock Button - Vibrant Signature Hot Pink */
+.tb-lock-btn {
+    -fx-background-color: rgba(232, 46, 136, 0.14);
+    -fx-border-color: rgba(232, 46, 136, 0.4);
+}
+.tb-lock-btn .svg-icon {
+    -fx-stroke: #FF3B8A;
+    -fx-fill: rgba(232, 46, 136, 0.22);
+    -fx-stroke-width: 2.2;
+    -fx-stroke-line-cap: round;
+    -fx-stroke-line-join: round;
+}
+.tb-lock-btn:hover {
+    -fx-background-color: rgba(232, 46, 136, 0.32);
+    -fx-border-color: #FF3B8A;
+    -fx-effect: dropshadow(gaussian, rgba(232, 46, 136, 0.65), 12, 0.4, 0, 0);
+    -fx-scale-x: 1.09;
+    -fx-scale-y: 1.09;
+}
+.tb-lock-btn:hover .svg-icon {
+    -fx-stroke: #FFFFFF;
+    -fx-fill: rgba(232, 46, 136, 0.45);
 }
 
 /* Backward compatibility for toolbar-btn */
 .toolbar-btn {
-    -fx-background-color: #24212F;
+    -fx-background-color: rgba(255, 255, 255, 0.06);
     -fx-background-radius: 8;
     -fx-border-radius: 8;
-    -fx-border-color: rgba(255, 255, 255, 0.05);
+    -fx-border-color: rgba(255, 255, 255, 0.08);
     -fx-border-width: 1;
     -fx-min-width: 34;
     -fx-min-height: 34;
@@ -133,8 +291,8 @@
     -fx-stroke-line-join: round;
 }
 .toolbar-btn:hover {
-    -fx-background-color: #322D42;
-    -fx-border-color: rgba(255, 255, 255, 0.12);
+    -fx-background-color: rgba(255, 255, 255, 0.12);
+    -fx-border-color: rgba(255, 255, 255, 0.2);
 }
 .toolbar-btn:hover .svg-icon {
     -fx-stroke: #FFFFFF;
@@ -143,23 +301,26 @@
 
 /* Wide Zoom Pill */
 .zoom-pill {
-    -fx-background-color: #24212F;
-    -fx-background-radius: 8;
-    -fx-border-radius: 8;
-    -fx-border-color: rgba(255, 255, 255, 0.05);
+    -fx-background-color: #242131;
+    -fx-background-radius: 9;
+    -fx-border-radius: 9;
+    -fx-border-color: rgba(255, 255, 255, 0.07);
     -fx-border-width: 1;
     -fx-padding: 4 18;
     -fx-alignment: center;
 }
+.zoom-pill:hover {
+    -fx-border-color: rgba(232, 46, 136, 0.35);
+}
 
 .zoom-icon {
-    -fx-text-fill: #C5C2D2;
-    -fx-font-size: 18px;
+    -fx-text-fill: #FF3B8A;
+    -fx-font-size: 19px;
     -fx-font-weight: bold;
     -fx-padding: 0 4 0 0;
 }
 .zoom-text {
-    -fx-text-fill: #C5C2D2;
+    -fx-text-fill: #FFFFFF;
     -fx-font-size: 13px;
     -fx-font-weight: bold;
     -fx-padding: 0 0 0 4;
@@ -243,31 +404,75 @@
 
 /* Input Area */
 .input-area {
-    -fx-background-color: #262432;
-    -fx-background-radius: 8;
-    -fx-padding: 5 10;
+    -fx-background-color: #242131;
+    -fx-background-radius: 9;
+    -fx-border-radius: 9;
+    -fx-border-color: rgba(255, 255, 255, 0.07);
+    -fx-border-width: 1;
+    -fx-padding: 3 8 3 14;
+}
+.input-area:hover {
+    -fx-border-color: rgba(232, 46, 136, 0.3);
 }
 
 .math-input-field {
     -fx-background-color: transparent;
     -fx-text-fill: white;
-    -fx-prompt-text-fill: #706E7A;
-    -fx-font-size: 14px;
+    -fx-prompt-text-fill: #9590A6;
+    -fx-font-size: 13.5px;
+    -fx-font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    -fx-padding: 6 4 6 0;
 }
 
+/* Eye-catching Input Action Icons */
 .input-icon-btn {
-    -fx-background-color: transparent;
-    -fx-background-radius: 4;
-    -fx-padding: 4 6;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-min-width: 32;
+    -fx-min-height: 32;
+    -fx-max-width: 32;
+    -fx-max-height: 32;
+    -fx-padding: 4;
+    -fx-alignment: center;
     -fx-cursor: hand;
 }
-.input-icon-btn .svg-icon {
-    -fx-fill: #9D9AA8;
+
+/* Microphone Icon - Vibrant Neon Rose/Pink with glowing hover */
+.mic-btn {
+    -fx-background-color: rgba(232, 46, 136, 0.14);
+    -fx-border-color: rgba(232, 46, 136, 0.4);
 }
-.input-icon-btn:hover {
-    -fx-background-color: rgba(255, 255, 255, 0.08);
+.mic-btn .svg-icon {
+    -fx-fill: #FF3B8A;
 }
-.input-icon-btn:hover .svg-icon {
+.mic-btn:hover {
+    -fx-background-color: rgba(232, 46, 136, 0.32);
+    -fx-border-color: #FF3B8A;
+    -fx-effect: dropshadow(gaussian, rgba(232, 46, 136, 0.65), 12, 0.4, 0, 0);
+    -fx-scale-x: 1.1;
+    -fx-scale-y: 1.1;
+}
+.mic-btn:hover .svg-icon {
+    -fx-fill: #FFFFFF;
+}
+
+/* Camera Icon - Vibrant Electric Cyan with glowing hover */
+.camera-btn {
+    -fx-background-color: rgba(0, 210, 255, 0.14);
+    -fx-border-color: rgba(0, 210, 255, 0.4);
+}
+.camera-btn .svg-icon {
+    -fx-fill: #00D2FF;
+}
+.camera-btn:hover {
+    -fx-background-color: rgba(0, 210, 255, 0.32);
+    -fx-border-color: #00D2FF;
+    -fx-effect: dropshadow(gaussian, rgba(0, 210, 255, 0.65), 12, 0.4, 0, 0);
+    -fx-scale-x: 1.1;
+    -fx-scale-y: 1.1;
+}
+.camera-btn:hover .svg-icon {
     -fx-fill: #FFFFFF;
 }
 

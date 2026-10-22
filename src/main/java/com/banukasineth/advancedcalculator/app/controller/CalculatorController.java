@@ -629,6 +629,76 @@ public class CalculatorController {
     @FXML
     private TextField mathInputField;
 
+    @FXML private Button micButton;
+    @FXML private Button cameraButton;
+
+    // Typewriter typing animation state for mathInputField prompt text
+    private Timeline typewriterTimeline;
+    private final String[] typewriterPrompts = {
+        "Ask anything about math...",
+        "Ask anything about math (e.g., solve 2x + 6 = 18)...",
+        "Ask anything about math (e.g., derivative of sin(x))...",
+        "Ask anything about math (e.g., factor x² - 9)...",
+        "Ask anything about math (e.g., area of circle r=5)..."
+    };
+    private int typewriterPromptIndex = 0;
+    private int typewriterCharIndex = 0;
+    private boolean typewriterIsDeleting = false;
+    private int typewriterPauseCounter = 0;
+
+    private void setupTypewriterAnimation() {
+        if (mathInputField == null) return;
+
+        typewriterTimeline = new Timeline(new KeyFrame(Duration.millis(75), ev -> {
+            if (mathInputField.isFocused() || !mathInputField.getText().isEmpty()) {
+                mathInputField.setPromptText("Ask anything about math...");
+                return;
+            }
+
+            String target = typewriterPrompts[typewriterPromptIndex];
+
+            if (!typewriterIsDeleting) {
+                if (typewriterCharIndex <= target.length()) {
+                    mathInputField.setPromptText(target.substring(0, typewriterCharIndex));
+                    typewriterCharIndex++;
+                } else {
+                    typewriterPauseCounter++;
+                    if (typewriterPauseCounter > 26) { // ~2.0 seconds pause at full phrase
+                        typewriterIsDeleting = true;
+                        typewriterPauseCounter = 0;
+                    }
+                }
+            } else {
+                if (typewriterCharIndex > 0) {
+                    typewriterCharIndex--;
+                    mathInputField.setPromptText(target.substring(0, typewriterCharIndex));
+                } else {
+                    typewriterIsDeleting = false;
+                    typewriterPromptIndex = (typewriterPromptIndex + 1) % typewriterPrompts.length;
+                    typewriterPauseCounter = 0;
+                }
+            }
+        }));
+        typewriterTimeline.setCycleCount(Timeline.INDEFINITE);
+        typewriterTimeline.play();
+    }
+
+    @FXML
+    private void handleMicClick() {
+        if (mathInputField != null) {
+            mathInputField.requestFocus();
+            mathInputField.setPromptText("Listening... (e.g. 'solve 3x + 5 = 20')");
+        }
+    }
+
+    @FXML
+    private void handleCameraClick() {
+        if (mathInputField != null) {
+            mathInputField.requestFocus();
+            mathInputField.setPromptText("Scan or paste math equation...");
+        }
+    }
+
     @FXML
     public void handleUndo() {
         if (!history.isEmpty()) {
@@ -646,6 +716,23 @@ public class CalculatorController {
             currentLatexExpression.setLength(0);
             currentLatexExpression.append(redoStack.pop());
             setMathExpression(currentLatexExpression.toString());
+        }
+    }
+
+    @FXML
+    public void handlePasteClipboard() {
+        try {
+            javafx.scene.input.Clipboard clipboard = javafx.scene.input.Clipboard.getSystemClipboard();
+            if (clipboard.hasString()) {
+                String str = clipboard.getString();
+                if (str != null && !str.trim().isEmpty()) {
+                    history.push(currentLatexExpression.toString());
+                    currentLatexExpression.append(str.trim());
+                    setMathExpression(currentLatexExpression.toString());
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Paste error: " + e.getMessage());
         }
     }
 
@@ -987,7 +1074,8 @@ public class CalculatorController {
                 || text.equals("÷") || text.equals("mod") || text.equals("\\times")
                 || text.equals("\\div") || text.equals("\\bmod")
                 || text.equals("AND") || text.equals("OR")
-                || text.equals("\\operatorname{AND}") || text.equals("\\operatorname{OR}");
+                || text.equals("\\operatorname{AND}") || text.equals("\\operatorname{OR}")
+                || text.equals("*") || text.equals("/") || text.equals("=");
     }
 
     private void appendOperator(String opLatex) {
@@ -1180,50 +1268,7 @@ public class CalculatorController {
         }
 
         if (isAdvancedExpression(expr)) {
-            history.push(currentLatexExpression.toString());
-            hasEvaluated = true;
-            setMathExpression(expr);
-
-            showSolutionArea();
-            loadingBox.setOpacity(1.0);
-            loadingBox.setVisible(true);
-            loadingBox.setManaged(true);
-            solutionWebView.setVisible(false);
-            solutionWebView.setManaged(false);
-            if (aiOrbView != null) {
-                aiOrbView.start();
-            }
-
-            aiSolverService.solveMathExpression(expr)
-                .thenAccept(solutionLatex -> {
-                    Platform.runLater(() -> {
-                        FadeTransition fadeOut = new FadeTransition(Duration.millis(250), loadingBox);
-                        fadeOut.setFromValue(1.0);
-                        fadeOut.setToValue(0.0);
-                        fadeOut.setOnFinished(ev -> {
-                            if (aiOrbView != null) {
-                                aiOrbView.stop();
-                            }
-                            loadingBox.setVisible(false);
-                            loadingBox.setManaged(false);
-                            solutionWebView.setOpacity(0.0);
-                            solutionWebView.setVisible(true);
-                            solutionWebView.setManaged(true);
-                            FadeTransition fadeIn = new FadeTransition(Duration.millis(300), solutionWebView);
-                            fadeIn.setFromValue(0.0);
-                            fadeIn.setToValue(1.0);
-                            fadeIn.play();
-                        });
-                        fadeOut.play();
-
-                        String jsSafeLatex = solutionLatex.replace("\\", "\\\\").replace("\n", "\\n").replace("'", "\\'");
-                        try {
-                            solutionWebView.getEngine().executeScript("updateSolution('" + jsSafeLatex + "')");
-                        } catch (Exception e) {
-                            System.err.println("Error rendering solution: " + e.getMessage());
-                        }
-                    });
-                });
+            solveWithAISolver(expr);
             return;
         }
 
@@ -1238,36 +1283,107 @@ public class CalculatorController {
             setMathExpression(alignedDisplay);
             hideSolutionArea();
             display.setText(formatted);
-        } else {
-            history.push(currentLatexExpression.toString());
-            String errorMsg = result.getErrorMessage();
-            setMathExpression("\\text{" + errorMsg + "}");
-            currentLatexExpression.setLength(0);
-            hasEvaluated = true;
-            display.setText(errorMsg);
+            return;
         }
+
+        // If numerical evaluation failed, check if expression contains words or symbols for AI solver
+        String stripped = expr.replaceAll("\\\\[a-zA-Z]+", "");
+        if (stripped.matches(".*[a-zA-Z].*")) {
+            solveWithAISolver(expr);
+            return;
+        }
+
+        history.push(currentLatexExpression.toString());
+        String errorMsg = result.getErrorMessage();
+        setMathExpression("\\text{" + errorMsg + "}");
+        currentLatexExpression.setLength(0);
+        hasEvaluated = true;
+        display.setText(errorMsg);
+    }
+
+    private void solveWithAISolver(String expr) {
+        history.push(currentLatexExpression.toString());
+        hasEvaluated = false;
+        setMathExpression(expr);
+
+        showSolutionArea();
+        loadingBox.setOpacity(1.0);
+        loadingBox.setVisible(true);
+        loadingBox.setManaged(true);
+        solutionWebView.setVisible(false);
+        solutionWebView.setManaged(false);
+        if (aiOrbView != null) {
+            aiOrbView.start();
+        }
+
+        aiSolverService.solveMathExpression(expr)
+            .thenAccept(solutionLatex -> {
+                Platform.runLater(() -> {
+                    FadeTransition fadeOut = new FadeTransition(Duration.millis(250), loadingBox);
+                    fadeOut.setFromValue(1.0);
+                    fadeOut.setToValue(0.0);
+                    fadeOut.setOnFinished(ev -> {
+                        if (aiOrbView != null) {
+                            aiOrbView.stop();
+                        }
+                        loadingBox.setVisible(false);
+                        loadingBox.setManaged(false);
+                        solutionWebView.setOpacity(0.0);
+                        solutionWebView.setVisible(true);
+                        solutionWebView.setManaged(true);
+                        FadeTransition fadeIn = new FadeTransition(Duration.millis(300), solutionWebView);
+                        fadeIn.setFromValue(0.0);
+                        fadeIn.setToValue(1.0);
+                        fadeIn.play();
+                    });
+                    fadeOut.play();
+
+                    String jsSafeLatex = solutionLatex.replace("\\", "\\\\").replace("\n", "\\n").replace("'", "\\'");
+                    try {
+                        solutionWebView.getEngine().executeScript("updateSolution('" + jsSafeLatex + "')");
+                    } catch (Exception e) {
+                        System.err.println("Error rendering solution: " + e.getMessage());
+                    }
+                });
+            });
     }
 
     private boolean isAdvancedExpression(String expr) {
         if (expr == null || expr.trim().isEmpty()) return false;
         String clean = expr.trim();
-        return clean.contains("x") || clean.contains("y") || clean.contains("z")
-                || clean.contains("t") || clean.contains("n")
-                || clean.contains("=")
-                || clean.contains("\\frac{d}{d") || clean.contains("\\frac{\\partial}{\\partial")
+
+        // 1. Explicit calculus & advanced operators
+        if (clean.contains("\\frac{d}{d") || clean.contains("\\frac{\\partial}{\\partial")
                 || clean.contains("\\partial") || clean.contains("\\int")
                 || clean.contains("\\iint") || clean.contains("\\lim")
                 || clean.contains("\\sum") || clean.contains("\\prod")
-                || clean.contains("f(") || clean.contains("g(")
                 || clean.contains("\\to") || clean.contains("\\infty")
-                || (modeComboBox != null && "Advanced".equals(modeComboBox.getValue()) && (clean.contains("\\") || clean.length() > 5));
+                || clean.contains("f(") || clean.contains("g(")) {
+            return true;
+        }
+
+        // 2. Contains an equality sign with terms on both sides (equation solving)
+        if (clean.contains("=") && !clean.endsWith("=")) {
+            return true;
+        }
+
+        // 3. Contains free algebraic variables (x, y, z, t) outside of LaTeX command names
+        // Strip out all LaTeX commands like \times, \sin, \cos, \tan, \sqrt, \exp, \cdot, \ln, \log, etc.
+        String stripped = clean.replaceAll("\\\\[a-zA-Z]+", "");
+        if (stripped.matches(".*[xyzXYZ].*")) {
+            return true;
+        }
+
+        // 4. Natural language queries (e.g. "solve", "derivative", "factor")
+        String lower = clean.toLowerCase();
+        if (lower.startsWith("solve") || lower.startsWith("derivative") || lower.startsWith("factor") || lower.startsWith("integrate") || lower.startsWith("find")) {
+            return true;
+        }
+
+        return false;
     }
 
     private void processKeyInput(String text) {
-        if (!text.equals("=")) {
-            hideSolutionArea();
-        }
-
         if (text.equals("⌫")) {
             backspace();
             return;
@@ -1312,9 +1428,13 @@ public class CalculatorController {
             if (isOperator(text) || text.equals("x²") || text.equals("x⁻¹") || text.equals("%") || text.equals("\\%") || text.equals("x!") || text.equals("n!")) {
                 // Keep current result and continue calculation
             } else {
-                // Number or function: start fresh calculation
-                history.push(currentLatexExpression.toString());
-                currentLatexExpression.setLength(0);
+                // Number or function: start fresh calculation only if simple scalar result and not an equation/formula
+                String currentStr = currentLatexExpression.toString();
+                boolean isFormulaOrEquation = currentStr.contains("=") || isAdvancedExpression(currentStr);
+                if (!isFormulaOrEquation) {
+                    history.push(currentStr);
+                    currentLatexExpression.setLength(0);
+                }
             }
         }
 
@@ -1876,6 +1996,9 @@ public class CalculatorController {
         hasEvaluated = false;
         currentLatexExpression.setLength(0);
         setMathExpression("");
+        if (mathInputField != null) {
+            mathInputField.clear();
+        }
 
         display.setText("0");
         expressionLabel.setText("");
@@ -2195,6 +2318,7 @@ public class CalculatorController {
         isInitialized = true;
 
         rootPane.setFocusTraversable(true);
+        setupTypewriterAnimation();
 
         if (orbContainer != null) {
             aiOrbView = new AIOrbView();
@@ -2419,7 +2543,10 @@ public class CalculatorController {
                         currentLatexExpression.setLength(0);
                         currentLatexExpression.append(result.workingLatex);
                         setMathExpression(result.workingLatex);
-                        hasEvaluated = true;
+                        hasEvaluated = false;
+                        if (mathInputField != null) {
+                            mathInputField.clear();
+                        }
 
                         if (result.isSolved && result.solutionLatex != null && !result.solutionLatex.isEmpty()) {
                             showSolutionArea();
