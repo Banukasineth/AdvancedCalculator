@@ -159,7 +159,18 @@ public class AISolverService {
                         "& \\text{Final Answer:} \\\\\n" +
                         "& \\mathbf{x^2 - \\cos(x) + C}\n" +
                         "\\end{aligned}";
-            } else if (clean.contains("=") && (clean.contains("x") || clean.contains("y"))) {
+            } else if (clean.contains("a^2") && clean.contains("b^2") && clean.contains("c^2")) {
+                return "\\begin{aligned}\n" +
+                        "& \\text{Pythagorean Theorem:} \\\\\n" +
+                        "& a^2 + b^2 = c^2 \\\\\n" +
+                        "& \\\\\n" +
+                        "& \\text{Solve for hypotenuse } c: \\\\\n" +
+                        "& c = \\sqrt{a^2 + b^2} \\\\\n" +
+                        "& \\\\\n" +
+                        "& \\text{Solve for side } a: \\\\\n" +
+                        "& a = \\sqrt{c^2 - b^2}\n" +
+                        "\\end{aligned}";
+            } else if (clean.contains("=")) {
                 return "\\begin{aligned}\n" +
                         "& \\text{Equation to Solve:} \\\\\n" +
                         "& " + clean + " \\\\\n" +
@@ -167,7 +178,7 @@ public class AISolverService {
                         "& \\text{Step 1: Isolate variable terms} \\\\\n" +
                         "& \\text{Subtract constants from both sides} \\\\\n" +
                         "& \\\\\n" +
-                        "& \\text{Step 2: Solve for } x \\\\\n" +
+                        "& \\text{Step 2: Solve for unknown} \\\\\n" +
                         "& x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a} \\\\\n" +
                         "& \\\\\n" +
                         "& \\text{Roots:} \\\\\n" +

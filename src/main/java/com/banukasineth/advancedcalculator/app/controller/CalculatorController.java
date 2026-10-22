@@ -47,7 +47,9 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import com.banukasineth.advancedcalculator.app.service.AISolverService;
 import com.banukasineth.advancedcalculator.app.ui.AIOrbView;
+import com.banukasineth.advancedcalculator.app.ui.EquationSubstitutionDialog;
 import com.banukasineth.advancedcalculator.app.util.MathEvaluator;
+import java.util.Optional;
 
 
 public class CalculatorController {
@@ -132,13 +134,10 @@ public class CalculatorController {
     private void updateProgrammerKeypadState() {
         if (programmerKeypad == null) return;
 
-        String activeBaseStyle = "-fx-background-color: rgba(255, 255, 255, 0.28), linear-gradient(to bottom, #E82E88, #D01D76); -fx-background-insets: 0, 1; -fx-background-radius: 8, 7; -fx-text-fill: white;";
-        String normalBaseStyle = "";
-
-        if (btnProgHex != null) btnProgHex.setStyle(currentProgrammerBase == 16 ? activeBaseStyle : normalBaseStyle);
-        if (btnProgDec != null) btnProgDec.setStyle(currentProgrammerBase == 10 ? activeBaseStyle : normalBaseStyle);
-        if (btnProgOct != null) btnProgOct.setStyle(currentProgrammerBase == 8 ? activeBaseStyle : normalBaseStyle);
-        if (btnProgBin != null) btnProgBin.setStyle(currentProgrammerBase == 2 ? activeBaseStyle : normalBaseStyle);
+        if (btnProgHex != null) btnProgHex.setStyle("");
+        if (btnProgDec != null) btnProgDec.setStyle("");
+        if (btnProgOct != null) btnProgOct.setStyle("");
+        if (btnProgBin != null) btnProgBin.setStyle("");
 
         // Keep all programmer buttons fully clickable
         setButtonEnabled(btnProgA, true);
@@ -1777,7 +1776,7 @@ public class CalculatorController {
     @FXML private TextField equation1Field;
     @FXML private TextField equation2Field;
     @FXML private ComboBox<String> graphModeComboBox;
-    private static final double WORKING_SPLIT_FRACTION = 0.67;
+    private static final double WORKING_SPLIT_FRACTION = 0.50;
     private DoubleProperty workingAreaFraction = new SimpleDoubleProperty(1.0);
 
     private void showSolutionArea() {
@@ -2410,10 +2409,63 @@ public class CalculatorController {
             equationLibraryBox.setOnAction(e -> {
                 String selected = equationLibraryBox.getValue();
                 if (selected != null && equationMap.containsKey(selected)) {
-                    history.push(currentLatexExpression.toString());
-                    currentLatexExpression.setLength(0);
-                    currentLatexExpression.append(equationMap.get(selected));
-                    setMathExpression(currentLatexExpression.toString());
+                    String formula = equationMap.get(selected);
+                    Stage stage = (rootPane != null && rootPane.getScene() != null) ? (Stage) rootPane.getScene().getWindow() : null;
+
+                    Optional<EquationSubstitutionDialog.SubstitutionResult> resultOpt = EquationSubstitutionDialog.show(selected, formula, stage);
+                    if (resultOpt.isPresent()) {
+                        EquationSubstitutionDialog.SubstitutionResult result = resultOpt.get();
+                        history.push(currentLatexExpression.toString());
+                        currentLatexExpression.setLength(0);
+                        currentLatexExpression.append(result.workingLatex);
+                        setMathExpression(result.workingLatex);
+                        hasEvaluated = true;
+
+                        if (result.isSolved && result.solutionLatex != null && !result.solutionLatex.isEmpty()) {
+                            showSolutionArea();
+                            loadingBox.setOpacity(1.0);
+                            loadingBox.setVisible(true);
+                            loadingBox.setManaged(true);
+                            solutionWebView.setVisible(false);
+                            solutionWebView.setManaged(false);
+                            if (aiOrbView != null) {
+                                aiOrbView.start();
+                            }
+
+                            javafx.animation.PauseTransition pt = new javafx.animation.PauseTransition(Duration.millis(500));
+                            pt.setOnFinished(ev -> {
+                                FadeTransition fadeOut = new FadeTransition(Duration.millis(250), loadingBox);
+                                fadeOut.setFromValue(1.0);
+                                fadeOut.setToValue(0.0);
+                                fadeOut.setOnFinished(fEv -> {
+                                    if (aiOrbView != null) {
+                                        aiOrbView.stop();
+                                    }
+                                    loadingBox.setVisible(false);
+                                    loadingBox.setManaged(false);
+                                    solutionWebView.setOpacity(0.0);
+                                    solutionWebView.setVisible(true);
+                                    solutionWebView.setManaged(true);
+                                    FadeTransition fadeIn = new FadeTransition(Duration.millis(300), solutionWebView);
+                                    fadeIn.setFromValue(0.0);
+                                    fadeIn.setToValue(1.0);
+                                    fadeIn.play();
+                                });
+                                fadeOut.play();
+
+                                String jsSafeLatex = result.solutionLatex.replace("\\", "\\\\").replace("\n", "\\n").replace("'", "\\'");
+                                try {
+                                    solutionWebView.getEngine().executeScript("updateSolution('" + jsSafeLatex + "')");
+                                } catch (Exception ex) {
+                                    System.err.println("Error rendering solution: " + ex.getMessage());
+                                }
+                            });
+                            pt.play();
+                        } else {
+                            hideSolutionArea();
+                        }
+                    }
+
                     Platform.runLater(() -> {
                         equationLibraryBox.getSelectionModel().clearSelection();
                         equationLibraryBox.setValue(null);
