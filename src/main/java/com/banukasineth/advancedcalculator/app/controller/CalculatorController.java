@@ -1225,7 +1225,7 @@ public class CalculatorController {
         String expr = currentLatexExpression.toString().trim();
         if (expr.isEmpty()) return;
 
-        // Auto-trim trailing operator if user pressed e.g. "5 + ="
+        // Auto-trim trailing operator or equals sign if user pressed e.g. "5 + =" or "12 = "
         if (expr.endsWith(" + ")) {
             expr = expr.substring(0, expr.length() - 3).trim();
         } else if (expr.endsWith(" - ")) {
@@ -1240,6 +1240,10 @@ public class CalculatorController {
             expr = expr.substring(0, expr.length() - 20).trim();
         } else if (expr.endsWith(" \\operatorname{OR} ")) {
             expr = expr.substring(0, expr.length() - 19).trim();
+        } else if (expr.endsWith(" = ")) {
+            expr = expr.substring(0, expr.length() - 3).trim();
+        } else if (expr.endsWith("=")) {
+            expr = expr.substring(0, expr.length() - 1).trim();
         }
 
         if (expr.isEmpty()) return;
@@ -1267,11 +1271,9 @@ public class CalculatorController {
             return;
         }
 
-        if (isAdvancedExpression(expr)) {
-            solveWithAISolver(expr);
-            return;
-        }
-
+        // Try offline MathEvaluator FIRST for all basic arithmetic and numerical calculations
+        // (addition, subtraction, multiplication, division, modulo, powers, roots, percentages, trig, log, exp, factorials)
+        // This guarantees NO AI is used for basic arithmetic operations.
         MathEvaluator.EvaluationResult result = MathEvaluator.evaluate(expr);
         if (result.isSuccess()) {
             history.push(currentLatexExpression.toString());
@@ -1283,6 +1285,13 @@ public class CalculatorController {
             setMathExpression(alignedDisplay);
             hideSolutionArea();
             display.setText(formatted);
+            return;
+        }
+
+        // If numerical evaluation was not applicable, check if this is an advanced symbolic expression,
+        // calculus problem (d/dx, integrals), equation with variables (e.g. 2x + 6 = 18), or query
+        if (isAdvancedExpression(expr)) {
+            solveWithAISolver(expr);
             return;
         }
 
