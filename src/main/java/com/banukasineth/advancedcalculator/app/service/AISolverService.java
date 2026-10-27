@@ -4,123 +4,285 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class AISolverService {
 
-    private static final String GEMINI_API_KEY = "YOUR_API_KEY_HERE";
-    private static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_API_KEY;
-
-    // Set this to true for testing without a real API key.
-    private static final boolean USE_MOCK = true;
-
     private final HttpClient httpClient;
 
+    // Resilient fallback order if the preferred model is temporarily busy (503/429) or migrated (404)
+    private static final List<String> KNOWN_MODELS = Arrays.asList(
+            "gemini-3.5-flash-lite",
+            "gemini-3.5-flash",
+            "gemini-3.8-flash"
+    );
+
     public AISolverService() {
-        this.httpClient = HttpClient.newHttpClient();
+        this.httpClient = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(15))
+                .build();
     }
 
     /**
      * Solves the given LaTeX math expression and returns a step-by-step LaTeX solution asynchronously.
+     * Uses real Google Gemini API if an API key is configured, otherwise falls back to local simulation.
      */
     public CompletableFuture<String> solveMathExpression(String latexExpression) {
-        if (USE_MOCK) {
+        String apiKey = AIConfigManager.getApiKey();
+        if (apiKey == null || apiKey.isEmpty()) {
             return simulateMockResponse(latexExpression);
         }
 
-        String prompt = "You are an advanced mathematical AI. Solve the following mathematical expression step-by-step. "
-                + "Return ONLY the raw LaTeX string for the solution without any markdown wrappers (do not include ```latex). "
-                + "Format it beautifully using \\begin{aligned} ... \\end{aligned} so it can be rendered by KaTeX. "
-                + "Expression to solve: " + latexExpression;
+        String prompt = "You are an expert mathematical AI. Solve the following mathematical expression or problem step-by-step with complete mathematical rigor.\n\n"
+                + "Requirements:\n"
+                + "1. Format the entire solution strictly as a KaTeX aligned block starting with \\begin{aligned} and ending with \\end{aligned}.\n"
+                + "2. Show each step with clear explanations using \\text{...}. Keep math symbols outside \\text{...}.\n"
+                + "3. State the final answer on the last line highlighted with \\mathbf{...}.\n"
+                + "4. Return ONLY the raw LaTeX string. Do NOT wrap it in markdown code blocks like ```latex or ```. Do NOT include any conversational text outside \\begin{aligned} and \\end{aligned}.\n"
+                + "5. Ensure all braces { and } are perfectly matched.\n\n"
+                + "Mathematical problem to solve: " + latexExpression;
 
-        String requestBody = "{\n" +
-                "  \"contents\": [{\n" +
-                "    \"parts\":[{\"text\": \"" + prompt.replace("\"", "\\\"").replace("\\", "\\\\") + "\"}]\n" +
-                "  }]\n" +
-                "}";
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(API_URL))
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-                .build();
-
-        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenApply(response -> {
-                    if (response.statusCode() == 200) {
-                        return parseResponse(response.body());
-                    } else {
-                        System.err.println("API Request failed with status code: " + response.statusCode());
-                        System.err.println("Response body: " + response.body());
-                        return "Error: Could not solve the equation.";
-                    }
-                })
-                .exceptionally(ex -> "Error: " + ex.getMessage());
+        List<String> modelQueue = buildModelQueue();
+        return callGeminiWithFallback(apiKey, prompt, modelQueue)
+                .thenApply(this::cleanLatexOutput)
+                .exceptionally(ex -> {
+                    System.err.println("Gemini API call failed: " + ex.getMessage());
+                    return "\\begin{aligned}\n" +
+                           "& \\text{\\textbf{AI Solver Notice:}} \\\\\n" +
+                           "& \\text{Failed to connect to Gemini API: " + escapeForLatex(ex.getMessage()) + "} \\\\\n" +
+                           "& \\text{Please verify your API key or network in AI Settings.} \\\\\n" +
+                           "\\end{aligned}";
+                });
     }
 
     /**
-     * Answers a specific question about a mathematical expression asynchronously.
+     * Answers a specific question about a mathematical expression asynchronously using Gemini.
      */
     public CompletableFuture<String> askQuestion(String latexExpression, String question) {
-        if (USE_MOCK) {
+        String apiKey = AIConfigManager.getApiKey();
+        if (apiKey == null || apiKey.isEmpty()) {
             return CompletableFuture.supplyAsync(() -> {
                 try {
-                    Thread.sleep(1500); // Simulate network delay
+                    Thread.sleep(800);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
-                return "Mock Response for: '" + question + "' regarding " + latexExpression + "\n\nThis is a simulated AI response indicating the properties and features of the requested mathematical expression.";
+                return "Mock Response (No Gemini API key configured): Regarding " + latexExpression + ", " + question + 
+                       ".\nConfigure your Gemini API key in AI Settings to enable live AI responses.";
             });
         }
 
-        String prompt = "You are an advanced mathematical AI assistant. A user is looking at the graph of the function: " 
+        String prompt = "You are an advanced mathematical AI assistant. A user is analyzing the mathematical expression/function: " 
                 + latexExpression 
-                + ". They have asked the following question about it: \"" + question + "\". "
-                + "Please provide a clear, concise, and accurate answer. Format your response in plain text (no markdown wrapping).";
+                + ".\nThey asked: \"" + question + "\".\n"
+                + "Please provide a clear, concise, and mathematically accurate answer. Format in plain text.";
 
-        String requestBody = "{\n" +
-                "  \"contents\": [{\n" +
-                "    \"parts\":[{\"text\": \"" + prompt.replace("\"", "\\\"").replace("\\", "\\\\") + "\"}]\n" +
-                "  }]\n" +
-                "}";
+        List<String> modelQueue = buildModelQueue();
+        return callGeminiWithFallback(apiKey, prompt, modelQueue)
+                .thenApply(res -> res != null ? res.trim() : "No response generated.")
+                .exceptionally(ex -> "Error connecting to AI: " + ex.getMessage());
+    }
+
+    private List<String> buildModelQueue() {
+        String preferred = AIConfigManager.getModelName();
+        List<String> queue = new ArrayList<>();
+        if (preferred != null && !preferred.trim().isEmpty()) {
+            queue.add(preferred.trim());
+        }
+        for (String m : KNOWN_MODELS) {
+            if (!queue.contains(m)) {
+                queue.add(m);
+            }
+        }
+        return queue;
+    }
+
+    private CompletableFuture<String> callGeminiWithFallback(String apiKey, String prompt, List<String> modelQueue) {
+        if (modelQueue == null || modelQueue.isEmpty()) {
+            return CompletableFuture.failedFuture(new RuntimeException("All Gemini models are currently experiencing high demand. Please try again shortly."));
+        }
+
+        String currentModel = modelQueue.get(0);
+        List<String> remainingQueue = modelQueue.subList(1, modelQueue.size());
+
+        return callGeminiGenerateContent(currentModel, apiKey, prompt)
+                .handle((result, ex) -> {
+                    if (ex == null && result != null) {
+                        return CompletableFuture.completedFuture(result);
+                    }
+                    System.out.println("Model " + currentModel + " returned (" + (ex != null ? ex.getMessage() : "null") + "). Attempting fallback...");
+                    return callGeminiWithFallback(apiKey, prompt, remainingQueue);
+                })
+                .thenCompose(java.util.function.Function.identity());
+    }
+
+    private CompletableFuture<String> callGeminiGenerateContent(String model, String apiKey, String prompt) {
+        String url = "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + apiKey.trim();
+
+        JSONObject payload = new JSONObject();
+        JSONArray contents = new JSONArray();
+        JSONObject contentObj = new JSONObject();
+        JSONArray parts = new JSONArray();
+        JSONObject partObj = new JSONObject();
+        partObj.put("text", prompt);
+        parts.put(partObj);
+        contentObj.put("parts", parts);
+        contents.put(contentObj);
+        payload.put("contents", contents);
+
+        JSONObject genConfig = new JSONObject();
+        genConfig.put("temperature", 0.1);
+        genConfig.put("topP", 0.95);
+        payload.put("generationConfig", genConfig);
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(API_URL))
+                .uri(URI.create(url))
                 .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                .timeout(Duration.ofSeconds(20))
+                .POST(HttpRequest.BodyPublishers.ofString(payload.toString()))
                 .build();
 
         return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenApply(response -> {
-                    if (response.statusCode() == 200) {
-                        return parseResponse(response.body());
-                    } else {
-                        return "Error: Failed to connect to AI (HTTP " + response.statusCode() + ")";
+                    int code = response.statusCode();
+                    if (code == 200) {
+                        return extractTextFromGeminiResponse(response.body());
                     }
-                })
-                .exceptionally(ex -> "Error: " + ex.getMessage());
+                    String errMsg = "HTTP " + code;
+                    try {
+                        JSONObject errJson = new JSONObject(response.body());
+                        if (errJson.has("error")) {
+                            errMsg = errJson.getJSONObject("error").optString("message", errMsg);
+                        }
+                    } catch (Exception ignored) {}
+                    throw new RuntimeException("Gemini API Error (" + errMsg + ")");
+                });
     }
 
-    private String parseResponse(String responseBody) {
+    private String extractTextFromGeminiResponse(String responseBody) {
         try {
-            int textStart = responseBody.indexOf("\"text\": \"") + 9;
-            int textEnd = responseBody.indexOf("\"", textStart);
-            if (textStart > 8 && textEnd > textStart) {
-                return responseBody.substring(textStart, textEnd)
-                        .replace("\\n", "\n")
-                        .replace("\\\\", "\\");
+            JSONObject root = new JSONObject(responseBody);
+            if (root.has("candidates")) {
+                JSONArray candidates = root.getJSONArray("candidates");
+                if (candidates.length() > 0) {
+                    JSONObject firstCand = candidates.getJSONObject(0);
+                    if (firstCand.has("content")) {
+                        JSONObject content = firstCand.getJSONObject("content");
+                        if (content.has("parts")) {
+                            JSONArray parts = content.getJSONArray("parts");
+                            if (parts.length() > 0) {
+                                return parts.getJSONObject(0).getString("text");
+                            }
+                        }
+                    }
+                }
             }
         } catch (Exception e) {
-            System.err.println("Failed to parse AI response: " + e.getMessage());
+            System.err.println("Error parsing Gemini response: " + e.getMessage());
         }
-        return "Error parsing response";
+        return "Error: Could not parse response from Gemini.";
     }
 
+    private String cleanLatexOutput(String raw) {
+        if (raw == null || raw.trim().isEmpty()) {
+            return "\\begin{aligned} & \\text{No solution produced.} \\end{aligned}";
+        }
+
+        String cleaned = raw.trim();
+
+        // 1. If markdown code fence is present, extract its inner content
+        if (cleaned.contains("```")) {
+            int firstFence = cleaned.indexOf("```");
+            int newlineAfterFence = cleaned.indexOf('\n', firstFence);
+            if (newlineAfterFence != -1) {
+                int closingFence = cleaned.indexOf("```", newlineAfterFence);
+                if (closingFence != -1) {
+                    cleaned = cleaned.substring(newlineAfterFence + 1, closingFence).trim();
+                } else {
+                    cleaned = cleaned.substring(newlineAfterFence + 1).trim();
+                }
+            }
+        }
+
+        // 2. Standardize align* / align / gather / equation environments to aligned
+        cleaned = cleaned.replaceAll("\\\\begin\\{align\\*?\\}", "\\\\begin{aligned}")
+                         .replaceAll("\\\\end\\{align\\*?\\}", "\\\\end{aligned}")
+                         .replaceAll("\\\\begin\\{gather\\*?\\}", "\\\\begin{aligned}")
+                         .replaceAll("\\\\end\\{gather\\*?\\}", "\\\\end{aligned}")
+                         .replaceAll("\\\\begin\\{equation\\*?\\}", "\\\\begin{aligned}")
+                         .replaceAll("\\\\end\\{equation\\*?\\}", "\\\\end{aligned}");
+
+        // 3. Extract strictly from \begin{aligned} to \end{aligned} if present
+        int beginIdx = cleaned.indexOf("\\begin{aligned}");
+        int endIdx = cleaned.lastIndexOf("\\end{aligned}");
+        if (beginIdx != -1 && endIdx != -1 && endIdx > beginIdx) {
+            cleaned = cleaned.substring(beginIdx, endIdx + "\\end{aligned}".length()).trim();
+        } else if (!cleaned.contains("\\begin{aligned}")) {
+            // If model omitted \begin{aligned}, wrap it safely
+            cleaned = "\\begin{aligned}\n& " + cleaned.replace("\n\n", " \\\\\n& ") + "\n\\end{aligned}";
+        }
+
+        // 4. Ensure all braces are balanced to guarantee KaTeX parsing success
+        cleaned = balanceBraces(cleaned);
+
+        return cleaned;
+    }
+
+    private String balanceBraces(String latex) {
+        if (latex == null) return "";
+        StringBuilder sb = new StringBuilder();
+        int openCount = 0;
+        for (int i = 0; i < latex.length(); i++) {
+            char c = latex.charAt(i);
+            if (c == '\\' && i + 1 < latex.length() && (latex.charAt(i + 1) == '{' || latex.charAt(i + 1) == '}')) {
+                sb.append(c).append(latex.charAt(i + 1));
+                i++;
+                continue;
+            }
+            if (c == '{') {
+                openCount++;
+                sb.append(c);
+            } else if (c == '}') {
+                if (openCount > 0) {
+                    openCount--;
+                    sb.append(c);
+                }
+                // Ignore unmatched closing brace
+            } else {
+                sb.append(c);
+            }
+        }
+        while (openCount > 0) {
+            sb.append('}');
+            openCount--;
+        }
+        return sb.toString();
+    }
+
+    private String escapeForLatex(String str) {
+        if (str == null) return "";
+        return str.replace("\\", "\\backslash ")
+                  .replace("{", "\\{")
+                  .replace("}", "\\}")
+                  .replace("_", "\\_")
+                  .replace("^", "\\^")
+                  .replace("%", "\\%")
+                  .replace("$", "\\$");
+    }
+
+    /**
+     * Fallback mock simulation used when no Gemini API key is configured.
+     */
     private CompletableFuture<String> simulateMockResponse(String inputLatex) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                // Responsive simulation latency (1.0 second)
-                Thread.sleep(1000);
+                Thread.sleep(800);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
@@ -128,7 +290,7 @@ public class AISolverService {
             String clean = inputLatex != null ? inputLatex.trim() : "";
             String lower = clean.toLowerCase();
 
-            // 1. Dynamic linear equation solver: e.g. "2x + 6 = 18", "3x - 5 = 10", "solve 2x + 6 = 18"
+            // 1. Dynamic linear equation solver: e.g. "2x + 6 = 18", "3x - 5 = 10"
             java.util.regex.Pattern pLinear = java.util.regex.Pattern.compile("(?i)(?:solve\\s*)?([+-]?[0-9]*\\.?[0-9]*)\\s*x\\s*([+-])\\s*([0-9]*\\.?[0-9]+)\\s*=\\s*([+-]?[0-9]*\\.?[0-9]+)");
             java.util.regex.Matcher mLinear = pLinear.matcher(clean);
             if (mLinear.find()) {
@@ -169,7 +331,7 @@ public class AISolverService {
                         "\\end{aligned}";
             }
 
-            // 2. Factoring / Quadratic polynomials (e.g., "factor x² - 9", "x^2 - 9")
+            // 2. Factoring / Quadratic polynomials (e.g., "factor x^2 - 9")
             if (lower.contains("factor") || lower.contains("x^2 - 9") || lower.contains("x^2-9") || lower.contains("x² - 9") || lower.contains("x²-9")) {
                 return "\\begin{aligned}\n" +
                         "& \\text{Factoring Polynomial:} \\\\\n" +
@@ -186,122 +348,27 @@ public class AISolverService {
                         "\\end{aligned}";
             }
 
-            // 3. Trigonometric derivatives (e.g. "derivative of sin(x)", "\frac{d}{dx}(\sin(x))")
+            // 3. Trigonometric derivatives
             if ((lower.contains("derivative") || clean.contains("\\frac{d}{d")) && lower.contains("sin")) {
                 return "\\begin{aligned}\n" +
-                        "& \\text{Differentiation Problem:} \\\\\n" +
-                        "& \\frac{d}{dx}\\left(\\sin(x)\\right) \\\\\n" +
+                        "& \\text{Differentiation:} \\\\\n" +
+                        "& \\frac{d}{dx}(\\sin(x)) \\\\\n" +
                         "& \\\\\n" +
-                        "& \\text{Step 1: Standard trigonometric differentiation rule} \\\\\n" +
-                        "& \\frac{d}{dx}\\left(\\sin(u)\\right) = \\cos(u) \\cdot \\frac{du}{dx} \\\\\n" +
+                        "& \\text{Step 1: Apply standard trigonometric derivative identity} \\\\\n" +
+                        "& \\frac{d}{dx}(\\sin(u)) = \\cos(u) \\cdot \\frac{du}{dx} \\\\\n" +
                         "& \\\\\n" +
-                        "& \\text{Step 2: With } u = x, \\; \\frac{du}{dx} = 1 \\\\\n" +
-                        "& \\frac{d}{dx}\\left(\\sin(x)\\right) = \\cos(x) \\cdot 1 = \\cos(x) \\\\\n" +
-                        "& \\\\\n" +
-                        "& \\text{Final Solution:} \\\\\n" +
+                        "& \\text{Final Derivative:} \\\\\n" +
                         "& \\mathbf{\\cos(x)}\n" +
                         "\\end{aligned}";
             }
 
-            // 4. Circle Area (e.g. "area of circle r=5", "A = \pi r^2")
-            if (lower.contains("circle") || (lower.contains("area") && lower.contains("5"))) {
-                return "\\begin{aligned}\n" +
-                        "& \\text{Area of Circle Formula:} \\\\\n" +
-                        "& A = \\pi r^2 \\quad \\text{where } r = 5 \\\\\n" +
-                        "& \\\\\n" +
-                        "& \\text{Step 1: Substitute radius } r = 5 \\\\\n" +
-                        "& A = \\pi \\times (5)^2 = 25\\pi \\\\\n" +
-                        "& \\\\\n" +
-                        "& \\text{Step 2: Decimal approximation} \\\\\n" +
-                        "& A \\approx 25 \\times 3.14159265 = 78.5398 \\\\\n" +
-                        "& \\\\\n" +
-                        "& \\text{Final Answer:} \\\\\n" +
-                        "& \\mathbf{A = 25\\pi \\approx 78.5398}\n" +
-                        "\\end{aligned}";
-            }
-
-            // 5. Differential Equations
-            if (clean.contains("\\frac{d}{d") || clean.contains("dy")) {
-                return "\\begin{aligned}\n" +
-                        "& \\text{Differential Equation:} \\\\\n" +
-                        "& " + clean + " \\\\\n" +
-                        "& \\\\\n" +
-                        "& \\text{Step 1: Compute partial derivatives} \\\\\n" +
-                        "& \\frac{\\partial}{\\partial y}(3y) = 3 \\\\\n" +
-                        "& \\\\\n" +
-                        "& \\text{Step 2: Substitute and simplify} \\\\\n" +
-                        "& \\frac{d^2 y}{dx^2} + 3 = 5 \\implies \\frac{d^2 y}{dx^2} = 2 \\\\\n" +
-                        "& \\\\\n" +
-                        "& \\text{Step 3: Integrate twice with respect to } x \\\\\n" +
-                        "& \\frac{dy}{dx} = 2x + C_1 \\\\\n" +
-                        "& y(x) = x^2 + C_1 x + C_2 \\\\\n" +
-                        "& \\\\\n" +
-                        "& \\text{Final Solution:} \\\\\n" +
-                        "& \\mathbf{y(x) = x^2 + C_1 x + C_2}\n" +
-                        "\\end{aligned}";
-            }
-
-            // 6. Integrals
-            if (clean.contains("\\int")) {
-                return "\\begin{aligned}\n" +
-                        "& \\text{Integration Problem:} \\\\\n" +
-                        "& " + clean + " \\\\\n" +
-                        "& \\\\\n" +
-                        "& \\text{Step 1: Apply linearity of integration} \\\\\n" +
-                        "& \\int 2x\\,dx + \\int \\sin(x)\\,dx \\\\\n" +
-                        "& \\\\\n" +
-                        "& \\text{Step 2: Compute antiderivatives} \\\\\n" +
-                        "& = x^2 - \\cos(x) + C \\\\\n" +
-                        "& \\\\\n" +
-                        "& \\text{Final Answer:} \\\\\n" +
-                        "& \\mathbf{x^2 - \\cos(x) + C}\n" +
-                        "\\end{aligned}";
-            }
-
-            // 7. Pythagorean Theorem
-            if (clean.contains("a^2") && clean.contains("b^2") && clean.contains("c^2")) {
-                return "\\begin{aligned}\n" +
-                        "& \\text{Pythagorean Theorem:} \\\\\n" +
-                        "& a^2 + b^2 = c^2 \\\\\n" +
-                        "& \\\\\n" +
-                        "& \\text{Solve for hypotenuse } c: \\\\\n" +
-                        "& c = \\sqrt{a^2 + b^2} \\\\\n" +
-                        "& \\\\\n" +
-                        "& \\text{Solve for side } a: \\\\\n" +
-                        "& a = \\sqrt{c^2 - b^2}\n" +
-                        "\\end{aligned}";
-            }
-
-            // 8. General Quadratic / Equation solving
-            if (clean.contains("=")) {
-                return "\\begin{aligned}\n" +
-                        "& \\text{Equation to Solve:} \\\\\n" +
-                        "& " + clean + " \\\\\n" +
-                        "& \\\\\n" +
-                        "& \\text{Step 1: Rearrange into standard form } ax^2 + bx + c = 0 \\\\\n" +
-                        "& \\text{Subtract RHS to set equal to zero} \\\\\n" +
-                        "& \\\\\n" +
-                        "& \\text{Step 2: Apply quadratic formula} \\\\\n" +
-                        "& x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a} \\\\\n" +
-                        "& \\\\\n" +
-                        "& \\text{Computed Roots:} \\\\\n" +
-                        "& \\mathbf{x_1 = 2, \\quad x_2 = -3}\n" +
-                        "\\end{aligned}";
-            }
-
-            // 9. Default rich step-by-step LaTeX response
+            // General fallback
             return "\\begin{aligned}\n" +
-                    "& \\text{Analyzing Expression:} \\\\\n" +
+                    "& \\text{Mathematical Solution:} \\\\\n" +
                     "& " + clean + " \\\\\n" +
                     "& \\\\\n" +
-                    "& \\text{Step 1: Simplify algebraic terms} \\\\\n" +
-                    "& \\Rightarrow f'(x) = 2x + \\sin(x) \\\\\n" +
-                    "& \\\\\n" +
-                    "& \\text{Step 2: Evaluate critical points} \\\\\n" +
-                    "& \\Rightarrow \\int (2x + \\sin(x))\\,dx \\\\\n" +
-                    "& \\\\\n" +
-                    "& \\text{Final Answer:} \\\\\n" +
-                    "& \\mathbf{x^2 - \\cos(x) + C}\n" +
+                    "& \\text{Note: Connect Google Gemini API Key in AI Settings for real-time AI solutions.} \\\\\n" +
+                    "& \\mathbf{\\text{Expression: } " + clean + "}\n" +
                     "\\end{aligned}";
         });
     }

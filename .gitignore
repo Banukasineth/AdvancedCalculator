@@ -4,6 +4,26 @@ target/
 !**/src/test/**/target/
 .kotlin
 
+### Security, Secrets & Environment Variables ###
+config.properties
+local.properties
+*.env
+.env*
+*.key
+*.pem
+*.p12
+*.cer
+*.crt
+*.pfx
+credentials.json
+google-services.json
+GoogleService-Info.plist
+
+### User application data & temporary files ###
+.advancedcalculator/
+*.log
+*.argfile
+
 ### IntelliJ IDEA ###
 .idea/modules.xml
 .idea/jarRepositories.xml

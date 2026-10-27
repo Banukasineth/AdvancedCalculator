@@ -369,7 +369,21 @@ public class MathEvaluator {
                 case 2:  formatted = Long.toBinaryString(val); break;
                 default: formatted = Long.toString(val); break;
             }
-            return EvaluationResult.ok((double) val, formatted);
+            EvaluationResult evalRes = EvaluationResult.ok((double) val, formatted);
+            List<String> steps = new ArrayList<>();
+            steps.add(rawExpression.trim());
+            String hexVal = Long.toHexString(val).toUpperCase();
+            String decVal = Long.toString(val);
+            String octVal = Long.toOctalString(val);
+            String binVal = Long.toBinaryString(val);
+
+            if (base != 10) {
+                steps.add("\\text{DEC: } " + decVal);
+            }
+            steps.add(formatted);
+            steps.add("\\text{\\small [HEX: " + hexVal + " \\quad DEC: " + decVal + " \\quad OCT: " + octVal + " \\quad BIN: " + binVal + "]}");
+            evalRes.setSteps(steps);
+            return evalRes;
         } catch (ArithmeticException e) {
             return EvaluationResult.error(e.getMessage());
         } catch (Exception e) {

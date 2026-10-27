@@ -1,0 +1,19 @@
+# ==============================================================================
+# Google Gemini AI Configuration Example
+# ==============================================================================
+# 
+# To use Google Gemini AI in this calculator:
+# 1. Obtain a free API key at: https://aistudio.google.com/app/apikey
+# 2. Copy this file to 'config.properties':
+#      cp config.properties.example config.properties
+# 3. Paste your API key below in place of 'YOUR_API_KEY_HERE'.
+#
+# Alternatively:
+# - Set the environment variable GEMINI_API_KEY in your system/shell.
+# - Or click the gear/settings icon in the calculator's AI Solution card to paste it securely in the GUI.
+#
+# DO NOT commit your real 'config.properties' with actual keys to public repositories!
+# ==============================================================================
+
+gemini.api.key=YOUR_API_KEY_HERE
+gemini.model.name=gemini-3.5-flash-lite

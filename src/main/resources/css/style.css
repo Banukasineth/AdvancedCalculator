@@ -476,6 +476,25 @@
     -fx-fill: #FFFFFF;
 }
 
+/* AI Settings Sparkle Button - Vibrant Purple Sparkle with glowing hover */
+.ai-settings-btn {
+    -fx-background-color: rgba(168, 85, 247, 0.16);
+    -fx-border-color: rgba(168, 85, 247, 0.45);
+}
+.ai-settings-btn .svg-icon {
+    -fx-fill: #C084FC;
+}
+.ai-settings-btn:hover {
+    -fx-background-color: rgba(168, 85, 247, 0.35);
+    -fx-border-color: #C084FC;
+    -fx-effect: dropshadow(gaussian, rgba(168, 85, 247, 0.70), 12, 0.4, 0, 0);
+    -fx-scale-x: 1.1;
+    -fx-scale-y: 1.1;
+}
+.ai-settings-btn:hover .svg-icon {
+    -fx-fill: #FFFFFF;
+}
+
 .svg-icon {
     -fx-fill: #9D9AA8;
 }

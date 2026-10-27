@@ -20,14 +20,13 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.layout.VBox;
+
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
+
 import java.io.IOException;
 import javafx.animation.TranslateTransition;
 import javafx.animation.FadeTransition;
@@ -37,19 +36,23 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.scene.layout.Region;
 import javafx.scene.shape.Rectangle;
+
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.scene.web.WebView;
 import javafx.scene.web.WebEngine;
 import javafx.util.Duration;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.HBox;
+
 import javafx.stage.Stage;
 import com.banukasineth.advancedcalculator.app.service.AISolverService;
+import com.banukasineth.advancedcalculator.app.service.AIConfigManager;
 import com.banukasineth.advancedcalculator.app.ui.AIOrbView;
+import com.banukasineth.advancedcalculator.app.ui.AISettingsDialog;
 import com.banukasineth.advancedcalculator.app.ui.EquationSubstitutionDialog;
 import com.banukasineth.advancedcalculator.app.util.MathEvaluator;
 import java.util.Optional;
+import org.json.JSONObject;
+
 
 
 public class CalculatorController {
@@ -111,6 +114,14 @@ public class CalculatorController {
                 currentLatexExpression.append(converted);
                 setMathExpression(converted);
                 display.setText(converted);
+
+                if (hasEvaluated) {
+                    try {
+                        long val = Long.parseUnsignedLong(converted.replace("-", ""), newBase);
+                        if (converted.startsWith("-")) val = -val;
+                        updateProgrammerSolutionArea(converted, val, newBase);
+                    } catch (Exception ignored) {}
+                }
             }
         }
         currentProgrammerBase = newBase;
@@ -134,10 +145,22 @@ public class CalculatorController {
     private void updateProgrammerKeypadState() {
         if (programmerKeypad == null) return;
 
-        if (btnProgHex != null) btnProgHex.setStyle("");
-        if (btnProgDec != null) btnProgDec.setStyle("");
-        if (btnProgOct != null) btnProgOct.setStyle("");
-        if (btnProgBin != null) btnProgBin.setStyle("");
+        if (btnProgHex != null) {
+            btnProgHex.getStyleClass().remove("active-base-btn");
+            btnProgHex.setStyle("");
+        }
+        if (btnProgDec != null) {
+            btnProgDec.getStyleClass().remove("active-base-btn");
+            btnProgDec.setStyle("");
+        }
+        if (btnProgOct != null) {
+            btnProgOct.getStyleClass().remove("active-base-btn");
+            btnProgOct.setStyle("");
+        }
+        if (btnProgBin != null) {
+            btnProgBin.getStyleClass().remove("active-base-btn");
+            btnProgBin.setStyle("");
+        }
 
         // Keep all programmer buttons fully clickable
         setButtonEnabled(btnProgA, true);
@@ -166,6 +189,35 @@ public class CalculatorController {
             btn.setDisable(!enabled);
             btn.setOpacity(enabled ? 1.0 : 0.35);
         }
+    }
+
+    private void updateProgrammerSolutionArea(String expr, long val, int base) {
+        String baseName = base == 16 ? "HEX" : (base == 8 ? "OCT" : (base == 2 ? "BIN" : "DEC"));
+        String hexVal = Long.toHexString(val).toUpperCase();
+        String decVal = Long.toString(val);
+        String octVal = Long.toOctalString(val);
+        String binVal = Long.toBinaryString(val);
+        String formatted = base == 16 ? hexVal : (base == 8 ? octVal : (base == 2 ? binVal : decVal));
+
+        StringBuilder sol = new StringBuilder();
+        sol.append("\\begin{aligned}\n");
+        sol.append("& \\text{\\large\\textbf{Programmer Calculation}} \\\\\n");
+        sol.append("& \\text{Active Base: } \\textbf{").append(baseName).append(" (Base ").append(base).append(")} \\\\\n");
+        sol.append("& \\\\\n");
+        sol.append("& \\text{\\textbf{Expression:}} \\\\\n");
+        sol.append("& \\quad ").append(expr).append(" \\\\\n");
+        sol.append("& = ").append(formatted).append(" \\\\\n");
+        sol.append("& \\\\\n");
+        sol.append("& \\text{\\textbf{Multi-Base Conversions:}} \\\\\n");
+        sol.append("& \\text{HEX: } \\mathbf{").append(hexVal).append("} \\\\\n");
+        sol.append("& \\text{DEC: } \\mathbf{").append(decVal).append("} \\\\\n");
+        sol.append("& \\text{OCT: } \\mathbf{").append(octVal).append("} \\\\\n");
+        sol.append("& \\text{BIN: } \\mathbf{").append(binVal).append("} \\\\\n");
+        sol.append("& \\\\\n");
+        sol.append("& \\mathbf{\\text{Result: } ").append(formatted).append("}\n");
+        sol.append("\\end{aligned}");
+
+        renderSolution(sol.toString());
     }
 
     private final Map<String, String> equationMap = new LinkedHashMap<>();
@@ -631,6 +683,7 @@ public class CalculatorController {
 
     @FXML private Button micButton;
     @FXML private Button cameraButton;
+    @FXML private Button aiSettingsButton;
 
     // Typewriter typing animation state for mathInputField prompt text
     private Timeline typewriterTimeline;
@@ -697,6 +750,12 @@ public class CalculatorController {
             mathInputField.requestFocus();
             mathInputField.setPromptText("Scan or paste math equation...");
         }
+    }
+
+    @FXML
+    private void handleAISettingsClick() {
+        Stage stage = (rootPane != null && rootPane.getScene() != null) ? (Stage) rootPane.getScene().getWindow() : null;
+        AISettingsDialog.show(stage);
     }
 
     @FXML
@@ -1258,8 +1317,11 @@ public class CalculatorController {
                 currentLatexExpression.append(formatted);
                 hasEvaluated = true;
                 setMathExpression(alignedDisplay);
-                hideSolutionArea();
                 display.setText(formatted);
+
+                // Show calculation steps and multi-base conversions in Solution Area
+                long val = (long) result.getValue();
+                updateProgrammerSolutionArea(expr, val, currentProgrammerBase);
             } else {
                 history.push(currentLatexExpression.toString());
                 String errorMsg = result.getErrorMessage();
@@ -1283,8 +1345,30 @@ public class CalculatorController {
             currentLatexExpression.append(formatted);
             hasEvaluated = true;
             setMathExpression(alignedDisplay);
-            hideSolutionArea();
             display.setText(formatted);
+
+            // Show calculation steps in Solution Area
+            List<String> steps = result.getSteps();
+            StringBuilder sol = new StringBuilder();
+            sol.append("\\begin{aligned}\n");
+            sol.append("& \\text{\\large\\textbf{Calculation Steps}} \\\\\n");
+            sol.append("& \\text{Input: } ").append(expr).append(" \\\\\n");
+            sol.append("& \\\\\n");
+            sol.append("& \\text{\\textbf{Step-by-Step Reduction:}} \\\\\n");
+            if (steps != null && !steps.isEmpty()) {
+                sol.append("& \\quad ").append(steps.get(0)).append(" \\\\\n");
+                for (int i = 1; i < steps.size(); i++) {
+                    sol.append("& = ").append(steps.get(i)).append(" \\\\\n");
+                }
+            } else {
+                sol.append("& \\quad ").append(expr).append(" \\\\\n");
+                sol.append("& = ").append(formatted).append(" \\\\\n");
+            }
+            sol.append("& \\\\\n");
+            sol.append("& \\mathbf{\\text{Final Result} = ").append(formatted).append("}\n");
+            sol.append("\\end{aligned}");
+
+            renderSolution(sol.toString());
             return;
         }
 
@@ -1314,6 +1398,11 @@ public class CalculatorController {
         history.push(currentLatexExpression.toString());
         hasEvaluated = false;
         setMathExpression(expr);
+
+        if (!AIConfigManager.hasApiKey()) {
+            Stage stage = (rootPane != null && rootPane.getScene() != null) ? (Stage) rootPane.getScene().getWindow() : null;
+            AISettingsDialog.show(stage);
+        }
 
         showSolutionArea();
         loadingBox.setOpacity(1.0);
@@ -1347,9 +1436,9 @@ public class CalculatorController {
                     });
                     fadeOut.play();
 
-                    String jsSafeLatex = solutionLatex.replace("\\", "\\\\").replace("\n", "\\n").replace("'", "\\'");
+                    String jsSafeLatex = JSONObject.quote(solutionLatex);
                     try {
-                        solutionWebView.getEngine().executeScript("updateSolution('" + jsSafeLatex + "')");
+                        solutionWebView.getEngine().executeScript("updateSolution(" + jsSafeLatex + ")");
                     } catch (Exception e) {
                         System.err.println("Error rendering solution: " + e.getMessage());
                     }
@@ -1619,8 +1708,11 @@ public class CalculatorController {
             case "5": case "6": case "7": case "8": case "9":
                 if (modeComboBox != null && "Programmer".equals(modeComboBox.getValue())) {
                     int d = Integer.parseInt(text);
-                    if (currentProgrammerBase == 2 && d > 1) return;
-                    if (currentProgrammerBase == 8 && d > 7) return;
+                    if (currentProgrammerBase == 2 && d > 1) {
+                        setProgrammerBase(10);
+                    } else if (currentProgrammerBase == 8 && d > 7) {
+                        setProgrammerBase(10);
+                    }
                 }
                 if (currentLatexExpression.toString().equals("0")) {
                     currentLatexExpression.setLength(0);
@@ -1912,10 +2004,6 @@ public class CalculatorController {
         verticalDivider.setVisible(true);
         verticalDivider.setManaged(true);
 
-        if (aiOrbView != null) {
-            aiOrbView.start();
-        }
-
         if (Math.abs(workingAreaFraction.get() - WORKING_SPLIT_FRACTION) < 0.01) {
             return;
         }
@@ -1926,6 +2014,43 @@ public class CalculatorController {
                 )
         );
         timeline.play();
+    }
+
+    public void renderSolution(String latex) {
+        showSolutionArea();
+        if (aiOrbView != null) {
+            aiOrbView.stop();
+        }
+        loadingBox.setVisible(false);
+        loadingBox.setManaged(false);
+        solutionWebView.setOpacity(1.0);
+        solutionWebView.setVisible(true);
+        solutionWebView.setManaged(true);
+
+        String jsSafeLatex = JSONObject.quote(latex);
+        if (solutionWebView != null) {
+            if (solutionWebView.getEngine().getLoadWorker().getState() == javafx.concurrent.Worker.State.SUCCEEDED) {
+                try {
+                    solutionWebView.getEngine().executeScript("updateSolution(" + jsSafeLatex + ")");
+                } catch (Exception e) {
+                    System.err.println("Error rendering solution: " + e.getMessage());
+                }
+            } else {
+                solutionWebView.getEngine().getLoadWorker().stateProperty().addListener(new javafx.beans.value.ChangeListener<javafx.concurrent.Worker.State>() {
+                    @Override
+                    public void changed(javafx.beans.value.ObservableValue<? extends javafx.concurrent.Worker.State> obs, javafx.concurrent.Worker.State oldState, javafx.concurrent.Worker.State newState) {
+                        if (newState == javafx.concurrent.Worker.State.SUCCEEDED) {
+                            solutionWebView.getEngine().getLoadWorker().stateProperty().removeListener(this);
+                            try {
+                                solutionWebView.getEngine().executeScript("updateSolution(" + jsSafeLatex + ")");
+                            } catch (Exception e) {
+                                System.err.println("Error rendering solution: " + e.getMessage());
+                            }
+                        }
+                    }
+                });
+            }
+        }
     }
 
     private void hideSolutionArea() {
@@ -2379,6 +2504,7 @@ public class CalculatorController {
 
         setupResponsiveLayout();
         updateDegRadState();
+        updateProgrammerKeypadState();
 
         // Initialize ComboBoxes
         if (modeComboBox != null) {
@@ -2589,9 +2715,9 @@ public class CalculatorController {
                                 });
                                 fadeOut.play();
 
-                                String jsSafeLatex = result.solutionLatex.replace("\\", "\\\\").replace("\n", "\\n").replace("'", "\\'");
+                                String jsSafeLatex = JSONObject.quote(result.solutionLatex);
                                 try {
-                                    solutionWebView.getEngine().executeScript("updateSolution('" + jsSafeLatex + "')");
+                                    solutionWebView.getEngine().executeScript("updateSolution(" + jsSafeLatex + ")");
                                 } catch (Exception ex) {
                                     System.err.println("Error rendering solution: " + ex.getMessage());
                                 }
@@ -2611,24 +2737,81 @@ public class CalculatorController {
         }
 
         if (calculusLibraryBox != null) {
-            calculusMap.put("Derivative (d/dx)", "\\frac{d}{dx}(");
-            calculusMap.put("2nd Derivative", "\\frac{d^2}{dx^2}(");
-            calculusMap.put("Partial Derivative", "\\frac{\\partial}{\\partial x}(");
-            calculusMap.put("Indefinite Integral", "\\int dx");
-            calculusMap.put("Definite Integral", "\\int_{a}^{b} dx");
-            calculusMap.put("Double Integral", "\\iint dx dy");
-            calculusMap.put("Limit (x→0)", "\\lim_{x \\to 0}(");
-            calculusMap.put("Limit (x→∞)", "\\lim_{x \\to \\infty}(");
-            calculusMap.put("Summation", "\\sum_{i=1}^{n}(");
-            calculusMap.put("Product", "\\prod_{i=1}^{n}(");
+            calculusMap.put("Derivative (d/dx)", "\\frac{d}{dx}[f(x)]");
+            calculusMap.put("2nd Derivative", "\\frac{d^2}{dx^2}[f(x)]");
+            calculusMap.put("Partial Derivative", "\\frac{\\partial}{\\partial x}[f(x, y)]");
+            calculusMap.put("Indefinite Integral", "\\int f(x) \\, dx");
+            calculusMap.put("Definite Integral", "\\int_{a}^{b} f(x) \\, dx");
+            calculusMap.put("Double Integral", "\\iint f(x, y) \\, dx \\, dy");
+            calculusMap.put("Limit (x→0)", "\\lim_{x \\to 0} f(x)");
+            calculusMap.put("Limit (x→∞)", "\\lim_{x \\to \\infty} f(x)");
+            calculusMap.put("Summation", "\\sum_{i=1}^{n} f(i)");
+            calculusMap.put("Product", "\\prod_{i=1}^{n} f(i)");
             
             calculusLibraryBox.getItems().addAll(calculusMap.keySet());
             calculusLibraryBox.setOnAction(e -> {
                 String selected = calculusLibraryBox.getValue();
                 if (selected != null && calculusMap.containsKey(selected)) {
-                    history.push(currentLatexExpression.toString());
-                    currentLatexExpression.append(calculusMap.get(selected));
-                    setMathExpression(currentLatexExpression.toString());
+                    String formula = calculusMap.get(selected);
+                    Stage stage = (rootPane != null && rootPane.getScene() != null) ? (Stage) rootPane.getScene().getWindow() : null;
+
+                    Optional<EquationSubstitutionDialog.SubstitutionResult> resultOpt = EquationSubstitutionDialog.show(selected, formula, stage);
+                    if (resultOpt.isPresent()) {
+                        EquationSubstitutionDialog.SubstitutionResult result = resultOpt.get();
+                        history.push(currentLatexExpression.toString());
+                        currentLatexExpression.setLength(0);
+                        currentLatexExpression.append(result.workingLatex);
+                        setMathExpression(result.workingLatex);
+                        hasEvaluated = false;
+                        if (mathInputField != null) {
+                            mathInputField.clear();
+                        }
+
+                        if (result.isSolved && result.solutionLatex != null && !result.solutionLatex.isEmpty()) {
+                            showSolutionArea();
+                            loadingBox.setOpacity(1.0);
+                            loadingBox.setVisible(true);
+                            loadingBox.setManaged(true);
+                            solutionWebView.setVisible(false);
+                            solutionWebView.setManaged(false);
+                            if (aiOrbView != null) {
+                                aiOrbView.start();
+                            }
+
+                            javafx.animation.PauseTransition pt = new javafx.animation.PauseTransition(Duration.millis(500));
+                            pt.setOnFinished(ev -> {
+                                FadeTransition fadeOut = new FadeTransition(Duration.millis(250), loadingBox);
+                                fadeOut.setFromValue(1.0);
+                                fadeOut.setToValue(0.0);
+                                fadeOut.setOnFinished(fEv -> {
+                                    if (aiOrbView != null) {
+                                        aiOrbView.stop();
+                                    }
+                                    loadingBox.setVisible(false);
+                                    loadingBox.setManaged(false);
+                                    solutionWebView.setOpacity(0.0);
+                                    solutionWebView.setVisible(true);
+                                    solutionWebView.setManaged(true);
+                                    FadeTransition fadeIn = new FadeTransition(Duration.millis(300), solutionWebView);
+                                    fadeIn.setFromValue(0.0);
+                                    fadeIn.setToValue(1.0);
+                                    fadeIn.play();
+                                });
+                                fadeOut.play();
+
+                                String jsSafeLatex = JSONObject.quote(result.solutionLatex);
+                                try {
+                                    solutionWebView.getEngine().executeScript("updateSolution(" + jsSafeLatex + ")");
+                                } catch (Exception ex) {
+                                    System.err.println("Error rendering solution: " + ex.getMessage());
+                                }
+                            });
+                            pt.play();
+                        } else {
+                            hideSolutionArea();
+                        }
+                    }
+
                     Platform.runLater(() -> {
                         calculusLibraryBox.getSelectionModel().clearSelection();
                         calculusLibraryBox.setValue(null);

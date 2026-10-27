@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Formula Display</title>
+    <!-- Load KaTeX -->
+    <link rel="stylesheet" href="../katex/katex.min.css">
+    <script defer src="../katex/katex.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        html, body {
+            background: transparent !important;
+            background-color: transparent !important;
+            color: #FFFFFF;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 2px 0;
+        }
+        #formula-card {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(232, 46, 136, 0.08);
+            border: 1px solid rgba(232, 46, 136, 0.28);
+            border-radius: 8px;
+            padding: 5px 12px;
+            max-width: 100%;
+        }
+        .prefix {
+            color: #E82E88;
+            font-weight: 700;
+            font-size: 13px;
+            margin-right: 10px;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+        #formula-content {
+            color: #FFFFFF;
+            font-size: 1.25em;
+            display: inline-flex;
+            align-items: center;
+        }
+        .katex {
+            color: #FFFFFF !important;
+            font-size: 1.15em !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="formula-card">
+        <span class="prefix">Formula:</span>
+        <span id="formula-content"></span>
+    </div>
+
+    <script>
+        function updateFormula(latex) {
+            const el = document.getElementById('formula-content');
+            if (!latex || !latex.trim()) {
+                el.innerHTML = '';
+                return;
+            }
+            try {
+                katex.render(latex, el, {
+                    throwOnError: false,
+                    displayMode: false,
+                    strict: false
+                });
+            } catch (e) {
+                el.innerText = latex;
+            }
+        }
+    </script>
+</body>
+</html>
