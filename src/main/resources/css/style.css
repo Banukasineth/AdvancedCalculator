@@ -496,6 +496,16 @@
     -fx-fill: #FFFFFF;
 }
 
+/* Camera active scanning state with intense electric cyan glow */
+.camera-btn.scanning {
+    -fx-background-color: rgba(0, 210, 255, 0.42);
+    -fx-border-color: #00D2FF;
+    -fx-effect: dropshadow(gaussian, rgba(0, 210, 255, 0.9), 16, 0.55, 0, 0);
+}
+.camera-btn.scanning .svg-icon {
+    -fx-fill: #FFFFFF;
+}
+
 /* AI Settings Sparkle Button - Vibrant Purple Sparkle with glowing hover */
 .ai-settings-btn {
     -fx-background-color: rgba(168, 85, 247, 0.16);

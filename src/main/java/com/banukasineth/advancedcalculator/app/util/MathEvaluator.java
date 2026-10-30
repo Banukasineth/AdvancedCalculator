@@ -261,7 +261,7 @@ public class MathEvaluator {
         }
 
         // 7. Multiplication, Division, Modulo
-        Pattern pMulDiv = Pattern.compile("(-?[0-9.]+(?:[eE][+-]?[0-9]+)?)\\s*(\\\\times|\\\\div|\\\\bmod|\\*|\\/|%)\\s*(-?[0-9.]+(?:[eE][+-]?[0-9]+)?)");
+        Pattern pMulDiv = Pattern.compile("(-?[0-9.]+(?:[eE][+-]?[0-9]+)?)\\s*(\\\\times|\\\\div|\\\\bmod|\\*|\\/|%|÷|×)\\s*(-?[0-9.]+(?:[eE][+-]?[0-9]+)?)");
         Matcher mMulDiv = pMulDiv.matcher(s);
         if (mMulDiv.find()) {
             try {
@@ -269,9 +269,9 @@ public class MathEvaluator {
                 String op = mMulDiv.group(2);
                 double right = Double.parseDouble(mMulDiv.group(3));
                 double res = 0;
-                if (op.equals("\\times") || op.equals("*")) {
+                if (op.equals("\\times") || op.equals("*") || op.equals("×")) {
                     res = left * right;
-                } else if (op.equals("\\div") || op.equals("/")) {
+                } else if (op.equals("\\div") || op.equals("/") || op.equals("÷")) {
                     if (right == 0) return null;
                     res = left / right;
                 } else if (op.equals("\\bmod") || op.equals("%")) {
@@ -354,7 +354,9 @@ public class MathEvaluator {
                 .replace("\\operatorname{OR}", "|")
                 .replace("\\operatorname{XOR}", "^")
                 .replace("\\times", "*")
-                .replace("\\div", "/")
+             .replace("\\div", "/")
+             .replace("÷", "/")
+             .replace("×", "*")
                 .replace("\\bmod", "%")
                 .replace("AND", "&")
                 .replace("OR", "|")
@@ -445,6 +447,8 @@ public class MathEvaluator {
         s = s.replace("\\times", "*")
              .replace("\\cdot", "*")
              .replace("\\div", "/")
+             .replace("÷", "/")
+             .replace("×", "*")
              .replace("\\bmod", " mod ")
              .replace("\\%", "%");
 
@@ -607,10 +611,12 @@ public class MathEvaluator {
                     i++;
                     break;
                 case '*':
+                case '×':
                     tokens.add(new Token(TokenType.MUL, "*"));
                     i++;
                     break;
                 case '/':
+                case '÷':
                     tokens.add(new Token(TokenType.DIV, "/"));
                     i++;
                     break;

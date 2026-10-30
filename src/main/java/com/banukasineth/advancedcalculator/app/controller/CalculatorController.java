@@ -49,6 +49,7 @@ import com.banukasineth.advancedcalculator.app.service.AIConfigManager;
 import com.banukasineth.advancedcalculator.app.service.VoiceInputService;
 import com.banukasineth.advancedcalculator.app.ui.AIOrbView;
 import com.banukasineth.advancedcalculator.app.ui.AISettingsDialog;
+import com.banukasineth.advancedcalculator.app.ui.CameraScannerDialog;
 import com.banukasineth.advancedcalculator.app.ui.EquationSubstitutionDialog;
 import com.banukasineth.advancedcalculator.app.util.MathEvaluator;
 import java.util.Optional;
@@ -883,12 +884,59 @@ public class CalculatorController {
         }
     }
 
+    private void setupImageDragAndDrop() {
+        if (rootPane == null) return;
+        rootPane.setOnDragOver(event -> {
+            if (event.getDragboard().hasFiles()) {
+                for (java.io.File file : event.getDragboard().getFiles()) {
+                    String name = file.getName().toLowerCase();
+                    if (name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg")
+                            || name.endsWith(".bmp") || name.endsWith(".webp")) {
+                        event.acceptTransferModes(javafx.scene.input.TransferMode.COPY);
+                        break;
+                    }
+                }
+            }
+            event.consume();
+        });
+
+        rootPane.setOnDragDropped(event -> {
+            javafx.scene.input.Dragboard db = event.getDragboard();
+            boolean handled = false;
+            if (db.hasFiles()) {
+                for (java.io.File file : db.getFiles()) {
+                    String name = file.getName().toLowerCase();
+                    if (name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg")
+                            || name.endsWith(".bmp") || name.endsWith(".webp")) {
+                        Stage stage = (rootPane != null && rootPane.getScene() != null) ? (Stage) rootPane.getScene().getWindow() : null;
+                        CameraScannerDialog.showWithFile(stage, file, scanned -> {
+                            if (scanned != null && !scanned.trim().isEmpty()) {
+                                if (mathInputField != null) {
+                                    mathInputField.setText(scanned.trim());
+                                    handleMathInputSubmit();
+                                }
+                            }
+                        });
+                        handled = true;
+                        break;
+                    }
+                }
+            }
+            event.setDropCompleted(handled);
+            event.consume();
+        });
+    }
     @FXML
     private void handleCameraClick() {
-        if (mathInputField != null) {
-            mathInputField.requestFocus();
-            mathInputField.setPromptText("Scan or paste math equation...");
-        }
+        Stage stage = (rootPane != null && rootPane.getScene() != null) ? (Stage) rootPane.getScene().getWindow() : null;
+        CameraScannerDialog.show(stage, scannedEquation -> {
+            if (scannedEquation != null && !scannedEquation.trim().isEmpty()) {
+                if (mathInputField != null) {
+                    mathInputField.setText(scannedEquation.trim());
+                    handleMathInputSubmit();
+                }
+            }
+        });
     }
 
     @FXML
@@ -2592,6 +2640,7 @@ public class CalculatorController {
 
         rootPane.setFocusTraversable(true);
         setupTypewriterAnimation();
+        setupImageDragAndDrop();
 
         if (orbContainer != null) {
             aiOrbView = new AIOrbView();
