@@ -20,6 +20,11 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.control.Tooltip;
+import javafx.animation.PauseTransition;
 
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
@@ -947,21 +952,33 @@ public class CalculatorController {
 
     @FXML
     public void handleUndo() {
+        if (mathInputField != null && mathInputField.isFocused()) {
+            mathInputField.undo();
+            return;
+        }
         if (!history.isEmpty()) {
             redoStack.push(currentLatexExpression.toString());
             currentLatexExpression.setLength(0);
             currentLatexExpression.append(history.pop());
             setMathExpression(currentLatexExpression.toString());
+            if (display != null) display.setText(currentLatexExpression.length() == 0 ? "0" : currentLatexExpression.toString());
+            if (mathInputField != null) mathInputField.setText(currentLatexExpression.toString());
         }
     }
 
     @FXML
     public void handleRedo() {
+        if (mathInputField != null && mathInputField.isFocused()) {
+            mathInputField.redo();
+            return;
+        }
         if (!redoStack.isEmpty()) {
             history.push(currentLatexExpression.toString());
             currentLatexExpression.setLength(0);
             currentLatexExpression.append(redoStack.pop());
             setMathExpression(currentLatexExpression.toString());
+            if (display != null) display.setText(currentLatexExpression.length() == 0 ? "0" : currentLatexExpression.toString());
+            if (mathInputField != null) mathInputField.setText(currentLatexExpression.toString());
         }
     }
 
@@ -975,10 +992,167 @@ public class CalculatorController {
                     history.push(currentLatexExpression.toString());
                     currentLatexExpression.append(str.trim());
                     setMathExpression(currentLatexExpression.toString());
+            if (display != null) display.setText(currentLatexExpression.length() == 0 ? "0" : currentLatexExpression.toString());
+            if (mathInputField != null) mathInputField.setText(currentLatexExpression.toString());
                 }
             }
         } catch (Exception e) {
             System.err.println("Paste error: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    public void handleClipboardAction(ActionEvent event) {
+        ContextMenu menu = new ContextMenu();
+
+        MenuItem pasteItem = new MenuItem("📋  Paste into Input (Ctrl+V)");
+        pasteItem.setOnAction(e -> handlePasteClipboard());
+
+        MenuItem copyExprItem = new MenuItem("📄  Copy Math Expression (Ctrl+C)");
+        copyExprItem.setOnAction(e -> {
+            String expr = currentLatexExpression.toString();
+            if (expr.isEmpty() && mathInputField != null) {
+                expr = mathInputField.getText();
+            }
+            if (expr != null && !expr.isEmpty()) {
+                javafx.scene.input.ClipboardContent content = new javafx.scene.input.ClipboardContent();
+                content.putString(expr);
+                javafx.scene.input.Clipboard.getSystemClipboard().setContent(content);
+                showToastNotification("Copied math expression to clipboard!");
+            } else {
+                showToastNotification("Nothing to copy!");
+            }
+        });
+
+        MenuItem copyResultItem = new MenuItem("📊  Copy Calculation Result");
+        copyResultItem.setOnAction(e -> {
+            String res = display != null ? display.getText() : "";
+            if (res != null && !res.isEmpty() && !res.equals("0")) {
+                javafx.scene.input.ClipboardContent content = new javafx.scene.input.ClipboardContent();
+                content.putString(res);
+                javafx.scene.input.Clipboard.getSystemClipboard().setContent(content);
+                showToastNotification("Copied calculation result: " + res);
+            } else {
+                showToastNotification("No result to copy!");
+            }
+        });
+
+        MenuItem clearItem = new MenuItem("🧹  Clear Input");
+        clearItem.setOnAction(e -> clearDisplay());
+
+        menu.getItems().addAll(pasteItem, copyExprItem, copyResultItem, new SeparatorMenuItem(), clearItem);
+
+        if (tbClipboardBtn != null) {
+            javafx.geometry.Bounds bounds = tbClipboardBtn.localToScreen(tbClipboardBtn.getBoundsInLocal());
+            if (bounds != null) {
+                menu.show(tbClipboardBtn, bounds.getMinX(), bounds.getMaxY() + 4);
+            }
+        }
+    }
+
+    private void showToastNotification(String message) {
+        Platform.runLater(() -> {
+            try {
+                javafx.scene.Node anchor = tbClipboardBtn != null ? tbClipboardBtn : rootPane;
+                if (anchor == null || anchor.getScene() == null) return;
+                Tooltip toast = new Tooltip(message);
+                toast.setAutoHide(true);
+                javafx.geometry.Bounds bounds = anchor.localToScreen(anchor.getBoundsInLocal());
+                if (bounds != null) {
+                    toast.show(anchor, bounds.getMinX(), bounds.getMaxY() + 8);
+                    PauseTransition delay = new PauseTransition(Duration.millis(1600));
+                    delay.setOnFinished(e -> toast.hide());
+                    delay.play();
+                }
+            } catch (Exception ignored) {}
+        });
+    }
+
+    @FXML
+    private void handleZoomOut() {
+        if (zoomSlider != null) {
+            zoomSlider.setValue(Math.max(zoomSlider.getMin(), zoomSlider.getValue() - 10));
+        }
+    }
+
+    @FXML
+    private void handleZoomLabelClick() {
+        if (zoomSlider != null) {
+            if (Math.abs(zoomSlider.getValue() - 100.0) < 5.0) {
+                zoomSlider.setValue(Math.min(zoomSlider.getMax(), zoomSlider.getValue() + 10));
+            } else {
+                zoomSlider.setValue(100.0);
+            }
+        }
+    }
+
+    @FXML
+    private void handleEditEquation() {
+        if (mathInputField != null) {
+            if (currentLatexExpression.length() > 0) {
+                mathInputField.setText(currentLatexExpression.toString());
+            }
+            mathInputField.requestFocus();
+            mathInputField.selectAll();
+
+            if (inputAreaHBox != null) {
+                FadeTransition glow = new FadeTransition(Duration.millis(180), inputAreaHBox);
+                glow.setFromValue(0.7);
+                glow.setToValue(1.0);
+                glow.setCycleCount(2);
+                glow.setAutoReverse(true);
+                glow.play();
+            }
+        }
+    }
+
+    @FXML
+    private void handlePinToggle() {
+        Stage stage = null;
+        if (rootPane != null && rootPane.getScene() != null && rootPane.getScene().getWindow() instanceof Stage) {
+            stage = (Stage) rootPane.getScene().getWindow();
+        } else if (tbLockBtn != null && tbLockBtn.getScene() != null && tbLockBtn.getScene().getWindow() instanceof Stage) {
+            stage = (Stage) tbLockBtn.getScene().getWindow();
+        }
+
+        if (stage != null) {
+            isWindowPinned = !stage.isAlwaysOnTop();
+            stage.setAlwaysOnTop(isWindowPinned);
+
+            if (tbLockBtn != null) {
+                if (isWindowPinned) {
+                    if (!tbLockBtn.getStyleClass().contains("active")) {
+                        tbLockBtn.getStyleClass().add("active");
+                    }
+                    tbLockBtn.setTooltip(new Tooltip("Window Pinned Always on Top: ON (Click to Unpin)"));
+                    showToastNotification("📌 Window Pinned Always on Top!");
+                } else {
+                    tbLockBtn.getStyleClass().remove("active");
+                    tbLockBtn.setTooltip(new Tooltip("Keep Window on Top (Always on Top)"));
+                    showToastNotification("Window Unpinned");
+                }
+            }
+        }
+    }
+
+    @FXML
+    private void handleToggleSidebarPanel() {
+        if (workingAreaFraction.get() < 0.99) {
+            hideSolutionArea();
+        } else {
+            showSolutionArea();
+            if (solutionWebView != null && (!solutionWebView.isVisible() || solutionWebView.getOpacity() < 0.1)) {
+                loadingBox.setVisible(false);
+                loadingBox.setManaged(false);
+                solutionWebView.setVisible(true);
+                solutionWebView.setManaged(true);
+                solutionWebView.setOpacity(1.0);
+                if (currentLatexExpression.length() > 0) {
+                    renderSolution("\\text{Press '=' or AI to solve: } " + currentLatexExpression.toString());
+                } else {
+                    renderSolution("\\text{Step-by-Step AI Solutions will appear here.}");
+                }
+            }
         }
     }
 
@@ -991,6 +1165,8 @@ public class CalculatorController {
             currentLatexExpression.setLength(0);
             currentLatexExpression.append(text.trim());
             setMathExpression(currentLatexExpression.toString());
+            if (display != null) display.setText(currentLatexExpression.length() == 0 ? "0" : currentLatexExpression.toString());
+            if (mathInputField != null) mathInputField.setText(currentLatexExpression.toString());
             evaluateCurrentExpression();
             mathInputField.clear();
         }
@@ -1358,6 +1534,8 @@ public class CalculatorController {
         if (expr.isEmpty()) {
             currentLatexExpression.append("-");
             setMathExpression(currentLatexExpression.toString());
+            if (display != null) display.setText(currentLatexExpression.length() == 0 ? "0" : currentLatexExpression.toString());
+            if (mathInputField != null) mathInputField.setText(currentLatexExpression.toString());
             return;
         }
 
@@ -1369,6 +1547,8 @@ public class CalculatorController {
             currentLatexExpression.setLength(0);
             currentLatexExpression.append(prefix).append(num);
             setMathExpression(currentLatexExpression.toString());
+            if (display != null) display.setText(currentLatexExpression.length() == 0 ? "0" : currentLatexExpression.toString());
+            if (mathInputField != null) mathInputField.setText(currentLatexExpression.toString());
             return;
         }
 
@@ -1379,6 +1559,8 @@ public class CalculatorController {
             currentLatexExpression.setLength(0);
             currentLatexExpression.append(mMinus.group(1)).append(" + ").append(mMinus.group(2));
             setMathExpression(currentLatexExpression.toString());
+            if (display != null) display.setText(currentLatexExpression.length() == 0 ? "0" : currentLatexExpression.toString());
+            if (mathInputField != null) mathInputField.setText(currentLatexExpression.toString());
             return;
         }
 
@@ -1389,6 +1571,8 @@ public class CalculatorController {
             currentLatexExpression.setLength(0);
             currentLatexExpression.append(mPlus.group(1)).append(" - ").append(mPlus.group(2));
             setMathExpression(currentLatexExpression.toString());
+            if (display != null) display.setText(currentLatexExpression.length() == 0 ? "0" : currentLatexExpression.toString());
+            if (mathInputField != null) mathInputField.setText(currentLatexExpression.toString());
             return;
         }
 
@@ -1399,6 +1583,8 @@ public class CalculatorController {
             currentLatexExpression.setLength(0);
             currentLatexExpression.append(mMulDiv.group(1)).append("(-").append(mMulDiv.group(2)).append(")");
             setMathExpression(currentLatexExpression.toString());
+            if (display != null) display.setText(currentLatexExpression.length() == 0 ? "0" : currentLatexExpression.toString());
+            if (mathInputField != null) mathInputField.setText(currentLatexExpression.toString());
             return;
         }
 
@@ -1407,6 +1593,8 @@ public class CalculatorController {
             currentLatexExpression.setLength(0);
             currentLatexExpression.append(expr.substring(1));
             setMathExpression(currentLatexExpression.toString());
+            if (display != null) display.setText(currentLatexExpression.length() == 0 ? "0" : currentLatexExpression.toString());
+            if (mathInputField != null) mathInputField.setText(currentLatexExpression.toString());
             return;
         }
 
@@ -1415,6 +1603,8 @@ public class CalculatorController {
             currentLatexExpression.setLength(0);
             currentLatexExpression.append("-").append(expr);
             setMathExpression(currentLatexExpression.toString());
+            if (display != null) display.setText(currentLatexExpression.length() == 0 ? "0" : currentLatexExpression.toString());
+            if (mathInputField != null) mathInputField.setText(currentLatexExpression.toString());
             return;
         }
 
@@ -1425,6 +1615,8 @@ public class CalculatorController {
             currentLatexExpression.setLength(0);
             currentLatexExpression.append(mTrailing.group(1)).append("(-").append(mTrailing.group(2)).append(")");
             setMathExpression(currentLatexExpression.toString());
+            if (display != null) display.setText(currentLatexExpression.length() == 0 ? "0" : currentLatexExpression.toString());
+            if (mathInputField != null) mathInputField.setText(currentLatexExpression.toString());
             return;
         }
 
@@ -1445,6 +1637,8 @@ public class CalculatorController {
             int idx = expr.lastIndexOf("(-");
             currentLatexExpression.setLength(idx);
             setMathExpression(currentLatexExpression.toString());
+            if (display != null) display.setText(currentLatexExpression.length() == 0 ? "0" : currentLatexExpression.toString());
+            if (mathInputField != null) mathInputField.setText(currentLatexExpression.toString());
             return;
         }
 
@@ -1455,6 +1649,8 @@ public class CalculatorController {
             currentLatexExpression.setLength(0);
             currentLatexExpression.append(m.group(1));
             setMathExpression(currentLatexExpression.toString());
+            if (display != null) display.setText(currentLatexExpression.length() == 0 ? "0" : currentLatexExpression.toString());
+            if (mathInputField != null) mathInputField.setText(currentLatexExpression.toString());
             return;
         }
 
@@ -1462,6 +1658,8 @@ public class CalculatorController {
             currentLatexExpression.setLength(0);
             currentLatexExpression.append(history.pop());
             setMathExpression(currentLatexExpression.toString());
+            if (display != null) display.setText(currentLatexExpression.length() == 0 ? "0" : currentLatexExpression.toString());
+            if (mathInputField != null) mathInputField.setText(currentLatexExpression.toString());
         } else {
             clearDisplay();
         }
@@ -1687,6 +1885,8 @@ public class CalculatorController {
                     }
                     currentLatexExpression.append("C");
                     setMathExpression(currentLatexExpression.toString());
+            if (display != null) display.setText(currentLatexExpression.length() == 0 ? "0" : currentLatexExpression.toString());
+            if (mathInputField != null) mathInputField.setText(currentLatexExpression.toString());
                 }
                 return;
             } else {
@@ -2174,6 +2374,15 @@ public class CalculatorController {
     
     @FXML private VBox standardLayout;
     @FXML private HBox toolbarHBox;
+    @FXML private Button tbPanelBtn;
+    @FXML private Button tbUndoBtn;
+    @FXML private Button tbRedoBtn;
+    @FXML private Button tbClipboardBtn;
+    @FXML private Label zoomMinusLabel;
+    @FXML private Button tbTrashBtn;
+    @FXML private Button tbEditBtn;
+    @FXML private Button tbLockBtn;
+    private boolean isWindowPinned = false;
     @FXML private Slider zoomSlider;
     @FXML private Label zoomLabel;
     @FXML private HBox inputAreaHBox;
@@ -2188,6 +2397,9 @@ public class CalculatorController {
     private DoubleProperty workingAreaFraction = new SimpleDoubleProperty(1.0);
 
     private void showSolutionArea() {
+        if (tbPanelBtn != null && !tbPanelBtn.getStyleClass().contains("active")) {
+            tbPanelBtn.getStyleClass().add("active");
+        }
         verticalDivider.setVisible(true);
         verticalDivider.setManaged(true);
 
@@ -2241,6 +2453,9 @@ public class CalculatorController {
     }
 
     private void hideSolutionArea() {
+        if (tbPanelBtn != null) {
+            tbPanelBtn.getStyleClass().remove("active");
+        }
         if (workingAreaFraction.get() >= 0.99) return;
 
         Timeline timeline = new Timeline(
@@ -2321,6 +2536,14 @@ public class CalculatorController {
             mathInputField.clear();
         }
 
+        if (solutionWebView != null) {
+            try {
+                solutionWebView.getEngine().executeScript("if (typeof updateSolution === 'function') updateSolution('');");
+            } catch (Exception ignored) {}
+        }
+        if (tbPanelBtn != null) {
+            tbPanelBtn.getStyleClass().remove("active");
+        }
         display.setText("0");
         expressionLabel.setText("");
 
@@ -2387,7 +2610,15 @@ public class CalculatorController {
         if (text.length() > 1) {
             display.setText(text.substring(0, text.length() - 1));
         } else {
-            display.setText("0");
+            if (solutionWebView != null) {
+            try {
+                solutionWebView.getEngine().executeScript("if (typeof updateSolution === 'function') updateSolution('');");
+            } catch (Exception ignored) {}
+        }
+        if (tbPanelBtn != null) {
+            tbPanelBtn.getStyleClass().remove("active");
+        }
+        display.setText("0");
         }
     }
 
@@ -2562,6 +2793,25 @@ public class CalculatorController {
 
     @FXML
     private void handleKeyPressed(KeyEvent event) {
+        if (event.isControlDown()) {
+            if (event.getCode() == KeyCode.Z) {
+                handleUndo();
+                event.consume();
+                return;
+            } else if (event.getCode() == KeyCode.Y) {
+                handleRedo();
+                event.consume();
+                return;
+            } else if (event.getCode() == KeyCode.V) {
+                handlePasteClipboard();
+                event.consume();
+                return;
+            } else if (event.getCode() == KeyCode.P) {
+                handlePinToggle();
+                event.consume();
+                return;
+            }
+        }
         if (event.isShiftDown()) {
             switch (event.getCode()) {
                 case DIGIT8: processKeyInput("×"); return;
@@ -2758,6 +3008,13 @@ public class CalculatorController {
         if (zoomSlider != null) {
             zoomSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
                 double val = newVal.doubleValue();
+                double zoomFactor = Math.max(0.3, val / 100.0);
+                if (mathWebView != null) {
+                    mathWebView.setZoom(zoomFactor);
+                }
+                if (solutionWebView != null) {
+                    solutionWebView.setZoom(zoomFactor);
+                }
                 if (zoomLabel != null) {
                     zoomLabel.setText("+ " + Math.round(val) + "%");
                 }

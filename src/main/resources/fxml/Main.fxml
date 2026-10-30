@@ -87,7 +87,7 @@
                         <!-- Left Group: 4 Separate Tile Buttons -->
                         <HBox alignment="CENTER_LEFT" spacing="6">
                             <!-- Sidebar Panel Toggle -->
-                            <Button styleClass="toolbar-tile-btn, tb-panel-btn" focusTraversable="false">
+                            <Button fx:id="tbPanelBtn" styleClass="toolbar-tile-btn, tb-panel-btn" focusTraversable="false" onAction="#handleToggleSidebarPanel">
                                 <tooltip>
                                     <Tooltip text="Toggle Sidebar Panel" />
                                 </tooltip>
@@ -97,7 +97,7 @@
                                 </graphic>
                             </Button>
                             <!-- Undo -->
-                            <Button styleClass="toolbar-tile-btn, tb-undo-btn" onAction="#handleUndo" focusTraversable="false">
+                            <Button fx:id="tbUndoBtn" styleClass="toolbar-tile-btn, tb-undo-btn" onAction="#handleUndo" focusTraversable="false">
                                 <tooltip>
                                     <Tooltip text="Undo (Ctrl+Z)" />
                                 </tooltip>
@@ -107,7 +107,7 @@
                                 </graphic>
                             </Button>
                             <!-- Redo -->
-                            <Button styleClass="toolbar-tile-btn, tb-redo-btn" onAction="#handleRedo" focusTraversable="false">
+                            <Button fx:id="tbRedoBtn" styleClass="toolbar-tile-btn, tb-redo-btn" onAction="#handleRedo" focusTraversable="false">
                                 <tooltip>
                                     <Tooltip text="Redo (Ctrl+Y)" />
                                 </tooltip>
@@ -117,7 +117,7 @@
                                 </graphic>
                             </Button>
                             <!-- Clipboard with Caret -->
-                            <Button styleClass="toolbar-tile-btn, tb-clipboard-btn" focusTraversable="false" onAction="#handlePasteClipboard">
+                            <Button fx:id="tbClipboardBtn" styleClass="toolbar-tile-btn, tb-clipboard-btn" focusTraversable="false" onAction="#handleClipboardAction">
                                 <tooltip>
                                     <Tooltip text="Paste from Clipboard" />
                                 </tooltip>
@@ -136,9 +136,9 @@
 
                         <!-- Center: Wide Zoom Slider Bar -->
                         <HBox alignment="CENTER" spacing="12" styleClass="zoom-pill" HBox.hgrow="ALWAYS">
-                            <Label text="−" styleClass="zoom-icon" />
-                            <Slider fx:id="zoomSlider" value="100" min="0" max="200" styleClass="zoom-slider" HBox.hgrow="ALWAYS" />
-                            <Label fx:id="zoomLabel" text="+ 100%" styleClass="zoom-text" minWidth="-Infinity" />
+                            <Label fx:id="zoomMinusLabel" text="−" styleClass="zoom-icon" onMouseClicked="#handleZoomOut" />
+                            <Slider fx:id="zoomSlider" value="100" min="40" max="200" styleClass="zoom-slider" HBox.hgrow="ALWAYS" />
+                            <Label fx:id="zoomLabel" text="+ 100%" styleClass="zoom-text" minWidth="-Infinity" onMouseClicked="#handleZoomLabelClick" />
                         </HBox>
 
                         <Region HBox.hgrow="ALWAYS" minWidth="15" maxWidth="30" />
@@ -146,7 +146,7 @@
                         <!-- Right Group: 3 Separate Tile Buttons -->
                         <HBox alignment="CENTER_RIGHT" spacing="6">
                             <!-- Trash can -->
-                            <Button styleClass="toolbar-tile-btn, tb-trash-btn" onAction="#clearDisplay" focusTraversable="false">
+                            <Button fx:id="tbTrashBtn" styleClass="toolbar-tile-btn, tb-trash-btn" onAction="#clearDisplay" focusTraversable="false">
                                 <tooltip>
                                     <Tooltip text="Clear Working Area" />
                                 </tooltip>
@@ -156,7 +156,7 @@
                                 </graphic>
                             </Button>
                             <!-- Pencil / Edit -->
-                            <Button styleClass="toolbar-tile-btn, tb-edit-btn" focusTraversable="false">
+                            <Button fx:id="tbEditBtn" styleClass="toolbar-tile-btn, tb-edit-btn" focusTraversable="false" onAction="#handleEditEquation">
                                 <tooltip>
                                     <Tooltip text="Draw / Edit Equation" />
                                 </tooltip>
@@ -166,7 +166,7 @@
                                 </graphic>
                             </Button>
                             <!-- Rotation Lock (Circle arrow with lock inside) -->
-                            <Button styleClass="toolbar-tile-btn, tb-lock-btn" focusTraversable="false">
+                            <Button fx:id="tbLockBtn" styleClass="toolbar-tile-btn, tb-lock-btn" focusTraversable="false" onAction="#handlePinToggle">
                                 <tooltip>
                                     <Tooltip text="Lock History &amp; Orientation" />
                                 </tooltip>
