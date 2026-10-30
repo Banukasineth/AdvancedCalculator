@@ -457,6 +457,26 @@
     -fx-fill: #FFFFFF;
 }
 
+/* Microphone active recording state with intense pulsing neon red glow */
+.mic-btn.recording {
+    -fx-background-color: rgba(255, 30, 86, 0.42);
+    -fx-border-color: #FF1E56;
+    -fx-effect: dropshadow(gaussian, rgba(255, 30, 86, 0.9), 16, 0.55, 0, 0);
+}
+.mic-btn.recording .svg-icon {
+    -fx-fill: #FFFFFF;
+}
+
+/* Microphone processing/transcribing state with violet glow */
+.mic-btn.transcribing {
+    -fx-background-color: rgba(168, 85, 247, 0.38);
+    -fx-border-color: #C084FC;
+    -fx-effect: dropshadow(gaussian, rgba(168, 85, 247, 0.85), 14, 0.5, 0, 0);
+}
+.mic-btn.transcribing .svg-icon {
+    -fx-fill: #F3E8FF;
+}
+
 /* Camera Icon - Vibrant Electric Cyan with glowing hover */
 .camera-btn {
     -fx-background-color: rgba(0, 210, 255, 0.14);

@@ -231,53 +231,76 @@ public class AISettingsDialog {
         root.getChildren().addAll(header, statusCard, modelBox, keyBox, testRow);
         pane.setContent(root);
 
-        // Dialog Action Buttons
-        ButtonType saveBtnType = new ButtonType("Save & Enable AI", ButtonBar.ButtonData.OK_DONE);
-        ButtonType clearBtnType = new ButtonType("Clear / Offline Mode", ButtonBar.ButtonData.OTHER);
-        ButtonType cancelBtnType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        // Centered Action Buttons in dedicated HBox with equal spacing
+        HBox buttonBarRow = new HBox(12);
+        buttonBarRow.setAlignment(Pos.CENTER);
+        buttonBarRow.setMaxWidth(Double.MAX_VALUE);
+        buttonBarRow.prefWidthProperty().bind(root.widthProperty());
+        buttonBarRow.setPadding(new Insets(14, 0, 0, 0));
 
-        pane.getButtonTypes().addAll(saveBtnType, clearBtnType, cancelBtnType);
+        Button clearBtn = new Button("Clear / Offline Mode");
+        Button saveBtn = new Button("Save & Enable AI");
+        Button cancelBtn = new Button("Cancel");
 
-        Button saveBtn = (Button) pane.lookupButton(saveBtnType);
-        if (saveBtn != null) {
-            String defaultSave = "-fx-background-color: linear-gradient(to bottom, #E82E88, #C4166E); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 16; -fx-cursor: hand;";
-            String hoverSave = "-fx-background-color: linear-gradient(to bottom, #FF3E9E, #D61B78); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 16; -fx-cursor: hand;";
-            saveBtn.setStyle(defaultSave);
-            saveBtn.setOnMouseEntered(e -> saveBtn.setStyle(hoverSave));
-            saveBtn.setOnMouseExited(e -> saveBtn.setStyle(defaultSave));
-        }
+        clearBtn.setPrefHeight(36);
+        saveBtn.setPrefHeight(36);
+        cancelBtn.setPrefHeight(36);
 
-        Button clearBtn = (Button) pane.lookupButton(clearBtnType);
-        if (clearBtn != null) {
-            String defaultClear = "-fx-background-color: #2C293A; -fx-text-fill: #E2DFEE; -fx-font-weight: bold; -fx-background-radius: 6; -fx-border-color: #5A5474; -fx-border-width: 1; -fx-border-radius: 6; -fx-padding: 8 14; -fx-cursor: hand;";
-            String hoverClear = "-fx-background-color: #3E3952; -fx-text-fill: #FFFFFF; -fx-font-weight: bold; -fx-background-radius: 6; -fx-border-color: #7D769E; -fx-border-width: 1; -fx-border-radius: 6; -fx-padding: 8 14; -fx-cursor: hand;";
-            clearBtn.setStyle(defaultClear);
-            clearBtn.setOnMouseEntered(e -> clearBtn.setStyle(hoverClear));
-            clearBtn.setOnMouseExited(e -> clearBtn.setStyle(defaultClear));
-        }
+        String defaultSave = "-fx-background-color: linear-gradient(to bottom, #E82E88, #C4166E); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 18; -fx-cursor: hand; -fx-font-size: 13px;";
+        String hoverSave = "-fx-background-color: linear-gradient(to bottom, #FF3E9E, #D61B78); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 18; -fx-cursor: hand; -fx-font-size: 13px;";
+        saveBtn.setStyle(defaultSave);
+        saveBtn.setOnMouseEntered(e -> saveBtn.setStyle(hoverSave));
+        saveBtn.setOnMouseExited(e -> saveBtn.setStyle(defaultSave));
 
-        Button cancelBtn = (Button) pane.lookupButton(cancelBtnType);
-        if (cancelBtn != null) {
-            String defaultCancel = "-fx-background-color: #2C293A; -fx-text-fill: #E2DFEE; -fx-font-weight: bold; -fx-background-radius: 6; -fx-border-color: #5A5474; -fx-border-width: 1; -fx-border-radius: 6; -fx-padding: 8 14; -fx-cursor: hand;";
-            String hoverCancel = "-fx-background-color: #3E3952; -fx-text-fill: #FFFFFF; -fx-font-weight: bold; -fx-background-radius: 6; -fx-border-color: #7D769E; -fx-border-width: 1; -fx-border-radius: 6; -fx-padding: 8 14; -fx-cursor: hand;";
-            cancelBtn.setStyle(defaultCancel);
-            cancelBtn.setOnMouseEntered(e -> cancelBtn.setStyle(hoverCancel));
-            cancelBtn.setOnMouseExited(e -> cancelBtn.setStyle(defaultCancel));
-        }
+        String defaultClear = "-fx-background-color: #2C293A; -fx-text-fill: #E2DFEE; -fx-font-weight: bold; -fx-background-radius: 6; -fx-border-color: #5A5474; -fx-border-width: 1; -fx-border-radius: 6; -fx-padding: 8 16; -fx-cursor: hand; -fx-font-size: 13px;";
+        String hoverClear = "-fx-background-color: #3E3952; -fx-text-fill: #FFFFFF; -fx-font-weight: bold; -fx-background-radius: 6; -fx-border-color: #7D769E; -fx-border-width: 1; -fx-border-radius: 6; -fx-padding: 8 16; -fx-cursor: hand; -fx-font-size: 13px;";
+        clearBtn.setStyle(defaultClear);
+        clearBtn.setOnMouseEntered(e -> clearBtn.setStyle(hoverClear));
+        clearBtn.setOnMouseExited(e -> clearBtn.setStyle(defaultClear));
 
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == saveBtnType) {
-                String key = passwordField.getText().trim();
-                String selectedModel = parseSelectedModel(modelCombo.getValue());
-                AIConfigManager.setModelName(selectedModel);
-                AIConfigManager.saveApiKey(key);
-                return key;
-            } else if (dialogButton == clearBtnType) {
-                AIConfigManager.saveApiKey("");
-                return "";
+        String defaultCancel = "-fx-background-color: #2C293A; -fx-text-fill: #E2DFEE; -fx-font-weight: bold; -fx-background-radius: 6; -fx-border-color: #5A5474; -fx-border-width: 1; -fx-border-radius: 6; -fx-padding: 8 16; -fx-cursor: hand; -fx-font-size: 13px;";
+        String hoverCancel = "-fx-background-color: #3E3952; -fx-text-fill: #FFFFFF; -fx-font-weight: bold; -fx-background-radius: 6; -fx-border-color: #7D769E; -fx-border-width: 1; -fx-border-radius: 6; -fx-padding: 8 16; -fx-cursor: hand; -fx-font-size: 13px;";
+        cancelBtn.setStyle(defaultCancel);
+        cancelBtn.setOnMouseEntered(e -> cancelBtn.setStyle(hoverCancel));
+        cancelBtn.setOnMouseExited(e -> cancelBtn.setStyle(defaultCancel));
+
+        buttonBarRow.getChildren().addAll(clearBtn, saveBtn, cancelBtn);
+        root.getChildren().add(buttonBarRow);
+
+        pane.setContent(root);
+
+        // Dummy close button so JavaFX Dialog window knows it can close cleanly
+        pane.getButtonTypes().add(ButtonType.CLOSE);
+        dialog.setOnShowing(ev -> {
+            javafx.scene.Node bar = pane.lookup(".button-bar");
+            if (bar != null) {
+                bar.setVisible(false);
+                bar.setManaged(false);
             }
-            return null;
         });
+
+        // Wire actions
+        saveBtn.setOnAction(e -> {
+            String key = passwordField.getText().trim();
+            String selectedModel = parseSelectedModel(modelCombo.getValue());
+            AIConfigManager.setModelName(selectedModel);
+            AIConfigManager.saveApiKey(key);
+            dialog.setResult(key);
+            dialog.close();
+        });
+
+        clearBtn.setOnAction(e -> {
+            AIConfigManager.saveApiKey("");
+            dialog.setResult("");
+            dialog.close();
+        });
+
+        cancelBtn.setOnAction(e -> {
+            dialog.setResult(null);
+            dialog.close();
+        });
+        cancelBtn.setCancelButton(true);
+        saveBtn.setDefaultButton(true);
 
         return dialog.showAndWait();
     }

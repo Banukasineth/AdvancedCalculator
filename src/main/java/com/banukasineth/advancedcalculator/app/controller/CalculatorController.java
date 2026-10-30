@@ -46,6 +46,7 @@ import javafx.util.Duration;
 import javafx.stage.Stage;
 import com.banukasineth.advancedcalculator.app.service.AISolverService;
 import com.banukasineth.advancedcalculator.app.service.AIConfigManager;
+import com.banukasineth.advancedcalculator.app.service.VoiceInputService;
 import com.banukasineth.advancedcalculator.app.ui.AIOrbView;
 import com.banukasineth.advancedcalculator.app.ui.AISettingsDialog;
 import com.banukasineth.advancedcalculator.app.ui.EquationSubstitutionDialog;
@@ -736,11 +737,149 @@ public class CalculatorController {
         typewriterTimeline.play();
     }
 
+    private final VoiceInputService voiceInputService = new VoiceInputService();
+    private Timeline micPulseTimeline;
+    private javafx.animation.PauseTransition micAutoStopTimer;
+
     @FXML
     private void handleMicClick() {
-        if (mathInputField != null) {
+        if (voiceInputService.isRecording()) {
+            stopVoiceRecordingAndTranscribe();
+        } else {
+            startVoiceRecording();
+        }
+    }
+
+    private void startVoiceRecording() {
+        if (mathInputField == null || micButton == null) return;
+
+        if (!voiceInputService.isSupported()) {
             mathInputField.requestFocus();
-            mathInputField.setPromptText("Listening... (e.g. 'solve 3x + 5 = 20')");
+            mathInputField.setPromptText("⚠️ Microphone input line not available on this system.");
+            return;
+        }
+
+        try {
+            voiceInputService.startRecording();
+        } catch (Exception e) {
+            System.err.println("Failed to start voice recording: " + e.getMessage());
+            mathInputField.setPromptText("⚠️ Could not open microphone: " + e.getMessage());
+            return;
+        }
+
+        // Pause idle typewriter animation so it doesn't overwrite our recording prompt
+        if (typewriterTimeline != null) {
+            typewriterTimeline.pause();
+        }
+
+        mathInputField.requestFocus();
+        mathInputField.clear();
+        mathInputField.setPromptText("🔴 Listening... Speak your math question (Click mic when done)");
+
+        // Add recording class to micButton for glowing red neon styling
+        micButton.getStyleClass().add("recording");
+
+        // Start pulse animation on micButton
+        if (micPulseTimeline != null) {
+            micPulseTimeline.stop();
+        }
+        micPulseTimeline = new Timeline(
+                new KeyFrame(Duration.ZERO,
+                        new KeyValue(micButton.scaleXProperty(), 1.0, Interpolator.EASE_BOTH),
+                        new KeyValue(micButton.scaleYProperty(), 1.0, Interpolator.EASE_BOTH)
+                ),
+                new KeyFrame(Duration.millis(450),
+                        new KeyValue(micButton.scaleXProperty(), 1.18, Interpolator.EASE_BOTH),
+                        new KeyValue(micButton.scaleYProperty(), 1.18, Interpolator.EASE_BOTH)
+                ),
+                new KeyFrame(Duration.millis(900),
+                        new KeyValue(micButton.scaleXProperty(), 1.0, Interpolator.EASE_BOTH),
+                        new KeyValue(micButton.scaleYProperty(), 1.0, Interpolator.EASE_BOTH)
+                )
+        );
+        micPulseTimeline.setCycleCount(Timeline.INDEFINITE);
+        micPulseTimeline.play();
+
+        // 15-second safety auto-stop timer
+        if (micAutoStopTimer != null) {
+            micAutoStopTimer.stop();
+        }
+        micAutoStopTimer = new javafx.animation.PauseTransition(Duration.seconds(15));
+        micAutoStopTimer.setOnFinished(ev -> {
+            if (voiceInputService.isRecording()) {
+                stopVoiceRecordingAndTranscribe();
+            }
+        });
+        micAutoStopTimer.play();
+    }
+
+    private void stopVoiceRecordingAndTranscribe() {
+        if (micAutoStopTimer != null) {
+            micAutoStopTimer.stop();
+        }
+        if (micPulseTimeline != null) {
+            micPulseTimeline.stop();
+        }
+
+        if (micButton != null) {
+            micButton.setScaleX(1.0);
+            micButton.setScaleY(1.0);
+            micButton.getStyleClass().remove("recording");
+            micButton.getStyleClass().add("transcribing");
+            micButton.setDisable(true);
+        }
+
+        if (mathInputField != null) {
+            mathInputField.setPromptText("✨ Transcribing voice to math...");
+        }
+
+        byte[] wavBytes = voiceInputService.stopRecording();
+
+        if (wavBytes == null || wavBytes.length == 0) {
+            resetMicUiAfterVoice();
+            if (mathInputField != null) {
+                mathInputField.setPromptText("Audio too short or silent. Click mic and speak...");
+            }
+            return;
+        }
+
+        voiceInputService.transcribe(wavBytes)
+                .thenAcceptAsync(transcribed -> {
+                    Platform.runLater(() -> {
+                        resetMicUiAfterVoice();
+
+                        if (transcribed != null && !transcribed.trim().isEmpty()) {
+                            String clean = transcribed.trim();
+                            mathInputField.setText(clean);
+                            handleMathInputSubmit();
+                        } else {
+                            if (mathInputField != null) {
+                                mathInputField.setPromptText("Could not detect clear speech. Please try again.");
+                            }
+                        }
+                    });
+                })
+                .exceptionally(ex -> {
+                    Platform.runLater(() -> {
+                        resetMicUiAfterVoice();
+                        if (mathInputField != null) {
+                            mathInputField.setPromptText("Speech recognition error: " + ex.getMessage());
+                        }
+                    });
+                    return null;
+                });
+    }
+
+    private void resetMicUiAfterVoice() {
+        if (micButton != null) {
+            micButton.getStyleClass().remove("recording");
+            micButton.getStyleClass().remove("transcribing");
+            micButton.setScaleX(1.0);
+            micButton.setScaleY(1.0);
+            micButton.setDisable(false);
+        }
+        if (typewriterTimeline != null) {
+            typewriterTimeline.play();
         }
     }
 

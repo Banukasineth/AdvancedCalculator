@@ -144,10 +144,12 @@ public class EquationSubstitutionDialog {
         }
         root.getChildren().add(grid);
 
-        // Custom Buttons in dedicated HBox with exact same spacing
+        // Custom Buttons in dedicated HBox with exact same spacing (centered)
         HBox buttonBarRow = new HBox(12);
-        buttonBarRow.setAlignment(Pos.CENTER_RIGHT);
-        buttonBarRow.setPadding(new Insets(10, 0, 0, 0));
+        buttonBarRow.setAlignment(Pos.CENTER);
+        buttonBarRow.setMaxWidth(Double.MAX_VALUE);
+        buttonBarRow.prefWidthProperty().bind(root.widthProperty());
+        buttonBarRow.setPadding(new Insets(14, 0, 0, 0));
 
         Button insertBtn = new Button("Insert Formula");
         Button solveBtn = new Button("Substitute & Solve");
