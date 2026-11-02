@@ -2,121 +2,141 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.geometry.Insets?>
 
 <StackPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1"
     fx:controller="com.banukasineth.advancedcalculator.app.controller.UnitConverterController"
     stylesheets="@../css/style.css"
-    styleClass="root-pane" prefHeight="750.0" prefWidth="1050.0">
+    style="-fx-background-color: #14121C;">
 
-    <BorderPane fx:id="rootPane" focusTraversable="true" styleClass="main-border-pane">
+    <BorderPane fx:id="rootPane" focusTraversable="true" style="-fx-background-color: transparent;">
         
-        <!-- Custom Top Bar for Undecorated Window -->
+        <!-- In-window Top Header for Unit Converter -->
         <top>
-            <HBox fx:id="titleBar" alignment="CENTER_LEFT" styleClass="custom-title-bar"
-                onMousePressed="#handleTitleBarPressed" onMouseDragged="#handleTitleBarDragged">
-
-                <Button text="≡" onAction="#toggleSidebar" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 24px; -fx-cursor: hand; -fx-padding: 0 15 0 10;"/>
-
-                <!-- App Tabs -->
-                <HBox alignment="CENTER_LEFT" spacing="5" styleClass="title-tabs">
-                    <HBox alignment="CENTER" styleClass="active-tab">
-                        <Label text="Unit Converter" styleClass="tab-text" />
-                    </HBox>
-                </HBox>
-
+            <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-padding: 8 16 8 16; -fx-background-color: #1A1724; -fx-border-color: rgba(255,255,255,0.06); -fx-border-width: 0 0 1 0;">
+                <Button fx:id="sidebarToggleBtn" text="≡" onAction="#toggleSidebar" 
+                        styleClass="converter-icon-btn" style="-fx-font-size: 18px; -fx-padding: 4 12;"/>
+                <ComboBox fx:id="unitModeComboBox" promptText="Unit Converter" styleClass="mode-combo" prefWidth="180" />
                 <Region HBox.hgrow="ALWAYS" />
-
-                <!-- Window Controls -->
-                <HBox alignment="CENTER_RIGHT" styleClass="window-controls">
-                    <Button text="🗕" styleClass="window-btn, minimize-btn"
-                        onAction="#minimizeWindow" />
-                    <Button text="🗖" styleClass="window-btn, maximize-btn"
-                        onAction="#maximizeWindow" />
-                    <Button text="🗙" styleClass="window-btn, close-btn" onAction="#closeWindow" />
-                </HBox>
+                <Label text="NovaCalc  •  Converter" style="-fx-text-fill: rgba(255,255,255,0.38); -fx-font-size: 12px; -fx-font-weight: 500;" />
             </HBox>
         </top>
 
-        <!-- Main Content (Sidebar + Converter) -->
+        <!-- Main Content (Sidebar + Converter View) -->
         <center>
-            <BorderPane>
+            <BorderPane style="-fx-background-color: transparent;">
+                <!-- Left Sidebar -->
                 <left>
-                    <VBox fx:id="sidebar" style="-fx-background-color: transparent;" prefWidth="220" spacing="5">
-                        <padding>
-                            <Insets top="20" right="0" bottom="20" left="0"/>
-                        </padding>
-                        <Label text="Converter" style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 0 0 10 20;"/>
-                        
-                        <ListView fx:id="menuList" VBox.vgrow="ALWAYS" 
-                                  style="-fx-background-color: transparent; -fx-control-inner-background: transparent; -fx-border-color: transparent; -fx-padding: 0;"/>
+                    <VBox fx:id="sidebar" prefWidth="215" minWidth="0" maxWidth="215" style="-fx-background-color: #171520; -fx-border-color: rgba(255,255,255,0.06); -fx-border-width: 0 1 0 0;">
+                        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;" VBox.vgrow="ALWAYS">
+                            <VBox spacing="4" style="-fx-padding: 12 8 16 8;">
+                                <Label text="MEASURE" style="-fx-text-fill: rgba(255,255,255,0.38); -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 6 10 4 10;" />
+                                <VBox fx:id="measureCategoryBox" spacing="2" />
+                                
+                                <Separator style="-fx-opacity: 0.08; -fx-padding: 10 4 10 4;" />
+                                
+                                <Label text="CALCULATE &amp; PLAN" style="-fx-text-fill: rgba(255,255,255,0.38); -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 6 10 4 10;" />
+                                <VBox fx:id="calculateCategoryBox" spacing="2" />
+                            </VBox>
+                        </ScrollPane>
                     </VBox>
                 </left>
                 
+                <!-- Center Main Content -->
                 <center>
-                    <HBox alignment="CENTER" spacing="40" style="-fx-background-color: transparent;">
-                        <padding>
-                            <Insets top="40" right="40" bottom="40" left="40"/>
-                        </padding>
-
-                        <!-- Left Side: Displays -->
-                        <VBox alignment="CENTER_LEFT" spacing="40" HBox.hgrow="ALWAYS">
-                            <Label fx:id="titleLabel" text="Length" style="-fx-text-fill: white; -fx-font-size: 36px; -fx-font-weight: bold;"/>
+                    <ScrollPane fx:id="mainScrollPane" fitToWidth="true" hbarPolicy="NEVER" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
+                        <VBox spacing="20" style="-fx-padding: 24 36 36 36;" maxWidth="960" alignment="TOP_CENTER">
                             
-                            <VBox spacing="20">
-                                <VBox spacing="10">
-                                    <Label fx:id="inputValueField" text="0" style="-fx-font-size: 48px; -fx-text-fill: white; -fx-font-weight: bold;"/>
-                                    <ComboBox fx:id="fromUnitBox" styleClass="mode-combo" maxWidth="Infinity" style="-fx-font-size: 18px;" />
-                                    <Region style="-fx-background-color: #0078D7; -fx-pref-height: 2px;" />
-                                </VBox>
-                                
-                                <Label text="=" style="-fx-text-fill: #0078D7; -fx-font-size: 36px; -fx-font-weight: bold;"/>
-                                
-                                <VBox spacing="10">
-                                    <Label fx:id="outputValueField" text="0" style="-fx-font-size: 48px; -fx-text-fill: #A0A0A0; -fx-font-weight: bold;"/>
-                                    <ComboBox fx:id="toUnitBox" styleClass="mode-combo" maxWidth="Infinity" style="-fx-font-size: 18px;" />
-                                    <Region style="-fx-background-color: #555555; -fx-pref-height: 2px;" />
-                                </VBox>
-
-                                <!-- Responsive Ruler Component (Visible only for Length) -->
-                                <Pane fx:id="visualizerPane" prefHeight="80" style="-fx-background-color: transparent;" managed="false" visible="false" />
+                            <!-- Header / Breadcrumb -->
+                            <VBox spacing="4" alignment="CENTER_LEFT" maxWidth="Infinity">
+                                <Label fx:id="breadcrumbLabel" text="Convert  /  Length" style="-fx-text-fill: rgba(255,255,255,0.45); -fx-font-size: 12px; -fx-font-weight: bold;" />
+                                <HBox alignment="CENTER_LEFT" spacing="12">
+                                    <Label fx:id="categoryIconLabel" text="📏" style="-fx-font-size: 30px;" />
+                                    <VBox spacing="2">
+                                        <Label fx:id="titleLabel" text="Length converter" style="-fx-text-fill: white; -fx-font-size: 26px; -fx-font-weight: bold;" />
+                                        <Label fx:id="subtitleLabel" text="Every unit in its place. Every answer within reach." style="-fx-text-fill: rgba(255,255,255,0.5); -fx-font-size: 13px;" />
+                                    </VBox>
+                                </HBox>
                             </VBox>
+
+                            <!-- Dual Cards HBox: From & To -->
+                            <HBox alignment="CENTER" spacing="14" maxWidth="Infinity">
+                                <!-- FROM Card -->
+                                <VBox styleClass="converter-card, from-card" HBox.hgrow="ALWAYS" spacing="10">
+                                    <HBox alignment="CENTER_LEFT">
+                                        <Label text="From" styleClass="card-label-muted" />
+                                        <Region HBox.hgrow="ALWAYS" />
+                                        <!-- Country Flag Showcase Badge -->
+                                        <HBox fx:id="fromFlagBadge" alignment="CENTER" spacing="8" styleClass="flag-badge-pill" visible="false" managed="false">
+                                            <ImageView fx:id="fromFlagView" fitWidth="34" fitHeight="22" preserveRatio="false" />
+                                            <Label fx:id="fromFlagCodeLabel" text="USD" styleClass="flag-code-label" />
+                                        </HBox>
+                                    </HBox>
+                                    <TextField fx:id="inputTextField" text="3" promptText="0" styleClass="converter-input-field" />
+                                    <ComboBox fx:id="fromUnitBox" maxWidth="Infinity" styleClass="converter-combo" />
+                                </VBox>
+
+                                <!-- Swap Button in the center -->
+                                <Button fx:id="swapBtn" text="⇄" onAction="#swapUnits" styleClass="converter-swap-btn" minWidth="44" minHeight="44" prefWidth="44" prefHeight="44">
+                                    <tooltip><Tooltip text="Swap units (⇄)" /></tooltip>
+                                </Button>
+
+                                <!-- TO Card -->
+                                <VBox styleClass="converter-card, to-card" HBox.hgrow="ALWAYS" spacing="10">
+                                    <HBox alignment="CENTER_LEFT">
+                                        <Label text="To" styleClass="card-label-muted" />
+                                        <Region HBox.hgrow="ALWAYS" />
+                                        <!-- Country Flag Showcase Badge -->
+                                        <HBox fx:id="toFlagBadge" alignment="CENTER" spacing="8" styleClass="flag-badge-pill" visible="false" managed="false">
+                                            <ImageView fx:id="toFlagView" fitWidth="34" fitHeight="22" preserveRatio="false" />
+                                            <Label fx:id="toFlagCodeLabel" text="EUR" styleClass="flag-code-label" />
+                                        </HBox>
+                                    </HBox>
+                                    <TextField fx:id="outputTextField" text="9.8425" editable="false" styleClass="converter-output-field" />
+                                    <ComboBox fx:id="toUnitBox" maxWidth="Infinity" styleClass="converter-combo" />
+                                </VBox>
+                            </HBox>
+
+                            <!-- Visual Representation Container -->
+                            <VBox styleClass="converter-visualizer-container" maxWidth="Infinity" spacing="12">
+                                <HBox alignment="CENTER_LEFT">
+                                    <Label fx:id="visualizerUnitPairLabel" text="m  ⇄  ft" style="-fx-text-fill: rgba(255,255,255,0.85); -fx-font-size: 14px; -fx-font-weight: bold;" />
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <Label text="Relative scale - not actual size" style="-fx-text-fill: rgba(255,255,255,0.35); -fx-font-size: 11px;" />
+                                </HBox>
+
+                                <!-- Responsive Visualizer Pane -->
+                                <Pane fx:id="visualizerPane" minHeight="120" prefHeight="130" style="-fx-background-color: transparent;" />
+
+                                <!-- Formula Pill -->
+                                <HBox alignment="CENTER">
+                                    <Label fx:id="formulaLabel" text="1 m = 3.2808 ft" styleClass="formula-pill" />
+                                </HBox>
+                            </VBox>
+
+                            <!-- Action Buttons Bar -->
+                            <HBox alignment="CENTER_LEFT" spacing="10" maxWidth="Infinity">
+                                <Button text="Clear value" onAction="#clearEntry" styleClass="converter-action-btn" />
+                                <Button text="⇄ Swap pair" onAction="#swapUnits" styleClass="converter-action-btn" />
+                                <Button fx:id="refreshRatesBtn" text="🔄 Live Rates" onAction="#refreshExchangeRates" styleClass="converter-action-btn" visible="false" managed="false" />
+                                <Region HBox.hgrow="ALWAYS" />
+                                <Button text="🕒 History" onAction="#showHistory" styleClass="converter-action-btn" />
+                                <Button fx:id="copyResultBtn" text="📋 Copy result" onAction="#copyResult" styleClass="converter-primary-btn" />
+                            </HBox>
+
+                            <!-- Equivalent Measurements Section -->
+                            <VBox spacing="10" maxWidth="Infinity">
+                                <HBox alignment="BOTTOM_LEFT" spacing="10">
+                                    <Label text="Equivalent measurements" style="-fx-text-fill: white; -fx-font-size: 17px; -fx-font-weight: bold;" />
+                                    <Label text="Rounded for display. Full precision retained." style="-fx-text-fill: rgba(255,255,255,0.4); -fx-font-size: 11px;" />
+                                </HBox>
+
+                                <VBox fx:id="equivalentsContainer" spacing="6" maxWidth="Infinity" />
+                            </VBox>
+
                         </VBox>
-
-                        <!-- Right Side: NumPad -->
-                        <GridPane hgap="10" vgap="10" alignment="CENTER">
-                            <columnConstraints>
-                                <ColumnConstraints percentWidth="33.3" />
-                                <ColumnConstraints percentWidth="33.3" />
-                                <ColumnConstraints percentWidth="33.3" />
-                            </columnConstraints>
-                            <rowConstraints>
-                                <RowConstraints percentHeight="20" />
-                                <RowConstraints percentHeight="20" />
-                                <RowConstraints percentHeight="20" />
-                                <RowConstraints percentHeight="20" />
-                                <RowConstraints percentHeight="20" />
-                            </rowConstraints>
-
-                            <Button text="CE" onAction="#clearEntry" GridPane.columnIndex="1" GridPane.rowIndex="0" style="-fx-background-color: #3b3b3b; -fx-text-fill: white; -fx-font-size: 24px; -fx-background-radius: 8; -fx-cursor: hand;" maxWidth="Infinity" maxHeight="Infinity"/>
-                            <Button text="⌫" onAction="#backspace" onMousePressed="#handleBackspacePressed" onMouseReleased="#handleBackspaceReleased" onMouseExited="#handleBackspaceExited" GridPane.columnIndex="2" GridPane.rowIndex="0" style="-fx-background-color: #3b3b3b; -fx-text-fill: white; -fx-font-size: 24px; -fx-background-radius: 8; -fx-cursor: hand;" maxWidth="Infinity" maxHeight="Infinity"/>
-
-                            <Button text="7" onAction="#appendNumber" GridPane.columnIndex="0" GridPane.rowIndex="1" style="-fx-background-color: #2b2b2b; -fx-text-fill: white; -fx-font-size: 28px; -fx-background-radius: 8; -fx-cursor: hand;" maxWidth="Infinity" maxHeight="Infinity"/>
-                            <Button text="8" onAction="#appendNumber" GridPane.columnIndex="1" GridPane.rowIndex="1" style="-fx-background-color: #2b2b2b; -fx-text-fill: white; -fx-font-size: 28px; -fx-background-radius: 8; -fx-cursor: hand;" maxWidth="Infinity" maxHeight="Infinity"/>
-                            <Button text="9" onAction="#appendNumber" GridPane.columnIndex="2" GridPane.rowIndex="1" style="-fx-background-color: #2b2b2b; -fx-text-fill: white; -fx-font-size: 28px; -fx-background-radius: 8; -fx-cursor: hand;" maxWidth="Infinity" maxHeight="Infinity"/>
-
-                            <Button text="4" onAction="#appendNumber" GridPane.columnIndex="0" GridPane.rowIndex="2" style="-fx-background-color: #2b2b2b; -fx-text-fill: white; -fx-font-size: 28px; -fx-background-radius: 8; -fx-cursor: hand;" maxWidth="Infinity" maxHeight="Infinity"/>
-                            <Button text="5" onAction="#appendNumber" GridPane.columnIndex="1" GridPane.rowIndex="2" style="-fx-background-color: #2b2b2b; -fx-text-fill: white; -fx-font-size: 28px; -fx-background-radius: 8; -fx-cursor: hand;" maxWidth="Infinity" maxHeight="Infinity"/>
-                            <Button text="6" onAction="#appendNumber" GridPane.columnIndex="2" GridPane.rowIndex="2" style="-fx-background-color: #2b2b2b; -fx-text-fill: white; -fx-font-size: 28px; -fx-background-radius: 8; -fx-cursor: hand;" maxWidth="Infinity" maxHeight="Infinity"/>
-
-                            <Button text="1" onAction="#appendNumber" GridPane.columnIndex="0" GridPane.rowIndex="3" style="-fx-background-color: #2b2b2b; -fx-text-fill: white; -fx-font-size: 28px; -fx-background-radius: 8; -fx-cursor: hand;" maxWidth="Infinity" maxHeight="Infinity"/>
-                            <Button text="2" onAction="#appendNumber" GridPane.columnIndex="1" GridPane.rowIndex="3" style="-fx-background-color: #2b2b2b; -fx-text-fill: white; -fx-font-size: 28px; -fx-background-radius: 8; -fx-cursor: hand;" maxWidth="Infinity" maxHeight="Infinity"/>
-                            <Button text="3" onAction="#appendNumber" GridPane.columnIndex="2" GridPane.rowIndex="3" style="-fx-background-color: #2b2b2b; -fx-text-fill: white; -fx-font-size: 28px; -fx-background-radius: 8; -fx-cursor: hand;" maxWidth="Infinity" maxHeight="Infinity"/>
-
-                            <Button text="0" onAction="#appendNumber" GridPane.columnIndex="0" GridPane.rowIndex="4" GridPane.columnSpan="2" style="-fx-background-color: #2b2b2b; -fx-text-fill: white; -fx-font-size: 28px; -fx-background-radius: 8; -fx-cursor: hand;" maxWidth="Infinity" maxHeight="Infinity"/>
-                            <Button text="." onAction="#appendDecimal" GridPane.columnIndex="2" GridPane.rowIndex="4" style="-fx-background-color: #2b2b2b; -fx-text-fill: white; -fx-font-size: 28px; -fx-background-radius: 8; -fx-cursor: hand;" maxWidth="Infinity" maxHeight="Infinity"/>
-                        </GridPane>
-                    </HBox>
+                    </ScrollPane>
                 </center>
             </BorderPane>
         </center>

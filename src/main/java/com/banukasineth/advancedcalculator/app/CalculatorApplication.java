@@ -30,7 +30,7 @@ public class CalculatorApplication extends Application {
         // Use TRANSPARENT style to remove OS window chrome and support transparent scene background
         stage.initStyle(StageStyle.TRANSPARENT);
         
-        stage.setTitle("Advanced Calculator");
+        stage.setTitle("NovaCalc");
         stage.setScene(scene);
 
         // Window size limits 

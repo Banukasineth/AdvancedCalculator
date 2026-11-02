@@ -77,6 +77,9 @@ public class CalculatorController {
 
     // Programmer Mode Keypad and Base
     private int currentProgrammerBase = 10;
+    private String lastProgrammerExpr = "";
+    private int lastProgrammerInputBase = 10;
+    private long lastProgrammerVal = 0;
     @FXML private Button btnProgHex;
     @FXML private Button btnProgDec;
     @FXML private Button btnProgOct;
@@ -114,21 +117,21 @@ public class CalculatorController {
         if (currentProgrammerBase == newBase) return;
         
         String cur = currentLatexExpression.toString().trim();
-        if (!cur.isEmpty()) {
+        if (hasEvaluated && !lastProgrammerExpr.isEmpty()) {
+            String converted = MathEvaluator.convertBase(Long.toString(lastProgrammerVal), 10, newBase);
+            currentLatexExpression.setLength(0);
+            currentLatexExpression.append(converted);
+            display.setText(converted);
+            String alignedDisplay = MathEvaluator.generateProgrammerAlignedDisplay(lastProgrammerExpr, lastProgrammerInputBase, newBase, lastProgrammerVal, converted);
+            setMathExpression(alignedDisplay);
+            updateProgrammerSolutionArea(lastProgrammerExpr, lastProgrammerVal, newBase);
+        } else if (!cur.isEmpty()) {
             if (isBaseNumber(cur, currentProgrammerBase)) {
                 String converted = MathEvaluator.convertBase(cur, currentProgrammerBase, newBase);
                 currentLatexExpression.setLength(0);
                 currentLatexExpression.append(converted);
                 setMathExpression(converted);
                 display.setText(converted);
-
-                if (hasEvaluated) {
-                    try {
-                        long val = Long.parseUnsignedLong(converted.replace("-", ""), newBase);
-                        if (converted.startsWith("-")) val = -val;
-                        updateProgrammerSolutionArea(converted, val, newBase);
-                    } catch (Exception ignored) {}
-                }
             }
         }
         currentProgrammerBase = newBase;
@@ -1697,7 +1700,12 @@ public class CalculatorController {
             if (result.isSuccess()) {
                 history.push(currentLatexExpression.toString());
                 String formatted = result.getFormattedResult();
-                String alignedDisplay = "\\begin{aligned}\n& " + expr + " \\\\\n&= " + formatted + "\n\\end{aligned}";
+
+                long val = (long) result.getValue();
+                lastProgrammerExpr = expr;
+                lastProgrammerInputBase = currentProgrammerBase;
+                lastProgrammerVal = val;
+                String alignedDisplay = MathEvaluator.generateProgrammerAlignedDisplay(expr, currentProgrammerBase, currentProgrammerBase, val, formatted);
                 currentLatexExpression.setLength(0);
                 currentLatexExpression.append(formatted);
                 hasEvaluated = true;
@@ -1705,7 +1713,6 @@ public class CalculatorController {
                 display.setText(formatted);
 
                 // Show calculation steps and multi-base conversions in Solution Area
-                long val = (long) result.getValue();
                 updateProgrammerSolutionArea(expr, val, currentProgrammerBase);
             } else {
                 history.push(currentLatexExpression.toString());
@@ -1880,7 +1887,10 @@ public class CalculatorController {
         if (text.equals("C")) {
             if (modeComboBox != null && "Programmer".equals(modeComboBox.getValue())) {
                 if (currentProgrammerBase == 16) {
-                    if (currentLatexExpression.toString().equals("0")) {
+                    if (hasEvaluated) {
+                        hasEvaluated = false;
+                        currentLatexExpression.setLength(0);
+                    } else if (currentLatexExpression.toString().equals("0")) {
                         currentLatexExpression.setLength(0);
                     }
                     currentLatexExpression.append("C");
@@ -1905,6 +1915,18 @@ public class CalculatorController {
             return;
         } else if (text.equals("hyp")) {
             isHypActive = !isHypActive;
+            return;
+        } else if (text.equals("HEX")) {
+            setProgrammerBase(16);
+            return;
+        } else if (text.equals("DEC")) {
+            setProgrammerBase(10);
+            return;
+        } else if (text.equals("OCT")) {
+            setProgrammerBase(8);
+            return;
+        } else if (text.equals("BIN")) {
+            setProgrammerBase(2);
             return;
         }
 
@@ -2389,6 +2411,8 @@ public class CalculatorController {
     @FXML private HBox modeSelectorsHBox;
 
     @FXML private HBox graphingLayout;
+    @FXML private StackPane unitConverterContainer;
+    @FXML private UnitConverterController unitConverterLayoutController;
     @FXML private WebView graphWebView;
     @FXML private TextField equation1Field;
     @FXML private TextField equation2Field;
@@ -2530,6 +2554,7 @@ public class CalculatorController {
         history.clear();
         redoStack.clear();
         hasEvaluated = false;
+        lastProgrammerExpr = "";
         currentLatexExpression.setLength(0);
         setMathExpression("");
         if (mathInputField != null) {
@@ -2954,12 +2979,18 @@ public class CalculatorController {
                 
                 if (newVal.equals("Graphing")) {
                     if (standardLayout != null) { standardLayout.setVisible(false); standardLayout.setManaged(false); }
+                    if (unitConverterContainer != null) { unitConverterContainer.setVisible(false); unitConverterContainer.setManaged(false); }
                     if (graphingLayout != null) { graphingLayout.setVisible(true); graphingLayout.setManaged(true); }
                 } else if (newVal.equals("Unit Converter")) {
-                    openUnitConverter();
-                    javafx.application.Platform.runLater(() -> modeComboBox.setValue(oldVal));
+                    if (standardLayout != null) { standardLayout.setVisible(false); standardLayout.setManaged(false); }
+                    if (graphingLayout != null) { graphingLayout.setVisible(false); graphingLayout.setManaged(false); }
+                    if (unitConverterContainer != null) { unitConverterContainer.setVisible(true); unitConverterContainer.setManaged(true); }
+                    if (unitConverterLayoutController != null) {
+                        unitConverterLayoutController.setMode("Unit Converter");
+                    }
                 } else {
                     if (graphingLayout != null) { graphingLayout.setVisible(false); graphingLayout.setManaged(false); }
+                    if (unitConverterContainer != null) { unitConverterContainer.setVisible(false); unitConverterContainer.setManaged(false); }
                     if (standardLayout != null) { standardLayout.setVisible(true); standardLayout.setManaged(true); }
                     
                     // Hide all keypads
@@ -2995,6 +3026,14 @@ public class CalculatorController {
             });
         }
         
+        if (unitConverterLayoutController != null) {
+            unitConverterLayoutController.setOnModeChange(mode -> {
+                if (modeComboBox != null) {
+                    modeComboBox.setValue(mode);
+                }
+            });
+        }
+
         if (graphModeComboBox != null) {
             graphModeComboBox.getItems().addAll("Basic", "Advanced", "Scientific", "Programmer", "Graphing", "Unit Converter");
             graphModeComboBox.setValue("Graphing");
@@ -3018,17 +3057,53 @@ public class CalculatorController {
                 if (zoomLabel != null) {
                     zoomLabel.setText("+ " + Math.round(val) + "%");
                 }
-                double min = zoomSlider.getMin();
-                double max = zoomSlider.getMax();
-                double pct = Math.max(0.0, Math.min(100.0, ((val - min) / (max - min)) * 100.0));
-                javafx.scene.Node track = zoomSlider.lookup(".track");
-                if (track != null) {
-                    track.setStyle(String.format(java.util.Locale.US,
-                        "-fx-background-color: linear-gradient(to right, #E82E88 0%%, #E82E88 %.1f%%, #353242 %.1f%%, #353242 100%%);",
-                        pct, pct));
-                }
+                updateZoomSliderTrack();
             });
+
+            zoomSlider.skinProperty().addListener((obs, oldSkin, newSkin) -> {
+                Platform.runLater(this::updateZoomSliderTrack);
+            });
+            zoomSlider.widthProperty().addListener((obs, oldVal, newVal) -> {
+                updateZoomSliderTrack();
+            });
+            Platform.runLater(this::updateZoomSliderTrack);
         }
+    }
+
+    private boolean trackListenerAttached = false;
+
+    private void updateZoomSliderTrack() {
+        if (zoomSlider == null) return;
+        javafx.scene.Node track = zoomSlider.lookup(".track");
+        if (track == null) {
+            Platform.runLater(this::updateZoomSliderTrack);
+            return;
+        }
+
+        if (!trackListenerAttached) {
+            trackListenerAttached = true;
+            track.boundsInLocalProperty().addListener((obs, oldVal, newVal) -> updateZoomSliderTrack());
+        }
+
+        double val = zoomSlider.getValue();
+        double min = zoomSlider.getMin();
+        double max = zoomSlider.getMax();
+        double ratio = (max > min) ? Math.max(0.0, Math.min(1.0, (val - min) / (max - min))) : 0.0;
+
+        javafx.scene.Node thumb = zoomSlider.lookup(".thumb");
+        double pct;
+        if (thumb != null && track.getLayoutBounds().getWidth() > 0 && thumb.getLayoutBounds().getWidth() > 0) {
+            double trackW = track.getLayoutBounds().getWidth();
+            double thumbW = thumb.getLayoutBounds().getWidth();
+            double thumbCenter = ratio * (trackW - thumbW) + (thumbW / 2.0);
+            pct = Math.max(0.0, Math.min(100.0, (thumbCenter / trackW) * 100.0));
+        } else {
+            pct = ratio * 100.0;
+        }
+
+        track.setStyle(String.format(java.util.Locale.US,
+            "-fx-background-color: linear-gradient(to right, #E82E88 0%%, #E82E88 %.2f%%, #353242 %.2f%%, #353242 100%%);",
+            pct, pct));
     }
 
     private void setupResponsiveLayout() {

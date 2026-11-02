@@ -15,6 +15,19 @@
 }
 
 /* Custom Title Bar */
+/* NovaCalc Title Brand */
+.app-brand-box {
+    -fx-padding: 2 12;
+    -fx-alignment: center-left;
+}
+
+.app-title-text {
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
 .custom-title-bar {
     -fx-background-color: #181620; /* Slightly darker top */
     -fx-background-radius: 12 12 0 0;
@@ -377,7 +390,7 @@
 }
 /* Style slider track */
 .zoom-slider .track {
-    -fx-background-color: linear-gradient(to right, #E82E88 0%, #E82E88 50%, #353242 50%, #353242 100%);
+    -fx-background-color: linear-gradient(to right, #E82E88 0%, #E82E88 38.5%, #353242 38.5%, #353242 100%);
     -fx-background-radius: 4;
     -fx-pref-height: 8;
 }
@@ -734,13 +747,7 @@
 
 /* Hide Custom Color option from specific ColorPickers */
 .no-custom-color .custom-color-link {
-    visibility: hidden;
-    -fx-pref-height: 0;
-    -fx-max-height: 0;
-    -fx-min-height: 0;
-    -fx-padding: 0;
-    -fx-opacity: 0;
-}
+
 
 /* Glassmorphic Context Menu */
 .context-menu {
@@ -773,10 +780,291 @@
     -fx-border-color: rgba(255, 255, 255, 0.08);
     -fx-border-width: 0.5;
 }
-    visibility: hidden;
-    -fx-pref-height: 0;
-    -fx-max-height: 0;
-    -fx-min-height: 0;
+
+/* ==========================================================================
+   NovaCalc Modern Unit Converter UI Styles
+   ========================================================================== */
+
+.converter-icon-btn {
+    -fx-background-color: #24212F;
+    -fx-text-fill: white;
+    -fx-cursor: hand;
+    -fx-background-radius: 8;
+    -fx-border-color: rgba(255, 255, 255, 0.08);
+    -fx-border-radius: 8;
+}
+.converter-icon-btn:hover {
+    -fx-background-color: #2D2A3B;
+    -fx-border-color: rgba(255, 255, 255, 0.16);
+}
+
+/* Sidebar category items */
+.category-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #B8B5C8;
+    -fx-font-size: 13px;
+    -fx-font-weight: 500;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 8 12;
+    -fx-cursor: hand;
+    -fx-background-radius: 6;
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 0 3;
+}
+.category-btn:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-text-fill: #FFFFFF;
+}
+.category-btn-active {
+    -fx-background-color: rgba(0, 210, 255, 0.12);
+    -fx-text-fill: #00D2FF;
+    -fx-font-weight: bold;
+    -fx-border-color: #00D2FF;
+    -fx-border-width: 0 0 0 3;
+    -fx-border-radius: 0 6 6 0;
+}
+.category-btn-active:hover {
+    -fx-background-color: rgba(0, 210, 255, 0.18);
+    -fx-text-fill: #00E5FF;
+}
+
+/* Dual Converter Cards */
+.converter-card {
+    -fx-background-color: #1E1C27;
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(255, 255, 255, 0.08);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-padding: 18 20;
+}
+.from-card:hover {
+    -fx-border-color: rgba(255, 255, 255, 0.15);
+}
+.to-card {
+    -fx-border-color: rgba(0, 210, 255, 0.35);
+    -fx-effect: dropshadow(gaussian, rgba(0, 210, 255, 0.08), 12, 0, 0, 2);
+}
+.to-card:hover {
+    -fx-border-color: rgba(0, 210, 255, 0.6);
+}
+
+.card-label-muted {
+    -fx-text-fill: rgba(255, 255, 255, 0.45);
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+/* Country Flag Showcase Badge beside / inside cards */
+.flag-badge-pill {
+    -fx-background-color: #272435;
+    -fx-background-radius: 8;
+    -fx-border-color: rgba(255, 255, 255, 0.14);
+    -fx-border-radius: 8;
+    -fx-padding: 3 8;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.35), 8, 0, 0, 2);
+}
+.flag-badge-pill:hover {
+    -fx-background-color: #2F2B40;
+    -fx-border-color: rgba(0, 210, 255, 0.4);
+}
+.flag-code-label {
+    -fx-text-fill: #00D2FF;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-letter-spacing: 0.5px;
+}
+
+.converter-input-field {
+    -fx-background-color: transparent;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 38px;
+    -fx-font-weight: bold;
+    -fx-padding: 2 0;
+    -fx-border-color: transparent;
+    -fx-highlight-fill: #E82E88;
+    -fx-highlight-text-fill: #FFFFFF;
+}
+.converter-input-field:focused {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.converter-output-field {
+    -fx-background-color: transparent;
+    -fx-text-fill: #00D2FF;
+    -fx-font-size: 38px;
+    -fx-font-weight: bold;
+    -fx-padding: 2 0;
+    -fx-border-color: transparent;
+}
+
+.converter-combo {
+    -fx-background-color: #262332;
+    -fx-background-radius: 8;
+    -fx-border-color: rgba(255, 255, 255, 0.08);
+    -fx-border-radius: 8;
+    -fx-padding: 6 10;
+}
+.converter-combo .list-cell {
+    -fx-text-fill: #E2E0EB;
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+}
+.converter-combo:hover {
+    -fx-background-color: #2E2A3C;
+    -fx-border-color: rgba(255, 255, 255, 0.16);
+}
+.converter-combo .combo-box-popup .list-view {
+    -fx-background-color: rgba(30, 28, 39, 0.96);
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-color: rgba(255, 255, 255, 0.12);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 14, 0, 0, 6);
+}
+.converter-combo .combo-box-popup .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #FFFFFF;
+    -fx-padding: 8 14;
+    -fx-font-size: 13px;
+}
+.converter-combo .combo-box-popup .list-cell:filled:hover {
+    -fx-background-color: rgba(0, 210, 255, 0.2);
+    -fx-text-fill: #00E5FF;
+}
+
+.converter-swap-btn {
+    -fx-background-color: #24212F;
+    -fx-background-radius: 22;
+    -fx-border-color: rgba(255, 255, 255, 0.12);
+    -fx-border-radius: 22;
+    -fx-border-width: 1.5;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 18px;
+    -fx-cursor: hand;
+}
+.converter-swap-btn:hover {
+    -fx-background-color: #E82E88;
+    -fx-border-color: #E82E88;
+    -fx-text-fill: white;
+    -fx-scale-x: 1.08;
+    -fx-scale-y: 1.08;
+}
+
+/* Visualizer Container */
+.converter-visualizer-container {
+    -fx-background-color: #1E1C27;
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(255, 255, 255, 0.08);
+    -fx-border-radius: 12;
+    -fx-padding: 16 22;
+}
+
+.formula-pill {
+    -fx-background-color: #272433;
+    -fx-background-radius: 20;
+    -fx-padding: 6 18;
+    -fx-text-fill: #D8D6E2;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-border-color: rgba(255, 255, 255, 0.08);
+    -fx-border-radius: 20;
+}
+
+/* Actions */
+.converter-action-btn {
+    -fx-background-color: #24212F;
+    -fx-background-radius: 8;
+    -fx-border-color: rgba(255, 255, 255, 0.08);
+    -fx-border-radius: 8;
+    -fx-text-fill: #D8D5E5;
+    -fx-font-size: 13px;
+    -fx-font-weight: 500;
+    -fx-padding: 8 16;
+    -fx-cursor: hand;
+}
+.converter-action-btn:hover {
+    -fx-background-color: #2E2A3C;
+    -fx-border-color: rgba(255, 255, 255, 0.16);
+    -fx-text-fill: #FFFFFF;
+}
+
+.converter-primary-btn {
+    -fx-background-color: #0E7490;
+    -fx-background-radius: 8;
+    -fx-border-color: transparent;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-padding: 8 18;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(14, 116, 144, 0.4), 8, 0, 0, 2);
+}
+.converter-primary-btn:hover {
+    -fx-background-color: #0891B2;
+}
+
+/* Equivalent measurement rows */
+.equivalent-row {
+    -fx-background-color: #1E1C27;
+    -fx-background-radius: 8;
+    -fx-border-color: rgba(255, 255, 255, 0.05);
+    -fx-border-radius: 8;
+    -fx-padding: 10 18;
+}
+.equivalent-row:hover {
+    -fx-background-color: #242131;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+}
+.equivalent-copy-btn {
+    -fx-background-color: #282536;
+    -fx-background-radius: 6;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-radius: 6;
+    -fx-text-fill: #C5C2D3;
+    -fx-font-size: 12px;
+    -fx-font-weight: 500;
+    -fx-padding: 4 14;
+    -fx-cursor: hand;
+}
+.equivalent-copy-btn:hover {
+    -fx-background-color: #E82E88;
+    -fx-border-color: #E82E88;
+    -fx-text-fill: white;
+}
+
+/* Sleek Dark ScrollPane & ScrollBar Styling */
+.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-color: transparent;
+}
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+.scroll-pane > .corner {
+    -fx-background-color: transparent;
+}
+.scroll-bar:vertical, .scroll-bar:horizontal {
+    -fx-background-color: transparent;
+}
+.scroll-bar:vertical .track, .scroll-bar:horizontal .track {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+.scroll-bar:vertical .thumb, .scroll-bar:horizontal .thumb {
+    -fx-background-color: rgba(255, 255, 255, 0.14);
+    -fx-background-radius: 6;
+}
+.scroll-bar:vertical .thumb:hover, .scroll-bar:horizontal .thumb:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.28);
+}
+.scroll-bar .increment-button, .scroll-bar .decrement-button {
+    -fx-background-color: transparent;
     -fx-padding: 0;
-    -fx-opacity: 0;
+    -fx-pref-width: 0;
+    -fx-pref-height: 0;
+}
+.scroll-bar .increment-arrow, .scroll-bar .decrement-arrow {
+    -fx-shape: " ";
+    -fx-padding: 0;
 }

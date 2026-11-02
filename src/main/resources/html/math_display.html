@@ -56,6 +56,10 @@
             text-align: left !important;
             color: #FFFFFF;
         }
+        .multi-step .katex {
+            font-size: 1.45em !important;
+            line-height: 1.4 !important;
+        }
         /* Discreet scrollbars */
         ::-webkit-scrollbar {
             width: 5px;
@@ -78,7 +82,13 @@
             const mathContent = document.getElementById('math-content');
             if (!latexString || latexString.trim() === '') {
                 mathContent.innerHTML = '';
+                document.body.classList.remove('multi-step');
                 return;
+            }
+            if (latexString.indexOf('\\begin{aligned}') !== -1 && latexString.indexOf('\\\\') !== -1) {
+                document.body.classList.add('multi-step');
+            } else {
+                document.body.classList.remove('multi-step');
             }
             try {
                 katex.render(latexString, mathContent, {
