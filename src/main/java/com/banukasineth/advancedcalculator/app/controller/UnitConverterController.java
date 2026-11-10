@@ -7,6 +7,7 @@ import javafx.animation.KeyValue;
 import javafx.animation.KeyFrame;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
@@ -41,41 +42,98 @@ import java.util.function.Consumer;
 
 public class UnitConverterController {
 
-    @FXML private BorderPane rootPane;
-    @FXML private VBox sidebar;
-    @FXML private Button sidebarToggleBtn;
-    @FXML private ComboBox<String> unitModeComboBox;
-    @FXML private VBox measureCategoryBox;
-    @FXML private VBox calculateCategoryBox;
-    @FXML private ScrollPane mainScrollPane;
+    @FXML
+    private BorderPane rootPane;
+    @FXML
+    private VBox sidebar;
+    @FXML
+    private Button sidebarToggleBtn;
+    @FXML
+    private ComboBox<String> unitModeComboBox;
+    @FXML
+    private VBox measureCategoryBox;
+    @FXML
+    private VBox calculateCategoryBox;
+    @FXML
+    private ScrollPane mainScrollPane;
 
-    @FXML private Label breadcrumbLabel;
-    @FXML private Label categoryIconLabel;
-    @FXML private Label titleLabel;
-    @FXML private Label subtitleLabel;
+    @FXML
+    private Label breadcrumbLabel;
+    @FXML
+    private Label categoryIconLabel;
+    @FXML
+    private Label titleLabel;
+    @FXML
+    private Label subtitleLabel;
 
-    @FXML private TextField inputTextField;
-    @FXML private TextField outputTextField;
-    @FXML private ComboBox<String> fromUnitBox;
-    @FXML private ComboBox<String> toUnitBox;
-    @FXML private Button swapBtn;
+    @FXML
+    private TextField inputTextField;
+    @FXML
+    private TextField outputTextField;
+    @FXML
+    private ComboBox<String> fromUnitBox;
+    @FXML
+    private ComboBox<String> toUnitBox;
+    @FXML
+    private Button swapBtn;
 
     // Currency Country Flag Showcase Badges
-    @FXML private HBox fromFlagBadge;
-    @FXML private ImageView fromFlagView;
-    @FXML private Label fromFlagCodeLabel;
+    @FXML
+    private HBox fromFlagBadge;
+    @FXML
+    private ImageView fromFlagView;
+    @FXML
+    private Label fromFlagCodeLabel;
 
-    @FXML private HBox toFlagBadge;
-    @FXML private ImageView toFlagView;
-    @FXML private Label toFlagCodeLabel;
+    @FXML
+    private HBox toFlagBadge;
+    @FXML
+    private ImageView toFlagView;
+    @FXML
+    private Label toFlagCodeLabel;
 
-    @FXML private Label visualizerUnitPairLabel;
-    @FXML private Pane visualizerPane;
-    @FXML private Label formulaLabel;
+    @FXML
+    private Label visualizerUnitPairLabel;
+    @FXML
+    private StackPane visualizerPane;
+    @FXML
+    private Label formulaLabel;
+    @FXML
+    private Button hubModeBtn;
+    @FXML
+    private Button rulerModeBtn;
 
-    @FXML private Button refreshRatesBtn;
-    @FXML private Button copyResultBtn;
-    @FXML private VBox equivalentsContainer;
+    private boolean isDrawingVisualizer = false;
+    private double lastDrawnWidth = 0.0;
+    private PauseTransition resizeDebounce;
+
+    public enum VisualizerMode {
+        CALCULATION_HUB,
+        DUAL_RULER
+    }
+
+    private VisualizerMode visualizerMode = VisualizerMode.CALCULATION_HUB;
+
+    public static class BenchmarkItem {
+        public final String icon;
+        public final String multiplier;
+        public final String title;
+        public final String reference;
+
+        public BenchmarkItem(String icon, String multiplier, String title, String reference) {
+            this.icon = icon;
+            this.multiplier = multiplier;
+            this.title = title;
+            this.reference = reference;
+        }
+    }
+
+    @FXML
+    private Button refreshRatesBtn;
+    @FXML
+    private Button copyResultBtn;
+    @FXML
+    private VBox equivalentsContainer;
 
     private boolean sidebarVisible = true;
     private Consumer<String> modeChangeListener;
@@ -106,7 +164,7 @@ public class UnitConverterController {
         public final String defaultTo;
 
         public CategoryData(String name, String icon, String section, String subtitle,
-                            List<UnitItem> units, String defaultFrom, String defaultTo) {
+                List<UnitItem> units, String defaultFrom, String defaultTo) {
             this.name = name;
             this.icon = icon;
             this.section = section;
@@ -145,7 +203,8 @@ public class UnitConverterController {
         initCategories();
 
         if (unitModeComboBox != null) {
-            unitModeComboBox.getItems().addAll("Basic", "Advanced", "Scientific", "Programmer", "Graphing", "Unit Converter");
+            unitModeComboBox.getItems().addAll("Basic", "Advanced", "Scientific", "Programmer", "Graphing",
+                    "Unit Converter");
             unitModeComboBox.setValue("Unit Converter");
             unitModeComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
                 if (newVal != null && !newVal.equals("Unit Converter") && modeChangeListener != null) {
@@ -191,8 +250,13 @@ public class UnitConverterController {
 
         if (visualizerPane != null) {
             visualizerPane.widthProperty().addListener((obs, oldVal, newVal) -> {
-                if (newVal.doubleValue() > 50) {
-                    drawVisualizer();
+                double nw = newVal.doubleValue();
+                if (nw > 100 && Math.abs(nw - lastDrawnWidth) > 8.0 && !isDrawingVisualizer) {
+                    if (resizeDebounce == null) {
+                        resizeDebounce = new PauseTransition(Duration.millis(100));
+                        resizeDebounce.setOnFinished(e -> drawVisualizer());
+                    }
+                    resizeDebounce.playFromStart();
                 }
             });
         }
@@ -230,7 +294,8 @@ public class UnitConverterController {
     }
 
     public void fetchLiveExchangeRatesAsync(boolean userInitiated) {
-        if (isFetchingRates) return;
+        if (isFetchingRates)
+            return;
         isFetchingRates = true;
 
         if (userInitiated && refreshRatesBtn != null) {
@@ -240,8 +305,8 @@ public class UnitConverterController {
         CompletableFuture.runAsync(() -> {
             boolean success = false;
             String[] apis = {
-                "https://open.er-api.com/v6/latest/USD",
-                "https://api.exchangerate-api.com/v4/latest/USD"
+                    "https://open.er-api.com/v6/latest/USD",
+                    "https://api.exchangerate-api.com/v4/latest/USD"
             };
 
             for (String api : apis) {
@@ -254,7 +319,8 @@ public class UnitConverterController {
                         BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
                         StringBuilder sb = new StringBuilder();
                         String line;
-                        while ((line = reader.readLine()) != null) sb.append(line);
+                        while ((line = reader.readLine()) != null)
+                            sb.append(line);
                         reader.close();
 
                         JSONObject json = new JSONObject(sb.toString());
@@ -312,7 +378,8 @@ public class UnitConverterController {
     }
 
     private Image getFlagImage(String symbol) {
-        if (symbol == null) return null;
+        if (symbol == null)
+            return null;
         String code = symbol.toLowerCase().trim();
         if (flagCache.containsKey(code)) {
             return flagCache.get(code);
@@ -344,6 +411,7 @@ public class UnitConverterController {
                 clip.setArcHeight(4);
                 flagImg.setClip(clip);
             }
+
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
@@ -389,6 +457,7 @@ public class UnitConverterController {
                 clip.setArcHeight(4);
                 flagImg.setClip(clip);
             }
+
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
@@ -445,7 +514,8 @@ public class UnitConverterController {
                     clip.setArcHeight(6);
                     fromFlagView.setClip(clip);
                 }
-                if (fromFlagCodeLabel != null) fromFlagCodeLabel.setText(from.symbol);
+                if (fromFlagCodeLabel != null)
+                    fromFlagCodeLabel.setText(from.symbol);
             }
 
             if (to != null && toFlagView != null) {
@@ -457,7 +527,8 @@ public class UnitConverterController {
                     clip.setArcHeight(6);
                     toFlagView.setClip(clip);
                 }
-                if (toFlagCodeLabel != null) toFlagCodeLabel.setText(to.symbol);
+                if (toFlagCodeLabel != null)
+                    toFlagCodeLabel.setText(to.symbol);
             }
         } else {
             if (fromFlagBadge != null) {
@@ -486,8 +557,7 @@ public class UnitConverterController {
                 new UnitItem("Yard", "yd", 0.9144),
                 new UnitItem("Foot", "ft", 0.3048),
                 new UnitItem("Inch", "in", 0.0254),
-                new UnitItem("Nautical Mile", "NM", 1852.0)
-        );
+                new UnitItem("Nautical Mile", "NM", 1852.0));
         allCategories.add(new CategoryData("Length", "📏", "MEASURE",
                 "Every unit in its place. Every answer within reach.", lengthUnits, "Meter (m)", "Foot (ft)"));
 
@@ -502,10 +572,10 @@ public class UnitConverterController {
                 new UnitItem("Square Mile", "mi²", 2589988.110336),
                 new UnitItem("Square Yard", "yd²", 0.83612736),
                 new UnitItem("Square Foot", "ft²", 0.09290304),
-                new UnitItem("Square Inch", "in²", 0.00064516)
-        );
+                new UnitItem("Square Inch", "in²", 0.00064516));
         allCategories.add(new CategoryData("Area", "⛶", "MEASURE",
-                "Convert between square meters, acres, hectares, and square feet.", areaUnits, "Square Meter (m²)", "Square Foot (ft²)"));
+                "Convert between square meters, acres, hectares, and square feet.", areaUnits, "Square Meter (m²)",
+                "Square Foot (ft²)"));
 
         // 3. Volume
         List<UnitItem> volumeUnits = Arrays.asList(
@@ -520,10 +590,10 @@ public class UnitConverterController {
                 new UnitItem("US Fluid Ounce", "fl oz", 0.0295735295625),
                 new UnitItem("Imperial Gallon", "imp gal", 4.54609),
                 new UnitItem("Tablespoon", "tbsp", 0.01478676478125),
-                new UnitItem("Teaspoon", "tsp", 0.00492892159375)
-        );
+                new UnitItem("Teaspoon", "tsp", 0.00492892159375));
         allCategories.add(new CategoryData("Volume", "🧊", "MEASURE",
-                "Fluid and solid capacity across metric, US customary, and imperial.", volumeUnits, "Liter (L)", "US Gallon (gal)"));
+                "Fluid and solid capacity across metric, US customary, and imperial.", volumeUnits, "Liter (L)",
+                "US Gallon (gal)"));
 
         // 4. Mass / Weight
         List<UnitItem> massUnits = Arrays.asList(
@@ -534,20 +604,20 @@ public class UnitConverterController {
                 new UnitItem("Pound", "lb", 0.45359237),
                 new UnitItem("Ounce", "oz", 0.028349523125),
                 new UnitItem("Stone", "st", 6.35029318),
-                new UnitItem("Carat", "ct", 0.0002)
-        );
+                new UnitItem("Carat", "ct", 0.0002));
         allCategories.add(new CategoryData("Mass / Weight", "⚖️", "MEASURE",
-                "Weight and mass conversion with precise multi-unit comparison.", massUnits, "Kilogram (kg)", "Pound (lb)"));
+                "Weight and mass conversion with precise multi-unit comparison.", massUnits, "Kilogram (kg)",
+                "Pound (lb)"));
 
         // 5. Temperature
         List<UnitItem> tempUnits = Arrays.asList(
                 new UnitItem("Celsius", "°C", 1.0),
                 new UnitItem("Fahrenheit", "°F", 1.0),
                 new UnitItem("Kelvin", "K", 1.0),
-                new UnitItem("Rankine", "°R", 1.0)
-        );
+                new UnitItem("Rankine", "°R", 1.0));
         allCategories.add(new CategoryData("Temperature", "🌡️", "MEASURE",
-                "Thermal conversion with key landmark reference points.", tempUnits, "Celsius (°C)", "Fahrenheit (°F)"));
+                "Thermal conversion with key landmark reference points.", tempUnits, "Celsius (°C)",
+                "Fahrenheit (°F)"));
 
         // 6. Speed
         List<UnitItem> speedUnits = Arrays.asList(
@@ -555,10 +625,10 @@ public class UnitConverterController {
                 new UnitItem("Kilometer per hour", "km/h", 1.0 / 3.6),
                 new UnitItem("Mile per hour", "mph", 0.44704),
                 new UnitItem("Knot", "kn", 0.5144444444444445),
-                new UnitItem("Foot per second", "ft/s", 0.3048)
-        );
+                new UnitItem("Foot per second", "ft/s", 0.3048));
         allCategories.add(new CategoryData("Speed", "🏃", "MEASURE",
-                "Velocity conversions with real-world motion benchmarks.", speedUnits, "Kilometer per hour (km/h)", "Mile per hour (mph)"));
+                "Velocity conversions with real-world motion benchmarks.", speedUnits, "Kilometer per hour (km/h)",
+                "Mile per hour (mph)"));
 
         // 7. Time / Duration
         List<UnitItem> timeUnits = Arrays.asList(
@@ -570,8 +640,7 @@ public class UnitConverterController {
                 new UnitItem("Day", "d", 86400.0),
                 new UnitItem("Week", "wk", 604800.0),
                 new UnitItem("Month (30d)", "mo", 2592000.0),
-                new UnitItem("Year (365d)", "yr", 31536000.0)
-        );
+                new UnitItem("Year (365d)", "yr", 31536000.0));
         allCategories.add(new CategoryData("Time / Duration", "⏱️", "MEASURE",
                 "Time intervals from microseconds to calendar years.", timeUnits, "Hour (h)", "Minute (min)"));
 
@@ -583,10 +652,10 @@ public class UnitConverterController {
                 new UnitItem("Millibar", "mbar", 100.0),
                 new UnitItem("Atmosphere", "atm", 101325.0),
                 new UnitItem("PSI", "psi", 6894.757293),
-                new UnitItem("Torr / mmHg", "Torr", 133.322368)
-        );
+                new UnitItem("Torr / mmHg", "Torr", 133.322368));
         allCategories.add(new CategoryData("Pressure", "🎈", "MEASURE",
-                "Atmospheric, hydraulic, and mechanical pressure comparisons.", pressureUnits, "Bar (bar)", "PSI (psi)"));
+                "Atmospheric, hydraulic, and mechanical pressure comparisons.", pressureUnits, "Bar (bar)",
+                "PSI (psi)"));
 
         // 9. Energy
         List<UnitItem> energyUnits = Arrays.asList(
@@ -597,10 +666,10 @@ public class UnitConverterController {
                 new UnitItem("Watt-hour", "Wh", 3600.0),
                 new UnitItem("Kilowatt-hour", "kWh", 3.6e6),
                 new UnitItem("British Thermal Unit", "BTU", 1055.056),
-                new UnitItem("Foot-pound", "ft-lb", 1.355818)
-        );
+                new UnitItem("Foot-pound", "ft-lb", 1.355818));
         allCategories.add(new CategoryData("Energy", "⚡", "CALCULATE",
-                "Work, thermal, and electrical energy conversion.", energyUnits, "Kilowatt-hour (kWh)", "Kilojoule (kJ)"));
+                "Work, thermal, and electrical energy conversion.", energyUnits, "Kilowatt-hour (kWh)",
+                "Kilojoule (kJ)"));
 
         // 10. Power
         List<UnitItem> powerUnits = Arrays.asList(
@@ -609,8 +678,7 @@ public class UnitConverterController {
                 new UnitItem("Megawatt", "MW", 1e6),
                 new UnitItem("Horsepower", "hp", 745.699872),
                 new UnitItem("Metric Horsepower", "PS", 735.49875),
-                new UnitItem("Foot-pound per min", "ft-lb/min", 0.0225969658)
-        );
+                new UnitItem("Foot-pound per min", "ft-lb/min", 0.0225969658));
         allCategories.add(new CategoryData("Power", "🔋", "CALCULATE",
                 "Mechanical and electrical rate of energy transfer.", powerUnits, "Kilowatt (kW)", "Horsepower (hp)"));
 
@@ -625,12 +693,12 @@ public class UnitConverterController {
                 new UnitItem("Bit", "bit", 0.125),
                 new UnitItem("Kilobit", "Kb", 128.0),
                 new UnitItem("Megabit", "Mb", 131072.0),
-                new UnitItem("Gigabit", "Gb", 134217728.0)
-        );
+                new UnitItem("Gigabit", "Gb", 134217728.0));
         allCategories.add(new CategoryData("Data", "💾", "CALCULATE",
                 "Binary digital storage and network bandwidth units.", dataUnits, "Gigabyte (GB)", "Megabyte (MB)"));
 
-        // 12. Currency (22 Major Global Currencies with Country Flags & Real-time Rates)
+        // 12. Currency (22 Major Global Currencies with Country Flags & Real-time
+        // Rates)
         List<UnitItem> currencyUnits = Arrays.asList(
                 new UnitItem("US Dollar", "USD", 1.0),
                 new UnitItem("Euro", "EUR", 1.08),
@@ -653,15 +721,17 @@ public class UnitConverterController {
                 new UnitItem("Turkish Lira", "TRY", 0.029),
                 new UnitItem("Swedish Krona", "SEK", 0.093),
                 new UnitItem("Norwegian Krone", "NOK", 0.091),
-                new UnitItem("Mexican Peso", "MXN", 0.050)
-        );
+                new UnitItem("Mexican Peso", "MXN", 0.050));
         allCategories.add(new CategoryData("Currency", "💱", "CALCULATE",
-                "Global currency reference conversion rates with live country flags.", currencyUnits, "US Dollar (USD)", "Euro (EUR)"));
+                "Global currency reference conversion rates with live country flags.", currencyUnits, "US Dollar (USD)",
+                "Euro (EUR)"));
     }
 
     private void buildSidebar() {
-        if (measureCategoryBox != null) measureCategoryBox.getChildren().clear();
-        if (calculateCategoryBox != null) calculateCategoryBox.getChildren().clear();
+        if (measureCategoryBox != null)
+            measureCategoryBox.getChildren().clear();
+        if (calculateCategoryBox != null)
+            calculateCategoryBox.getChildren().clear();
         categoryButtons.clear();
 
         for (CategoryData cat : allCategories) {
@@ -672,9 +742,11 @@ public class UnitConverterController {
             categoryButtons.put(cat.name, btn);
 
             if ("MEASURE".equalsIgnoreCase(cat.section)) {
-                if (measureCategoryBox != null) measureCategoryBox.getChildren().add(btn);
+                if (measureCategoryBox != null)
+                    measureCategoryBox.getChildren().add(btn);
             } else {
-                if (calculateCategoryBox != null) calculateCategoryBox.getChildren().add(btn);
+                if (calculateCategoryBox != null)
+                    calculateCategoryBox.getChildren().add(btn);
             }
         }
     }
@@ -695,9 +767,12 @@ public class UnitConverterController {
         }
 
         // Update headers
-        if (breadcrumbLabel != null) breadcrumbLabel.setText("Convert  /  " + cat.name);
-        if (categoryIconLabel != null) categoryIconLabel.setText(cat.icon);
-        if (titleLabel != null) titleLabel.setText(cat.name + " converter");
+        if (breadcrumbLabel != null)
+            breadcrumbLabel.setText("Convert  /  " + cat.name);
+        if (categoryIconLabel != null)
+            categoryIconLabel.setText(cat.icon);
+        if (titleLabel != null)
+            titleLabel.setText(cat.name + " converter");
 
         if ("Currency".equalsIgnoreCase(cat.name)) {
             if (refreshRatesBtn != null) {
@@ -739,43 +814,67 @@ public class UnitConverterController {
         }
         isUpdatingUnits = false;
 
+        if (mainScrollPane != null) {
+            mainScrollPane.setVvalue(0.0);
+            Platform.runLater(() -> mainScrollPane.setVvalue(0.0));
+        }
+
         updateCardFlags();
         convertUnits();
     }
 
     private UnitItem findUnitByDisplay(CategoryData cat, String display) {
-        if (cat == null || display == null) return null;
+        if (cat == null || display == null)
+            return null;
         for (UnitItem u : cat.units) {
-            if (u.getDisplay().equals(display)) return u;
+            if (u.getDisplay().equals(display))
+                return u;
         }
         return null;
     }
 
     private double convert(double input, String category, UnitItem from, UnitItem to) {
-        if (from == null || to == null) return 0;
-        if (from.equals(to)) return input;
+        if (from == null || to == null)
+            return 0;
+        if (from.equals(to))
+            return input;
 
         if ("Temperature".equalsIgnoreCase(category)) {
             // First convert from -> Celsius
             double c = input;
             switch (from.symbol) {
-                case "°F": c = (input - 32.0) * (5.0 / 9.0); break;
-                case "K":  c = input - 273.15; break;
-                case "°R": c = (input - 491.67) * (5.0 / 9.0); break;
-                case "°C": default: c = input; break;
+                case "°F":
+                    c = (input - 32.0) * (5.0 / 9.0);
+                    break;
+                case "K":
+                    c = input - 273.15;
+                    break;
+                case "°R":
+                    c = (input - 491.67) * (5.0 / 9.0);
+                    break;
+                case "°C":
+                default:
+                    c = input;
+                    break;
             }
             // Then convert Celsius -> to
             switch (to.symbol) {
-                case "°F": return (c * (9.0 / 5.0)) + 32.0;
-                case "K":  return c + 273.15;
-                case "°R": return (c + 273.15) * (9.0 / 5.0);
-                case "°C": default: return c;
+                case "°F":
+                    return (c * (9.0 / 5.0)) + 32.0;
+                case "K":
+                    return c + 273.15;
+                case "°R":
+                    return (c + 273.15) * (9.0 / 5.0);
+                case "°C":
+                default:
+                    return c;
             }
         } else if ("Currency".equalsIgnoreCase(category)) {
             // Real-time currency exchange rates (USD based rates)
             double rateFrom = liveRates.getOrDefault(from.symbol, 1.0);
             double rateTo = liveRates.getOrDefault(to.symbol, 1.0);
-            if (rateFrom <= 0) rateFrom = 1.0;
+            if (rateFrom <= 0)
+                rateFrom = 1.0;
             return input * (rateTo / rateFrom);
         } else {
             // Linear conversions via base factor
@@ -785,8 +884,10 @@ public class UnitConverterController {
     }
 
     public static String formatNumber(double value) {
-        if (Double.isNaN(value) || Double.isInfinite(value)) return "Invalid";
-        if (Math.abs(value) < 1e-12) return "0";
+        if (Double.isNaN(value) || Double.isInfinite(value))
+            return "Invalid";
+        if (Math.abs(value) < 1e-12)
+            return "0";
         if (Math.abs(value) >= 1e11 || (Math.abs(value) < 1e-5 && Math.abs(value) > 0)) {
             return String.format(Locale.US, "%.5e", value).replace("e+0", "e+").replace("e-0", "e-");
         }
@@ -795,7 +896,8 @@ public class UnitConverterController {
     }
 
     private void convertUnits() {
-        if (inputTextField == null || outputTextField == null || currentCategory == null) return;
+        if (inputTextField == null || outputTextField == null || currentCategory == null)
+            return;
 
         String inputStr = inputTextField.getText();
         if (inputStr == null || inputStr.trim().isEmpty() || inputStr.equals("-")) {
@@ -810,7 +912,8 @@ public class UnitConverterController {
             UnitItem from = findUnitByDisplay(currentCategory, fromUnitBox != null ? fromUnitBox.getValue() : null);
             UnitItem to = findUnitByDisplay(currentCategory, toUnitBox != null ? toUnitBox.getValue() : null);
 
-            if (from == null || to == null) return;
+            if (from == null || to == null)
+                return;
 
             double result = convert(inputVal, currentCategory.name, from, to);
             outputTextField.setText(formatNumber(result));
@@ -819,7 +922,8 @@ public class UnitConverterController {
             String record = inputStr + " " + from.symbol + " = " + formatNumber(result) + " " + to.symbol;
             if (conversionHistory.isEmpty() || !conversionHistory.get(conversionHistory.size() - 1).equals(record)) {
                 conversionHistory.add(record);
-                if (conversionHistory.size() > 50) conversionHistory.remove(0);
+                if (conversionHistory.size() > 50)
+                    conversionHistory.remove(0);
             }
 
             updateCardFlags();
@@ -831,33 +935,571 @@ public class UnitConverterController {
         }
     }
 
-    private void drawVisualizer() {
-        if (visualizerPane == null || currentCategory == null) return;
-        visualizerPane.getChildren().clear();
+    @FXML
+    public void switchToHubMode() {
+        visualizerMode = VisualizerMode.CALCULATION_HUB;
+        updateVisualizerModeButtons();
+        drawVisualizer();
+    }
 
-        UnitItem from = findUnitByDisplay(currentCategory, fromUnitBox != null ? fromUnitBox.getValue() : null);
-        UnitItem to = findUnitByDisplay(currentCategory, toUnitBox != null ? toUnitBox.getValue() : null);
+    @FXML
+    public void switchToRulerMode() {
+        visualizerMode = VisualizerMode.DUAL_RULER;
+        updateVisualizerModeButtons();
+        drawVisualizer();
+    }
 
-        if (from == null || to == null) return;
-
-        if (visualizerUnitPairLabel != null) {
-            visualizerUnitPairLabel.setText(from.symbol + "  ⇄  " + to.symbol);
-        }
-
-        double oneUnit = convert(1.0, currentCategory.name, from, to);
-        if (formulaLabel != null) {
-            formulaLabel.setText("1 " + from.symbol + " = " + formatNumber(oneUnit) + " " + to.symbol);
-        }
-
-        double inputVal = 0;
-        try {
-            String s = inputTextField.getText();
-            if (s != null && !s.trim().isEmpty() && !s.equals("-")) {
-                inputVal = Double.parseDouble(s.trim().replace(",", ""));
+    private void updateVisualizerModeButtons() {
+        if (hubModeBtn != null) {
+            hubModeBtn.getStyleClass().removeAll("visualizer-mode-active");
+            if (visualizerMode == VisualizerMode.CALCULATION_HUB) {
+                hubModeBtn.getStyleClass().add("visualizer-mode-active");
             }
-        } catch (Exception ignored) {}
+        }
+        if (rulerModeBtn != null) {
+            rulerModeBtn.getStyleClass().removeAll("visualizer-mode-active");
+            if (visualizerMode == VisualizerMode.DUAL_RULER) {
+                rulerModeBtn.getStyleClass().add("visualizer-mode-active");
+            }
+        }
+    }
 
-        double paneWidth = visualizerPane.getWidth() > 200 ? visualizerPane.getWidth() : 600;
+    private void drawVisualizer() {
+        if (visualizerPane == null || currentCategory == null || isDrawingVisualizer) return;
+        isDrawingVisualizer = true;
+        try {
+            lastDrawnWidth = visualizerPane.getWidth();
+            visualizerPane.getChildren().clear();
+
+            UnitItem from = findUnitByDisplay(currentCategory, fromUnitBox != null ? fromUnitBox.getValue() : null);
+            UnitItem to = findUnitByDisplay(currentCategory, toUnitBox != null ? toUnitBox.getValue() : null);
+
+            if (from == null || to == null) return;
+
+            double oneUnit = convert(1.0, currentCategory.name, from, to);
+            if (formulaLabel != null) {
+                formulaLabel.setText("1 " + from.symbol + " = " + formatNumber(oneUnit) + " " + to.symbol);
+            }
+
+            double inputVal = 0;
+            try {
+                String s = inputTextField.getText();
+                if (s != null && !s.trim().isEmpty() && !s.equals("-")) {
+                    inputVal = Double.parseDouble(s.trim().replace(",", ""));
+                }
+            } catch (Exception ignored) {}
+
+            double paneWidth = visualizerPane.getWidth() > 200 ? visualizerPane.getWidth() : 600;
+
+            if (visualizerMode == VisualizerMode.CALCULATION_HUB) {
+                if (visualizerUnitPairLabel != null) {
+                    visualizerUnitPairLabel.setText(from.symbol + "  ⇄  " + to.symbol + "   •   Visual Calculation Hub");
+                }
+                drawCalculationHub(from, to, inputVal, oneUnit, paneWidth);
+            } else {
+                if (visualizerUnitPairLabel != null) {
+                    visualizerUnitPairLabel.setText(from.symbol + "  ⇄  " + to.symbol + "   •   Dual Scale Ruler");
+                }
+                drawDualRuler(from, to, inputVal, paneWidth);
+            }
+        } finally {
+            isDrawingVisualizer = false;
+        }
+    }
+
+    private void drawCalculationHub(UnitItem from, UnitItem to, double inputVal, double oneUnit, double paneWidth) {
+        visualizerPane.setPrefHeight(230);
+
+        VBox hubRoot = new VBox(10);
+        hubRoot.setFillWidth(true);
+        hubRoot.setMaxWidth(Double.MAX_VALUE);
+        hubRoot.setAlignment(Pos.TOP_CENTER);
+
+        double outputVal = convert(inputVal, currentCategory.name, from, to);
+
+        HBox pipelineBox = buildPipelineBox(from, to, inputVal, outputVal, oneUnit);
+        Node magnitudeScale = buildMagnitudeScaleNode(from, to, inputVal, outputVal, oneUnit, paneWidth);
+        HBox benchmarksBox = buildBenchmarksBox(from, to, inputVal, outputVal);
+
+        hubRoot.getChildren().addAll(pipelineBox, magnitudeScale, benchmarksBox);
+        visualizerPane.getChildren().add(hubRoot);
+
+        // Clip visualizerPane to prevent any possible visual overflow
+        Rectangle clip = new Rectangle();
+        clip.widthProperty().bind(visualizerPane.widthProperty());
+        clip.heightProperty().bind(visualizerPane.heightProperty());
+        visualizerPane.setClip(clip);
+    }
+
+    private HBox buildPipelineBox(UnitItem from, UnitItem to, double inputVal, double outputVal, double oneUnit) {
+        HBox pipeline = new HBox(8);
+        pipeline.setAlignment(Pos.CENTER);
+        pipeline.setFillHeight(true);
+        pipeline.setMaxWidth(Double.MAX_VALUE);
+
+        // Center Operator Pill (Compact, Fixed Width)
+        VBox opPill = new VBox(2);
+        opPill.setAlignment(Pos.CENTER);
+        opPill.setMinWidth(125);
+        opPill.setPrefWidth(145);
+        opPill.setMaxWidth(160);
+        HBox.setHgrow(opPill, Priority.NEVER);
+        opPill.setStyle("-fx-background-color: #242033; -fx-background-radius: 12; " +
+                "-fx-border-color: rgba(255, 255, 255, 0.14); -fx-border-radius: 12; -fx-padding: 6 10; " +
+                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 8, 0, 0, 2);");
+
+        if ("Temperature".equalsIgnoreCase(currentCategory.name)) {
+            Label opLbl = new Label(getTemperatureFormula(from, to));
+            opLbl.setStyle("-fx-text-fill: #00E5FF; -fx-font-size: 11px; -fx-font-weight: bold;");
+            Label formulaDesc = new Label("Thermal Formula Shift");
+            formulaDesc.setStyle("-fx-text-fill: rgba(255, 255, 255, 0.55); -fx-font-size: 9px;");
+            opPill.getChildren().addAll(opLbl, formulaDesc);
+        } else {
+            Label opLbl = new Label("➔   × " + formatNumber(oneUnit));
+            opLbl.setStyle("-fx-text-fill: #00E5FF; -fx-font-size: 12px; -fx-font-weight: bold;");
+            Label formulaDesc = new Label("1 " + from.symbol + " = " + formatNumber(oneUnit) + " " + to.symbol);
+            formulaDesc.setStyle("-fx-text-fill: rgba(255, 255, 255, 0.65); -fx-font-size: 10px;");
+            opPill.getChildren().addAll(opLbl, formulaDesc);
+        }
+
+        // Left Node: Input Card
+        VBox inputCard = new VBox(2);
+        inputCard.setAlignment(Pos.CENTER_LEFT);
+        inputCard.setMinWidth(100);
+        inputCard.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(inputCard, Priority.ALWAYS);
+        inputCard.setStyle("-fx-background-color: rgba(0, 210, 255, 0.08); -fx-background-radius: 10; " +
+                "-fx-border-color: rgba(0, 210, 255, 0.35); -fx-border-radius: 10; -fx-padding: 8 12;");
+
+        Label inTag = new Label("INPUT VALUE");
+        inTag.setStyle("-fx-text-fill: rgba(0, 210, 255, 0.75); -fx-font-size: 10px; -fx-font-weight: bold;");
+
+        Label inVal = new Label(formatNumber(inputVal) + " " + from.symbol);
+        inVal.setStyle("-fx-text-fill: #FFFFFF; -fx-font-size: 15px; -fx-font-weight: bold;");
+
+        Label inName = new Label(from.name);
+        inName.setStyle("-fx-text-fill: rgba(255, 255, 255, 0.55); -fx-font-size: 11px;");
+
+        inputCard.getChildren().addAll(inTag, inVal, inName);
+
+        // Right Node: Result Card
+        VBox resultCard = new VBox(2);
+        resultCard.setAlignment(Pos.CENTER_LEFT);
+        resultCard.setMinWidth(100);
+        resultCard.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(resultCard, Priority.ALWAYS);
+        resultCard.setStyle("-fx-background-color: rgba(232, 46, 136, 0.08); -fx-background-radius: 10; " +
+                "-fx-border-color: rgba(232, 46, 136, 0.4); -fx-border-radius: 10; -fx-padding: 8 12;");
+
+        Label outTag = new Label("CALCULATED RESULT");
+        outTag.setStyle("-fx-text-fill: rgba(255, 102, 170, 0.85); -fx-font-size: 10px; -fx-font-weight: bold;");
+
+        Label outVal = new Label(formatNumber(outputVal) + " " + to.symbol);
+        outVal.setStyle("-fx-text-fill: #FF66AA; -fx-font-size: 15px; -fx-font-weight: bold;");
+
+        Label outName = new Label(to.name);
+        outName.setStyle("-fx-text-fill: rgba(255, 255, 255, 0.55); -fx-font-size: 11px;");
+
+        resultCard.getChildren().addAll(outTag, outVal, outName);
+
+        // Perfectly balance inputCard and resultCard to have identical 50/50 widths
+        inputCard.prefWidthProperty().bind(pipeline.widthProperty().subtract(165).multiply(0.5));
+        resultCard.prefWidthProperty().bind(inputCard.prefWidthProperty());
+
+        pipeline.getChildren().addAll(inputCard, opPill, resultCard);
+        return pipeline;
+    }
+
+    private String getTemperatureFormula(UnitItem from, UnitItem to) {
+        if (from.symbol.equals("°C") && to.symbol.equals("°F"))
+            return "(°C × 9/5) + 32";
+        if (from.symbol.equals("°F") && to.symbol.equals("°C"))
+            return "(°F - 32) × 5/9";
+        if (from.symbol.equals("°C") && to.symbol.equals("K"))
+            return "°C + 273.15";
+        if (from.symbol.equals("K") && to.symbol.equals("°C"))
+            return "K - 273.15";
+        if (from.symbol.equals("°F") && to.symbol.equals("K"))
+            return "(°F - 32) × 5/9 + 273.15";
+        if (from.symbol.equals("K") && to.symbol.equals("°F"))
+            return "(K - 273.15) × 9/5 + 32";
+        return from.symbol + " ➔ " + to.symbol;
+    }
+
+    private Node buildMagnitudeScaleNode(UnitItem from, UnitItem to, double inputVal, double outputVal, double oneUnit, double paneWidth) {
+        VBox containerBox = new VBox(4);
+        containerBox.setStyle("-fx-background-color: rgba(25, 23, 35, 0.65); -fx-background-radius: 10; " +
+                "-fx-border-color: rgba(255, 255, 255, 0.08); -fx-border-radius: 10; -fx-padding: 7 12;");
+        containerBox.setMaxWidth(Double.MAX_VALUE);
+
+        if ("Temperature".equalsIgnoreCase(currentCategory.name)) {
+            // Temperature spectrum
+            HBox header = new HBox();
+            Label title = new Label("Thermal Spectrum");
+            title.setStyle("-fx-text-fill: rgba(255, 255, 255, 0.7); -fx-font-size: 11px; -fx-font-weight: bold;");
+            Region spacer = new Region();
+            HBox.setHgrow(spacer, Priority.ALWAYS);
+            Label currentLbl = new Label(
+                    formatNumber(inputVal) + " " + from.symbol + " = " + formatNumber(outputVal) + " " + to.symbol);
+            currentLbl.setStyle("-fx-text-fill: #00E5FF; -fx-font-size: 11px; -fx-font-weight: bold;");
+            header.getChildren().addAll(title, spacer, currentLbl);
+
+            Pane tempBarPane = new Pane();
+            tempBarPane.setPrefHeight(18);
+            tempBarPane.setMaxWidth(Double.MAX_VALUE);
+
+            Rectangle gradBar = new Rectangle();
+            gradBar.setHeight(8);
+            gradBar.setY(5);
+            gradBar.setArcWidth(8);
+            gradBar.setArcHeight(8);
+            gradBar.widthProperty().bind(tempBarPane.widthProperty());
+            LinearGradient grad = new LinearGradient(0, 0, 1, 0, true, CycleMethod.NO_CYCLE,
+                    new Stop(0.0, Color.web("#00A8FF")),
+                    new Stop(0.25, Color.web("#00E5FF")),
+                    new Stop(0.5, Color.web("#00E676")),
+                    new Stop(0.75, Color.web("#FFB300")),
+                    new Stop(1.0, Color.web("#FF3366")));
+            gradBar.setFill(grad);
+            tempBarPane.getChildren().add(gradBar);
+
+            double inCelsius = convert(inputVal, "Temperature", from, new UnitItem("Celsius", "°C", 1.0));
+            double clampedNorm = Math.max(0.0, Math.min(1.0, (inCelsius - (-20.0)) / (120.0 - (-20.0))));
+
+            Polygon marker = new Polygon(0.0, -5.0, 5.0, 0.0, 0.0, 5.0, -5.0, 0.0);
+            marker.setFill(Color.web("#FFFFFF"));
+            marker.setStroke(Color.web("#00D2FF"));
+            marker.setStrokeWidth(1.5);
+            marker.setEffect(new DropShadow(6, Color.web("#00D2FF")));
+            marker.layoutYProperty().set(9);
+            marker.layoutXProperty().bind(tempBarPane.widthProperty().multiply(clampedNorm));
+            tempBarPane.getChildren().add(marker);
+
+            HBox markersLblRow = new HBox();
+            Label l1 = new Label("❄️ Freezing: 0°C (32°F)");
+            l1.setStyle("-fx-text-fill: #00E5FF; -fx-font-size: 10px;");
+            Region s1 = new Region();
+            HBox.setHgrow(s1, Priority.ALWAYS);
+            Label l2 = new Label("🛋️ Room: 20°C (68°F)");
+            l2.setStyle("-fx-text-fill: #00E676; -fx-font-size: 10px;");
+            Region s2 = new Region();
+            HBox.setHgrow(s2, Priority.ALWAYS);
+            Label l3 = new Label("🔥 Boiling: 100°C (212°F)");
+            l3.setStyle("-fx-text-fill: #FF3366; -fx-font-size: 10px;");
+            markersLblRow.getChildren().addAll(l1, s1, l2, s2, l3);
+
+            containerBox.getChildren().addAll(header, tempBarPane, markersLblRow);
+            return containerBox;
+        }
+
+        // Linear Units: Proportional container fill
+        double oneToInFrom = convert(1.0, currentCategory.name, to, from);
+        double absIn = Math.abs(inputVal);
+
+        HBox header = new HBox();
+        Label title = new Label("Container Magnitude & Fill Scale");
+        title.setStyle("-fx-text-fill: rgba(255, 255, 255, 0.75); -fx-font-size: 11px; -fx-font-weight: bold;");
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        Label ratioLbl = new Label();
+        header.getChildren().addAll(title, spacer, ratioLbl);
+
+        if (absIn <= 0.000001) {
+            ratioLbl.setText("Fill: 0%");
+            ratioLbl.setStyle("-fx-text-fill: rgba(255, 255, 255, 0.5); -fx-font-size: 11px;");
+
+            StackPane emptyBar = new StackPane();
+            emptyBar.setPrefHeight(22);
+            emptyBar.setStyle("-fx-background-color: rgba(255, 255, 255, 0.05); -fx-background-radius: 8; -fx-border-color: rgba(255, 255, 255, 0.15); -fx-border-radius: 8;");
+
+            Label caption = new Label("Enter an input value above to visualize container fill and magnitude scale.");
+            caption.setStyle("-fx-text-fill: rgba(255, 255, 255, 0.45); -fx-font-size: 10px;");
+            containerBox.getChildren().addAll(header, emptyBar, caption);
+            return containerBox;
+        }
+
+        if (outputVal <= 1.05 && outputVal > 0) {
+            // Fits within 1 container!
+            double fillRatio = Math.max(0.0, Math.min(1.0, outputVal));
+            int pct = (int) Math.round(fillRatio * 100);
+            ratioLbl.setText("1 " + to.name + " (" + formatNumber(oneToInFrom) + " " + from.symbol + ")  •  " + pct + "% Filled");
+            ratioLbl.setStyle("-fx-text-fill: #00D2FF; -fx-font-size: 11px; -fx-font-weight: bold;");
+
+            StackPane barStack = new StackPane();
+            barStack.setPrefHeight(22);
+            barStack.setAlignment(Pos.CENTER_LEFT);
+            barStack.setStyle("-fx-background-color: rgba(20, 18, 28, 0.8); -fx-background-radius: 8; -fx-border-color: rgba(0, 210, 255, 0.3); -fx-border-radius: 8;");
+
+            Region fill = new Region();
+            fill.setPrefHeight(22);
+            fill.setStyle("-fx-background-color: linear-gradient(to right, #00D2FF, #0088FF); -fx-background-radius: 7;");
+            fill.maxWidthProperty().bind(barStack.widthProperty().multiply(fillRatio));
+            fill.setMinWidth(0);
+
+            HBox textOverlay = new HBox(10);
+            textOverlay.setAlignment(Pos.CENTER_LEFT);
+            textOverlay.setStyle("-fx-padding: 0 10;");
+            Label inFillText = new Label(formatNumber(inputVal) + " " + from.symbol + " (" + pct + "%)");
+            inFillText.setStyle("-fx-text-fill: #FFFFFF; -fx-font-size: 11px; -fx-font-weight: bold; " +
+                    "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.8), 3, 0, 0, 1);");
+
+            Region barSpacer = new Region();
+            HBox.setHgrow(barSpacer, Priority.ALWAYS);
+
+            double remaining = Math.max(0.0, oneToInFrom - inputVal);
+            Label remainText = new Label(
+                    remaining > 0.0001 ? ("+" + formatNumber(remaining) + " " + from.symbol + " to full") : "100% Full");
+            remainText.setStyle("-fx-text-fill: rgba(255, 255, 255, 0.55); -fx-font-size: 10px;");
+
+            textOverlay.getChildren().addAll(inFillText, barSpacer, remainText);
+            barStack.getChildren().addAll(fill, textOverlay);
+
+            Label caption = new Label(
+                    "💡 " + formatNumber(inputVal) + " " + from.symbol + " fills " + pct + "% of a 1 " + to.name +
+                            " container. Needs +" + formatNumber(remaining) + " " + from.symbol + " to make 1 full " + to.symbol + ".");
+            caption.setStyle("-fx-text-fill: rgba(255, 255, 255, 0.7); -fx-font-size: 10px;");
+
+            containerBox.getChildren().addAll(header, barStack, caption);
+
+        } else if (outputVal > 1.05 && outputVal <= 10.0) {
+            // Multi-container fill (e.g. 10 L to Gallons = 2.64 Gallons, or 3 m to ft = 9.84 ft)
+            int fullContainers = (int) Math.floor(outputVal);
+            double partial = outputVal - fullContainers;
+            int partialPct = (int) Math.round(partial * 100);
+
+            ratioLbl.setText(fullContainers + " Full " + to.symbol + " + " + partialPct + "% of next");
+            ratioLbl.setStyle("-fx-text-fill: #00D2FF; -fx-font-size: 11px; -fx-font-weight: bold;");
+
+            if (fullContainers <= 3) {
+                // Individual container blocks
+                HBox multiContainers = new HBox(6);
+                multiContainers.setAlignment(Pos.CENTER_LEFT);
+                multiContainers.setPrefHeight(22);
+
+                int totalBoxes = fullContainers + (partial > 0.01 ? 1 : 0);
+                for (int i = 0; i < totalBoxes; i++) {
+                    StackPane box = new StackPane();
+                    HBox.setHgrow(box, Priority.ALWAYS);
+                    box.setPrefHeight(22);
+                    box.setMinWidth(40);
+                    box.setStyle("-fx-background-color: rgba(20, 18, 28, 0.8); -fx-background-radius: 6; -fx-border-color: rgba(0, 210, 255, 0.3); -fx-border-radius: 6;");
+
+                    if (i < fullContainers) {
+                        box.setStyle("-fx-background-color: #00B0FF; -fx-background-radius: 6;");
+                        Label lbl = new Label("1 " + to.symbol + " (100%)");
+                        lbl.setStyle("-fx-text-fill: #FFFFFF; -fx-font-size: 10px; -fx-font-weight: bold;");
+                        box.getChildren().add(lbl);
+                    } else {
+                        Region partFill = new Region();
+                        partFill.setPrefHeight(22);
+                        partFill.setStyle("-fx-background-color: #00D2FF; -fx-background-radius: 5;");
+                        partFill.maxWidthProperty().bind(box.widthProperty().multiply(partial));
+                        box.setAlignment(Pos.CENTER_LEFT);
+
+                        Label lbl = new Label("  " + partialPct + "%");
+                        lbl.setStyle("-fx-text-fill: #FFFFFF; -fx-font-size: 10px; -fx-font-weight: bold;");
+                        box.getChildren().addAll(partFill, lbl);
+                    }
+                    multiContainers.getChildren().add(box);
+                }
+                containerBox.getChildren().addAll(header, multiContainers);
+            } else {
+                // If more than 3 full containers (e.g. 9 full ft for 3 m), show unified proportional segmented bar
+                StackPane barStack = new StackPane();
+                barStack.setPrefHeight(22);
+                barStack.setAlignment(Pos.CENTER_LEFT);
+                barStack.setStyle("-fx-background-color: rgba(20, 18, 28, 0.8); -fx-background-radius: 6; -fx-border-color: rgba(0, 210, 255, 0.3); -fx-border-radius: 6;");
+
+                double fullRatio = Math.min(0.92, (double) fullContainers / outputVal);
+                Region fullFill = new Region();
+                fullFill.setPrefHeight(22);
+                fullFill.setStyle("-fx-background-color: #0099FF; -fx-background-radius: 5;");
+                fullFill.maxWidthProperty().bind(barStack.widthProperty().multiply(fullRatio));
+
+                HBox barText = new HBox(8);
+                barText.setAlignment(Pos.CENTER_LEFT);
+                barText.setStyle("-fx-padding: 0 10;");
+
+                Label fullLbl = new Label(fullContainers + " Full " + to.symbol + " (" + (int) Math.round(fullRatio * 100) + "%)");
+                fullLbl.setStyle("-fx-text-fill: #FFFFFF; -fx-font-size: 10px; -fx-font-weight: bold;");
+
+                Region spacer2 = new Region();
+                HBox.setHgrow(spacer2, Priority.ALWAYS);
+
+                Label partLbl = new Label("+" + formatNumber(partial) + " " + to.symbol + " (" + partialPct + "%)");
+                partLbl.setStyle("-fx-text-fill: rgba(0, 229, 255, 0.95); -fx-font-size: 10px; -fx-font-weight: bold;");
+
+                barText.getChildren().addAll(fullLbl, spacer2, partLbl);
+                barStack.getChildren().addAll(fullFill, barText);
+                containerBox.getChildren().addAll(header, barStack);
+            }
+
+            Label caption = new Label("💡 " + formatNumber(inputVal) + " " + from.symbol + " completely fills "
+                    + fullContainers + " full " + to.name + " (" + to.symbol + ") containers, plus " + partialPct + "% of another.");
+            caption.setStyle("-fx-text-fill: rgba(255, 255, 255, 0.7); -fx-font-size: 10px;");
+            containerBox.getChildren().add(caption);
+
+        } else {
+            // High magnitude multiplier scale
+            ratioLbl.setText("1 " + from.symbol + " = " + formatNumber(oneUnit) + " " + to.symbol);
+            ratioLbl.setStyle("-fx-text-fill: #FF66AA; -fx-font-size: 11px; -fx-font-weight: bold;");
+
+            StackPane barStack = new StackPane();
+            barStack.setPrefHeight(22);
+            barStack.setAlignment(Pos.CENTER_LEFT);
+            barStack.setStyle("-fx-background-color: rgba(20, 18, 28, 0.8); -fx-background-radius: 8; -fx-border-color: rgba(232, 46, 136, 0.3); -fx-border-radius: 8;");
+
+            Region fill = new Region();
+            fill.setPrefHeight(22);
+            fill.setStyle("-fx-background-color: linear-gradient(to right, #E82E88, #9C27B0); -fx-background-radius: 7;");
+            fill.maxWidthProperty().bind(barStack.widthProperty().multiply(0.85));
+
+            Label barLbl = new Label("Magnitude Expansion: ×" + formatNumber(oneUnit));
+            barLbl.setStyle("-fx-text-fill: #FFFFFF; -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 0 10;");
+
+            barStack.getChildren().addAll(fill, barLbl);
+
+            Label caption = new Label(
+                    "💡 Each 1 " + from.name + " expands to " + formatNumber(oneUnit) + " " + to.symbol +
+                            ". Total output yield is " + formatNumber(outputVal) + " " + to.symbol + ".");
+            caption.setStyle("-fx-text-fill: rgba(255, 255, 255, 0.7); -fx-font-size: 10px;");
+
+            containerBox.getChildren().addAll(header, barStack, caption);
+        }
+
+        return containerBox;
+    }
+
+    private HBox buildBenchmarksBox(UnitItem from, UnitItem to, double inputVal, double outputVal) {
+        HBox benchmarksBox = new HBox(6);
+        benchmarksBox.setAlignment(Pos.CENTER);
+        benchmarksBox.setMaxWidth(Double.MAX_VALUE);
+
+        List<BenchmarkItem> items = getCategoryBenchmarks(currentCategory.name, inputVal, from, to);
+        for (BenchmarkItem item : items) {
+            VBox tile = new VBox(1);
+            tile.setAlignment(Pos.CENTER_LEFT);
+            tile.setMinWidth(60);
+            tile.setMaxWidth(Double.MAX_VALUE);
+            HBox.setHgrow(tile, Priority.ALWAYS);
+            tile.setStyle("-fx-background-color: rgba(30, 27, 43, 0.75); -fx-background-radius: 8; " +
+                    "-fx-border-color: rgba(255, 255, 255, 0.08); -fx-border-radius: 8; -fx-padding: 5 8;");
+
+            Label countLbl = new Label(item.icon + "  " + item.multiplier);
+            countLbl.setStyle("-fx-text-fill: #00E5FF; -fx-font-size: 11px; -fx-font-weight: bold;");
+
+            Label titleLbl = new Label(item.title);
+            titleLbl.setStyle("-fx-text-fill: #FFFFFF; -fx-font-size: 10px; -fx-font-weight: 600;");
+
+            Label refLbl = new Label(item.reference);
+            refLbl.setStyle("-fx-text-fill: rgba(255, 255, 255, 0.45); -fx-font-size: 9px;");
+
+            tile.getChildren().addAll(countLbl, titleLbl, refLbl);
+            benchmarksBox.getChildren().add(tile);
+        }
+
+        return benchmarksBox;
+    }
+
+    private String formatBenchmark(double val) {
+        if (Math.abs(val) < 1e-9) return "0";
+        if (val >= 1000) return String.format(Locale.US, "%,.0f", val);
+        if (val >= 100) return String.format(Locale.US, "%.0f", val);
+        if (val >= 10) return String.format(Locale.US, "%.1f", val).replaceAll("\\.0$", "");
+        if (val >= 1) return String.format(Locale.US, "%.1f", val).replaceAll("\\.0$", "");
+        if (val >= 0.01) {
+            String s = String.format(Locale.US, "%.2f", val);
+            return s.replaceAll("0+$", "").replaceAll("\\.$", "");
+        }
+        return String.format(Locale.US, "%.1e", val);
+    }
+
+    private List<BenchmarkItem> getCategoryBenchmarks(String category, double inputVal, UnitItem from, UnitItem to) {
+        List<BenchmarkItem> list = new ArrayList<>();
+
+        if ("Volume".equalsIgnoreCase(category)) {
+            double liters = inputVal * from.factor;
+            list.add(new BenchmarkItem("🥤", formatBenchmark(liters / 0.5) + "×", "Water Bottles", "500 mL standard"));
+            list.add(new BenchmarkItem("🧃", formatBenchmark(liters / 0.355) + "×", "Drink Cans", "355 mL soda can"));
+            list.add(new BenchmarkItem("☕", formatBenchmark(liters / 0.2366) + "×", "Standard Cups", "236 mL metric cup"));
+            list.add(new BenchmarkItem("🪣", formatBenchmark(liters / 10.0) + "×", "10L Buckets", "10 L utility bucket"));
+        } else if ("Length".equalsIgnoreCase(category)) {
+            double meters = inputVal * from.factor;
+            list.add(new BenchmarkItem("🚶", formatBenchmark(meters / 0.75) + "×", "Walking Steps", "0.75 m adult stride"));
+            list.add(new BenchmarkItem("🧍", formatBenchmark(meters / 1.75) + "×", "Adult Height", "1.75 m person"));
+            list.add(new BenchmarkItem("🚗", formatBenchmark(meters / 4.5) + "×", "Family Cars", "4.5 m sedan car"));
+            list.add(new BenchmarkItem("⚽", formatBenchmark(meters / 105.0) + "×", "Football Pitches", "105 m pitch"));
+        } else if ("Mass / Weight".equalsIgnoreCase(category) || "Weight".equalsIgnoreCase(category)) {
+            double kg = inputVal * from.factor;
+            list.add(new BenchmarkItem("📱", formatBenchmark(kg / 0.2) + "×", "Smartphones", "200 g phone"));
+            list.add(new BenchmarkItem("🏀", formatBenchmark(kg / 0.62) + "×", "Basketballs", "620 g match ball"));
+            list.add(new BenchmarkItem("💻", formatBenchmark(kg / 1.5) + "×", "Laptops", "1.5 kg notebook"));
+            list.add(new BenchmarkItem("🚲", formatBenchmark(kg / 12.0) + "×", "Bicycles", "12 kg commuter bike"));
+        } else if ("Area".equalsIgnoreCase(category)) {
+            double m2 = inputVal * from.factor;
+            list.add(new BenchmarkItem("🛏️", formatBenchmark(m2 / 14.0) + "×", "Bedrooms", "14 m² room"));
+            list.add(new BenchmarkItem("🎾", formatBenchmark(m2 / 260.7) + "×", "Tennis Courts", "260 m² court"));
+            list.add(new BenchmarkItem("🏀", formatBenchmark(m2 / 436.6) + "×", "Basketball Courts", "436 m² court"));
+            list.add(new BenchmarkItem("⚽", formatBenchmark(m2 / 7140.0) + "×", "Football Fields", "7,140 m² pitch"));
+        } else if ("Speed".equalsIgnoreCase(category)) {
+            double kmh = (inputVal * from.factor) * 3.6;
+            list.add(new BenchmarkItem("🚶", formatBenchmark(kmh / 5.0) + "×", "Walking Pace", "5 km/h human walk"));
+            list.add(new BenchmarkItem("🚴", formatBenchmark(kmh / 20.0) + "×", "City Cycling", "20 km/h bicycle"));
+            list.add(new BenchmarkItem("🚗", formatBenchmark(kmh / 100.0) + "×", "Highway Speed", "100 km/h speed limit"));
+            list.add(new BenchmarkItem("✈️", formatBenchmark(kmh / 900.0) + "×", "Passenger Jet", "900 km/h cruising"));
+        } else if ("Data".equalsIgnoreCase(category)) {
+            double bytes = inputVal * from.factor;
+            list.add(new BenchmarkItem("🎵", formatBenchmark(bytes / 4194304.0) + "×", "MP3 Songs", "4 MB audio track"));
+            list.add(new BenchmarkItem("📸", formatBenchmark(bytes / 5242880.0) + "×", "HD Photos", "5 MB jpeg image"));
+            list.add(new BenchmarkItem("🎬", formatBenchmark(bytes / 2147483648.0) + "×", "1080p Movies", "2 GB full HD movie"));
+            list.add(new BenchmarkItem("💾", formatBenchmark(bytes / 1099511627776.0) + "×", "1 TB Drives", "1,024 GB storage"));
+        } else if ("Time".equalsIgnoreCase(category)) {
+            double sec = inputVal * from.factor;
+            list.add(new BenchmarkItem("🎵", formatBenchmark(sec / 240.0) + "×", "Pop Songs", "4 minute track"));
+            list.add(new BenchmarkItem("🎬", formatBenchmark(sec / 7200.0) + "×", "Feature Films", "2 hour movie"));
+            list.add(new BenchmarkItem("🌙", formatBenchmark(sec / 28800.0) + "×", "Full Sleep", "8 hour rest"));
+            list.add(new BenchmarkItem("☀️", formatBenchmark(sec / 86400.0) + "×", "Whole Days", "24 hour solar day"));
+        } else if ("Currency".equalsIgnoreCase(category)) {
+            double rate = convert(1.0, "Currency", from, to);
+            double invRate = rate > 0 ? (1.0 / rate) : 0;
+            list.add(new BenchmarkItem("💱", "1 " + from.symbol + " =", formatNumber(rate) + " " + to.symbol, "Direct conversion rate"));
+            list.add(new BenchmarkItem("🔄", "1 " + to.symbol + " =", formatNumber(invRate) + " " + from.symbol, "Inverse exchange rate"));
+            list.add(new BenchmarkItem("🌐", "Live Rates", "Global Forex", "Updated exchange data"));
+            list.add(new BenchmarkItem("💵", formatNumber(inputVal * rate), to.symbol + " Total", "Market mid-price equivalent"));
+        } else if ("Temperature".equalsIgnoreCase(category)) {
+            list.add(new BenchmarkItem("❄️", "0°C", "Freezing Point", "32°F / 273.15 K"));
+            list.add(new BenchmarkItem("🛋️", "20°C", "Room Temp", "68°F / 293.15 K"));
+            list.add(new BenchmarkItem("🌡️", "37°C", "Human Body", "98.6°F / 310.15 K"));
+            list.add(new BenchmarkItem("🔥", "100°C", "Boiling Point", "212°F / 373.15 K"));
+        } else if ("Power".equalsIgnoreCase(category)) {
+            double watts = inputVal * from.factor;
+            list.add(new BenchmarkItem("💡", formatBenchmark(watts / 10.0) + "×", "LED Bulbs", "10 W light"));
+            list.add(new BenchmarkItem("💻", formatBenchmark(watts / 65.0) + "×", "Laptops", "65 W charger"));
+            list.add(new BenchmarkItem("☕", formatBenchmark(watts / 1500.0) + "×", "Kettles", "1,500 W boiling"));
+            list.add(new BenchmarkItem("🏎️", formatBenchmark(watts / 110000.0) + "×", "Car Engines", "~150 hp output"));
+        } else if ("Energy".equalsIgnoreCase(category)) {
+            double joules = inputVal * from.factor;
+            list.add(new BenchmarkItem("🍎", formatBenchmark(joules / 400000.0) + "×", "Apples", "95 kcal nutrition"));
+            list.add(new BenchmarkItem("🔋", formatBenchmark(joules / 40000.0) + "×", "Phone Charges", "40 kJ full battery"));
+            list.add(new BenchmarkItem("⚡", formatBenchmark(joules / 3600000.0) + "×", "Kilowatt-Hours", "1 kWh home power"));
+            list.add(new BenchmarkItem("🚗", formatBenchmark(joules / 130000000.0) + "×", "Gasoline (Gal)", "130 MJ energy"));
+        } else { // Pressure or other
+            double pa = inputVal * from.factor;
+            list.add(new BenchmarkItem("🎈", formatBenchmark(pa / 103000.0) + "×", "Party Balloons", "103 kPa pressure"));
+            list.add(new BenchmarkItem("🌊", formatBenchmark(pa / 101325.0) + "×", "Sea Atmosphere", "1 atm (101.3 kPa)"));
+            list.add(new BenchmarkItem("🚗", formatBenchmark(pa / 220000.0) + "×", "Car Tires", "2.2 bar (~32 psi)"));
+            list.add(new BenchmarkItem("🤿", formatBenchmark(pa / 20000000.0) + "×", "Scuba Tanks", "200 bar tank"));
+        }
+
+        return list;
+    }
+
+    private void drawDualRuler(UnitItem from, UnitItem to, double inputVal, double paneWidth) {
+        Pane rulerPane = new Pane();
+        rulerPane.setMaxWidth(Double.MAX_VALUE);
+        rulerPane.setPrefWidth(paneWidth);
+
         double x0 = 40.0;
         double x1 = paneWidth - 40.0;
         double w = x1 - x0;
@@ -881,16 +1523,19 @@ public class UnitConverterController {
             double exp = Math.floor(Math.log10(target));
             double factor = Math.pow(10, exp);
             double norm = target / factor;
-            if (norm <= 2.0) maxVal = 2.0 * factor;
-            else if (norm <= 5.0) maxVal = 5.0 * factor;
-            else maxVal = 10.0 * factor;
+            if (norm <= 2.0)
+                maxVal = 2.0 * factor;
+            else if (norm <= 5.0)
+                maxVal = 5.0 * factor;
+            else
+                maxVal = 10.0 * factor;
         }
 
         // 1. Horizontal Baseline Line
         Line baseline = new Line(x0, axisY, x1, axisY);
         baseline.setStroke(Color.web("rgba(255, 255, 255, 0.22)"));
         baseline.setStrokeWidth(1.5);
-        visualizerPane.getChildren().add(baseline);
+        rulerPane.getChildren().add(baseline);
 
         // 2. 5 Major Ticks and Minor Ticks
         for (int i = 0; i <= 4; i++) {
@@ -901,7 +1546,7 @@ public class UnitConverterController {
             Line majorTick = new Line(xi, axisY - 10, xi, axisY + 10);
             majorTick.setStroke(Color.web("rgba(255, 255, 255, 0.45)"));
             majorTick.setStrokeWidth(1.5);
-            visualizerPane.getChildren().add(majorTick);
+            rulerPane.getChildren().add(majorTick);
 
             // Top Label (From unit value)
             Label topLbl = new Label(formatNumber(ti));
@@ -910,7 +1555,7 @@ public class UnitConverterController {
             topLbl.setLayoutY(axisY - 32);
             topLbl.setPrefWidth(50);
             topLbl.setAlignment(Pos.CENTER);
-            visualizerPane.getChildren().add(topLbl);
+            rulerPane.getChildren().add(topLbl);
 
             // Bottom Label (To unit converted value)
             double convTi = convert(ti, currentCategory.name, from, to);
@@ -920,7 +1565,7 @@ public class UnitConverterController {
             botLbl.setLayoutY(axisY + 16);
             botLbl.setPrefWidth(70);
             botLbl.setAlignment(Pos.CENTER);
-            visualizerPane.getChildren().add(botLbl);
+            rulerPane.getChildren().add(botLbl);
 
             // 3 minor ticks between each major tick
             if (i < 4) {
@@ -929,7 +1574,7 @@ public class UnitConverterController {
                     Line minorTick = new Line(xMinor, axisY - 5, xMinor, axisY + 5);
                     minorTick.setStroke(Color.web("rgba(255, 255, 255, 0.2)"));
                     minorTick.setStrokeWidth(1.0);
-                    visualizerPane.getChildren().add(minorTick);
+                    rulerPane.getChildren().add(minorTick);
                 }
             }
         }
@@ -948,12 +1593,11 @@ public class UnitConverterController {
                 pinX, axisY - 7.0,
                 pinX + 5.0, axisY,
                 pinX, axisY + 7.0,
-                pinX - 5.0, axisY
-        );
+                pinX - 5.0, axisY);
         diamond.setFill(Color.web("#00D2FF"));
         diamond.setEffect(new DropShadow(8, Color.web("#00D2FF")));
 
-        visualizerPane.getChildren().addAll(pinLine, diamond);
+        rulerPane.getChildren().addAll(pinLine, diamond);
 
         // 4. Special Category Visualizer Enhancements
         if ("Temperature".equalsIgnoreCase(currentCategory.name)) {
@@ -967,10 +1611,9 @@ public class UnitConverterController {
                     new Stop(0.2, Color.web("#00E5FF")),
                     new Stop(0.4, Color.web("#00E676")),
                     new Stop(0.7, Color.web("#FFB300")),
-                    new Stop(1.0, Color.web("#FF3366"))
-            );
+                    new Stop(1.0, Color.web("#FF3366")));
             gradBar.setFill(grad);
-            visualizerPane.getChildren().add(gradBar);
+            rulerPane.getChildren().add(gradBar);
 
             Label freezeLbl = new Label("Freezing: 0°C (32°F)");
             freezeLbl.setStyle("-fx-text-fill: rgba(0, 229, 255, 0.85); -fx-font-size: 10px;");
@@ -987,16 +1630,17 @@ public class UnitConverterController {
             boilLbl.setLayoutX(x1 - 105);
             boilLbl.setLayoutY(barY + 12);
 
-            visualizerPane.getChildren().addAll(freezeLbl, roomLbl, boilLbl);
+            rulerPane.getChildren().addAll(freezeLbl, roomLbl, boilLbl);
 
         } else if ("Speed".equalsIgnoreCase(currentCategory.name)) {
             visualizerPane.setPrefHeight(125);
             double barY = axisY + 42.0;
-            Label hint = new Label("Context:  🚶 Walking ~5 km/h   •   🚗 Highway ~100 km/h   •   ✈️ Jet ~900 km/h   •   ⚡ Mach 1 ~1235 km/h");
+            Label hint = new Label(
+                    "Context:  🚶 Walking ~5 km/h   •   🚗 Highway ~100 km/h   •   ✈️ Jet ~900 km/h   •   ⚡ Mach 1 ~1235 km/h");
             hint.setStyle("-fx-text-fill: rgba(255, 255, 255, 0.4); -fx-font-size: 11px;");
             hint.setLayoutX(x0);
             hint.setLayoutY(barY);
-            visualizerPane.getChildren().add(hint);
+            rulerPane.getChildren().add(hint);
 
         } else if ("Data".equalsIgnoreCase(currentCategory.name)) {
             visualizerPane.setPrefHeight(125);
@@ -1005,18 +1649,22 @@ public class UnitConverterController {
             hint.setStyle("-fx-text-fill: rgba(255, 255, 255, 0.4); -fx-font-size: 11px;");
             hint.setLayoutX(x0);
             hint.setLayoutY(barY);
-            visualizerPane.getChildren().add(hint);
+            rulerPane.getChildren().add(hint);
         } else {
             visualizerPane.setPrefHeight(110);
         }
+
+        visualizerPane.getChildren().add(rulerPane);
     }
 
     private void updateEquivalentsTable(double inputVal) {
-        if (equivalentsContainer == null || currentCategory == null) return;
+        if (equivalentsContainer == null || currentCategory == null)
+            return;
         equivalentsContainer.getChildren().clear();
 
         UnitItem from = findUnitByDisplay(currentCategory, fromUnitBox != null ? fromUnitBox.getValue() : null);
-        if (from == null) return;
+        if (from == null)
+            return;
 
         boolean isCurrency = "Currency".equalsIgnoreCase(currentCategory.name);
 
@@ -1079,7 +1727,8 @@ public class UnitConverterController {
 
     @FXML
     public void swapUnits() {
-        if (fromUnitBox == null || toUnitBox == null) return;
+        if (fromUnitBox == null || toUnitBox == null)
+            return;
         String fromVal = fromUnitBox.getValue();
         String toVal = toUnitBox.getValue();
 
@@ -1108,9 +1757,11 @@ public class UnitConverterController {
 
     @FXML
     public void copyResult() {
-        if (outputTextField == null || copyResultBtn == null) return;
+        if (outputTextField == null || copyResultBtn == null)
+            return;
         String res = outputTextField.getText();
-        if (res == null || res.trim().isEmpty() || res.equals("Invalid")) return;
+        if (res == null || res.trim().isEmpty() || res.equals("Invalid"))
+            return;
 
         ClipboardContent content = new ClipboardContent();
         content.putString(res.trim());
@@ -1162,7 +1813,8 @@ public class UnitConverterController {
 
     @FXML
     public void toggleSidebar() {
-        if (sidebar == null) return;
+        if (sidebar == null)
+            return;
         sidebarVisible = !sidebarVisible;
         Timeline timeline = new Timeline();
         KeyValue kvW = new KeyValue(sidebar.prefWidthProperty(), sidebarVisible ? 215.0 : 0.0);

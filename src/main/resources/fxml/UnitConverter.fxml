@@ -11,15 +11,18 @@
     style="-fx-background-color: #14121C;">
 
     <BorderPane fx:id="rootPane" focusTraversable="true" style="-fx-background-color: transparent;">
-        
+
         <!-- In-window Top Header for Unit Converter -->
         <top>
-            <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-padding: 8 16 8 16; -fx-background-color: #1A1724; -fx-border-color: rgba(255,255,255,0.06); -fx-border-width: 0 0 1 0;">
-                <Button fx:id="sidebarToggleBtn" text="≡" onAction="#toggleSidebar" 
-                        styleClass="converter-icon-btn" style="-fx-font-size: 18px; -fx-padding: 4 12;"/>
-                <ComboBox fx:id="unitModeComboBox" promptText="Unit Converter" styleClass="mode-combo" prefWidth="180" />
+            <HBox alignment="CENTER_LEFT" spacing="12"
+                style="-fx-padding: 8 16 8 16; -fx-background-color: #1A1724; -fx-border-color: rgba(255,255,255,0.06); -fx-border-width: 0 0 1 0;">
+                <Button fx:id="sidebarToggleBtn" text="≡" onAction="#toggleSidebar"
+                    styleClass="converter-icon-btn" style="-fx-font-size: 18px; -fx-padding: 4 12;" />
+                <ComboBox fx:id="unitModeComboBox" promptText="Unit Converter"
+                    styleClass="mode-combo" prefWidth="180" />
                 <Region HBox.hgrow="ALWAYS" />
-                <Label text="NovaCalc  •  Converter" style="-fx-text-fill: rgba(255,255,255,0.38); -fx-font-size: 12px; -fx-font-weight: 500;" />
+                <Label text="NovaCalc  •  Converter"
+                    style="-fx-text-fill: rgba(255,255,255,0.38); -fx-font-size: 12px; -fx-font-weight: 500;" />
             </HBox>
         </top>
 
@@ -28,34 +31,46 @@
             <BorderPane style="-fx-background-color: transparent;">
                 <!-- Left Sidebar -->
                 <left>
-                    <VBox fx:id="sidebar" prefWidth="215" minWidth="0" maxWidth="215" style="-fx-background-color: #171520; -fx-border-color: rgba(255,255,255,0.06); -fx-border-width: 0 1 0 0;">
-                        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;" VBox.vgrow="ALWAYS">
+                    <VBox fx:id="sidebar" prefWidth="215" minWidth="0" maxWidth="215"
+                        style="-fx-background-color: #171520; -fx-border-color: rgba(255,255,255,0.06); -fx-border-width: 0 1 0 0;">
+                        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                            style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;"
+                            VBox.vgrow="ALWAYS">
                             <VBox spacing="4" style="-fx-padding: 12 8 16 8;">
-                                <Label text="MEASURE" style="-fx-text-fill: rgba(255,255,255,0.38); -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 6 10 4 10;" />
+                                <Label text="MEASURE"
+                                    style="-fx-text-fill: rgba(255,255,255,0.38); -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 6 10 4 10;" />
                                 <VBox fx:id="measureCategoryBox" spacing="2" />
-                                
+
                                 <Separator style="-fx-opacity: 0.08; -fx-padding: 10 4 10 4;" />
-                                
-                                <Label text="CALCULATE &amp; PLAN" style="-fx-text-fill: rgba(255,255,255,0.38); -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 6 10 4 10;" />
+
+                                <Label text="CALCULATE &amp; PLAN"
+                                    style="-fx-text-fill: rgba(255,255,255,0.38); -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 6 10 4 10;" />
                                 <VBox fx:id="calculateCategoryBox" spacing="2" />
                             </VBox>
                         </ScrollPane>
                     </VBox>
                 </left>
-                
+
                 <!-- Center Main Content -->
                 <center>
-                    <ScrollPane fx:id="mainScrollPane" fitToWidth="true" hbarPolicy="NEVER" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
-                        <VBox spacing="20" style="-fx-padding: 24 36 36 36;" maxWidth="960" alignment="TOP_CENTER">
-                            
+                    <ScrollPane fx:id="mainScrollPane" fitToWidth="true" hbarPolicy="NEVER"
+                        style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
+                        <VBox spacing="20" style="-fx-padding: 24 36 36 36;" maxWidth="Infinity"
+                            alignment="TOP_CENTER">
+
                             <!-- Header / Breadcrumb -->
                             <VBox spacing="4" alignment="CENTER_LEFT" maxWidth="Infinity">
-                                <Label fx:id="breadcrumbLabel" text="Convert  /  Length" style="-fx-text-fill: rgba(255,255,255,0.45); -fx-font-size: 12px; -fx-font-weight: bold;" />
+                                <Label fx:id="breadcrumbLabel" text="Convert  /  Length"
+                                    style="-fx-text-fill: rgba(255,255,255,0.45); -fx-font-size: 12px; -fx-font-weight: bold;" />
                                 <HBox alignment="CENTER_LEFT" spacing="12">
-                                    <Label fx:id="categoryIconLabel" text="📏" style="-fx-font-size: 30px;" />
+                                    <Label fx:id="categoryIconLabel" text="📏"
+                                        style="-fx-font-size: 30px;" />
                                     <VBox spacing="2">
-                                        <Label fx:id="titleLabel" text="Length converter" style="-fx-text-fill: white; -fx-font-size: 26px; -fx-font-weight: bold;" />
-                                        <Label fx:id="subtitleLabel" text="Every unit in its place. Every answer within reach." style="-fx-text-fill: rgba(255,255,255,0.5); -fx-font-size: 13px;" />
+                                        <Label fx:id="titleLabel" text="Length converter"
+                                            style="-fx-text-fill: white; -fx-font-size: 26px; -fx-font-weight: bold;" />
+                                        <Label fx:id="subtitleLabel"
+                                            text="Every unit in its place. Every answer within reach."
+                                            style="-fx-text-fill: rgba(255,255,255,0.5); -fx-font-size: 13px;" />
                                     </VBox>
                                 </HBox>
                             </VBox>
@@ -63,73 +78,113 @@
                             <!-- Dual Cards HBox: From & To -->
                             <HBox alignment="CENTER" spacing="14" maxWidth="Infinity">
                                 <!-- FROM Card -->
-                                <VBox styleClass="converter-card, from-card" HBox.hgrow="ALWAYS" spacing="10">
+                                <VBox styleClass="converter-card, from-card" HBox.hgrow="ALWAYS"
+                                    spacing="10">
                                     <HBox alignment="CENTER_LEFT">
                                         <Label text="From" styleClass="card-label-muted" />
                                         <Region HBox.hgrow="ALWAYS" />
                                         <!-- Country Flag Showcase Badge -->
-                                        <HBox fx:id="fromFlagBadge" alignment="CENTER" spacing="8" styleClass="flag-badge-pill" visible="false" managed="false">
-                                            <ImageView fx:id="fromFlagView" fitWidth="34" fitHeight="22" preserveRatio="false" />
-                                            <Label fx:id="fromFlagCodeLabel" text="USD" styleClass="flag-code-label" />
+                                        <HBox fx:id="fromFlagBadge" alignment="CENTER" spacing="8"
+                                            styleClass="flag-badge-pill" visible="false"
+                                            managed="false">
+                                            <ImageView fx:id="fromFlagView" fitWidth="34"
+                                                fitHeight="22" preserveRatio="false" />
+                                            <Label fx:id="fromFlagCodeLabel" text="USD"
+                                                styleClass="flag-code-label" />
                                         </HBox>
                                     </HBox>
-                                    <TextField fx:id="inputTextField" text="3" promptText="0" styleClass="converter-input-field" />
-                                    <ComboBox fx:id="fromUnitBox" maxWidth="Infinity" styleClass="converter-combo" />
+                                    <TextField fx:id="inputTextField" text="3" promptText="0"
+                                        styleClass="converter-input-field" />
+                                    <ComboBox fx:id="fromUnitBox" maxWidth="Infinity"
+                                        styleClass="converter-combo" />
                                 </VBox>
 
                                 <!-- Swap Button in the center -->
-                                <Button fx:id="swapBtn" text="⇄" onAction="#swapUnits" styleClass="converter-swap-btn" minWidth="44" minHeight="44" prefWidth="44" prefHeight="44">
-                                    <tooltip><Tooltip text="Swap units (⇄)" /></tooltip>
+                                <Button fx:id="swapBtn" text="⇄" onAction="#swapUnits"
+                                    styleClass="converter-swap-btn" minWidth="44" minHeight="44"
+                                    prefWidth="44" prefHeight="44">
+                                    <tooltip>
+                                        <Tooltip text="Swap units (⇄)" />
+                                    </tooltip>
                                 </Button>
 
                                 <!-- TO Card -->
-                                <VBox styleClass="converter-card, to-card" HBox.hgrow="ALWAYS" spacing="10">
+                                <VBox styleClass="converter-card, to-card" HBox.hgrow="ALWAYS"
+                                    spacing="10">
                                     <HBox alignment="CENTER_LEFT">
                                         <Label text="To" styleClass="card-label-muted" />
                                         <Region HBox.hgrow="ALWAYS" />
                                         <!-- Country Flag Showcase Badge -->
-                                        <HBox fx:id="toFlagBadge" alignment="CENTER" spacing="8" styleClass="flag-badge-pill" visible="false" managed="false">
-                                            <ImageView fx:id="toFlagView" fitWidth="34" fitHeight="22" preserveRatio="false" />
-                                            <Label fx:id="toFlagCodeLabel" text="EUR" styleClass="flag-code-label" />
+                                        <HBox fx:id="toFlagBadge" alignment="CENTER" spacing="8"
+                                            styleClass="flag-badge-pill" visible="false"
+                                            managed="false">
+                                            <ImageView fx:id="toFlagView" fitWidth="34"
+                                                fitHeight="22" preserveRatio="false" />
+                                            <Label fx:id="toFlagCodeLabel" text="EUR"
+                                                styleClass="flag-code-label" />
                                         </HBox>
                                     </HBox>
-                                    <TextField fx:id="outputTextField" text="9.8425" editable="false" styleClass="converter-output-field" />
-                                    <ComboBox fx:id="toUnitBox" maxWidth="Infinity" styleClass="converter-combo" />
+                                    <TextField fx:id="outputTextField" text="9.8425"
+                                        editable="false" styleClass="converter-output-field" />
+                                    <ComboBox fx:id="toUnitBox" maxWidth="Infinity"
+                                        styleClass="converter-combo" />
                                 </VBox>
                             </HBox>
 
                             <!-- Visual Representation Container -->
-                            <VBox styleClass="converter-visualizer-container" maxWidth="Infinity" spacing="12">
-                                <HBox alignment="CENTER_LEFT">
-                                    <Label fx:id="visualizerUnitPairLabel" text="m  ⇄  ft" style="-fx-text-fill: rgba(255,255,255,0.85); -fx-font-size: 14px; -fx-font-weight: bold;" />
+                            <VBox styleClass="converter-visualizer-container" maxWidth="Infinity"
+                                spacing="12">
+                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                    <Label fx:id="visualizerUnitPairLabel" text="m  ⇄  ft"
+                                        style="-fx-text-fill: rgba(255,255,255,0.85); -fx-font-size: 14px; -fx-font-weight: bold;" />
                                     <Region HBox.hgrow="ALWAYS" />
-                                    <Label text="Relative scale - not actual size" style="-fx-text-fill: rgba(255,255,255,0.35); -fx-font-size: 11px;" />
+                                    <!-- View Mode Switcher -->
+                                    <HBox spacing="4"
+                                        style="-fx-background-color: rgba(255, 255, 255, 0.07); -fx-background-radius: 16; -fx-padding: 3;">
+                                        <Button fx:id="hubModeBtn" text="🧮 Calculation Hub"
+                                            onAction="#switchToHubMode"
+                                            styleClass="visualizer-mode-btn, visualizer-mode-active" />
+                                        <Button fx:id="rulerModeBtn" text="📏 Dual Ruler"
+                                            onAction="#switchToRulerMode"
+                                            styleClass="visualizer-mode-btn" />
+                                    </HBox>
                                 </HBox>
 
                                 <!-- Responsive Visualizer Pane -->
-                                <Pane fx:id="visualizerPane" minHeight="120" prefHeight="130" style="-fx-background-color: transparent;" />
+                                <StackPane fx:id="visualizerPane" minHeight="220" prefHeight="230"
+                                    style="-fx-background-color: transparent;" />
 
                                 <!-- Formula Pill -->
                                 <HBox alignment="CENTER">
-                                    <Label fx:id="formulaLabel" text="1 m = 3.2808 ft" styleClass="formula-pill" />
+                                    <Label fx:id="formulaLabel" text="1 m = 3.2808 ft"
+                                        styleClass="formula-pill" />
                                 </HBox>
                             </VBox>
 
                             <!-- Action Buttons Bar -->
                             <HBox alignment="CENTER_LEFT" spacing="10" maxWidth="Infinity">
-                                <Button text="Clear value" onAction="#clearEntry" styleClass="converter-action-btn" />
-                                <Button text="⇄ Swap pair" onAction="#swapUnits" styleClass="converter-action-btn" />
-                                <Button fx:id="refreshRatesBtn" text="🔄 Live Rates" onAction="#refreshExchangeRates" styleClass="converter-action-btn" visible="false" managed="false" />
+                                <Button text="Clear value" onAction="#clearEntry"
+                                    styleClass="converter-action-btn" />
+                                <Button text="⇄ Swap pair" onAction="#swapUnits"
+                                    styleClass="converter-action-btn" />
+                                <Button fx:id="refreshRatesBtn" text="🔄 Live Rates"
+                                    onAction="#refreshExchangeRates"
+                                    styleClass="converter-action-btn" visible="false"
+                                    managed="false" />
                                 <Region HBox.hgrow="ALWAYS" />
-                                <Button text="🕒 History" onAction="#showHistory" styleClass="converter-action-btn" />
-                                <Button fx:id="copyResultBtn" text="📋 Copy result" onAction="#copyResult" styleClass="converter-primary-btn" />
+                                <Button text="🕒 History" onAction="#showHistory"
+                                    styleClass="converter-action-btn" />
+                                <Button fx:id="copyResultBtn" text="📋 Copy result"
+                                    onAction="#copyResult" styleClass="converter-primary-btn" />
                             </HBox>
 
                             <!-- Equivalent Measurements Section -->
                             <VBox spacing="10" maxWidth="Infinity">
                                 <HBox alignment="BOTTOM_LEFT" spacing="10">
-                                    <Label text="Equivalent measurements" style="-fx-text-fill: white; -fx-font-size: 17px; -fx-font-weight: bold;" />
-                                    <Label text="Rounded for display. Full precision retained." style="-fx-text-fill: rgba(255,255,255,0.4); -fx-font-size: 11px;" />
+                                    <Label text="Equivalent measurements"
+                                        style="-fx-text-fill: white; -fx-font-size: 17px; -fx-font-weight: bold;" />
+                                    <Label text="Rounded for display. Full precision retained."
+                                        style="-fx-text-fill: rgba(255,255,255,0.4); -fx-font-size: 11px;" />
                                 </HBox>
 
                                 <VBox fx:id="equivalentsContainer" spacing="6" maxWidth="Infinity" />
@@ -140,7 +195,7 @@
                 </center>
             </BorderPane>
         </center>
-        
+
     </BorderPane>
 
 </StackPane>
