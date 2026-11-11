@@ -15,3 +15,4 @@ fi
 
 echo "[INFO] Starting NovaCalc..."
 java -jar "$JAR_PATH"
+
