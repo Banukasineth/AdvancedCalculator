@@ -678,7 +678,105 @@ public class CalculatorController {
     @FXML
     private StackPane orbContainer;
 
+    @FXML
+    private Label loadingTextLabel;
+
     private AIOrbView aiOrbView;
+
+    // Typewriter and pulsing dots animation for solution loading state
+    private Timeline loadingTextTimeline;
+    private int loadingPhraseIndex = 0;
+    private int loadingCharIndex = 0;
+    private boolean loadingIsDeleting = false;
+    private int loadingPauseCounter = 0;
+
+    private static final String[] LOADING_BASE_PHRASES = {
+        "Generating a solution",
+        "Analyzing mathematical logic",
+        "Formulating step-by-step steps",
+        "Computing optimal answer"
+    };
+
+    private void startLoadingAnimation() {
+        if (loadingBox != null) {
+            loadingBox.setOpacity(1.0);
+            loadingBox.setVisible(true);
+            loadingBox.setManaged(true);
+        }
+        if (solutionWebView != null) {
+            solutionWebView.setVisible(false);
+            solutionWebView.setManaged(false);
+        }
+        if (aiOrbView != null) {
+            aiOrbView.start();
+        }
+        startLoadingTextAnimation();
+    }
+
+    private void stopLoadingAnimation() {
+        if (aiOrbView != null) {
+            aiOrbView.stop();
+        }
+        stopLoadingTextAnimation();
+    }
+
+    private void startLoadingTextAnimation() {
+        if (loadingTextLabel == null) return;
+
+        stopLoadingTextAnimation();
+
+        loadingPhraseIndex = 0;
+        String firstPhrase = LOADING_BASE_PHRASES[0];
+        loadingCharIndex = firstPhrase.length();
+        loadingIsDeleting = false;
+        loadingPauseCounter = 0;
+        loadingTextLabel.setText(firstPhrase + "...");
+
+        loadingTextTimeline = new Timeline(new KeyFrame(Duration.millis(45), ev -> {
+            if (loadingTextLabel == null) return;
+
+            String basePhrase = LOADING_BASE_PHRASES[loadingPhraseIndex];
+
+            if (!loadingIsDeleting) {
+                if (loadingCharIndex <= basePhrase.length()) {
+                    loadingTextLabel.setText(basePhrase.substring(0, loadingCharIndex));
+                    loadingCharIndex++;
+                } else {
+                    loadingPauseCounter++;
+                    int dotCount = (loadingPauseCounter / 6) % 4;
+                    StringBuilder sb = new StringBuilder(basePhrase);
+                    for (int i = 0; i < dotCount; i++) {
+                        sb.append(".");
+                    }
+                    loadingTextLabel.setText(sb.toString());
+
+                    if (loadingPauseCounter > 45) { // ~2 seconds hold at full phrase with animated dots
+                        loadingIsDeleting = true;
+                        loadingPauseCounter = 0;
+                    }
+                }
+            } else {
+                if (loadingCharIndex > 0) {
+                    loadingCharIndex = Math.max(0, loadingCharIndex - 2);
+                    loadingTextLabel.setText(basePhrase.substring(0, Math.min(loadingCharIndex, basePhrase.length())));
+                } else {
+                    loadingIsDeleting = false;
+                    loadingPhraseIndex = (loadingPhraseIndex + 1) % LOADING_BASE_PHRASES.length;
+                    loadingPauseCounter = 0;
+                    loadingCharIndex = 0;
+                }
+            }
+        }));
+        loadingTextTimeline.setCycleCount(Timeline.INDEFINITE);
+        loadingTextTimeline.play();
+    }
+
+    private void stopLoadingTextAnimation() {
+        if (loadingTextTimeline != null) {
+            loadingTextTimeline.stop();
+            loadingTextTimeline = null;
+        }
+    }
 
     private AISolverService aiSolverService = new AISolverService();
 
@@ -1144,18 +1242,7 @@ public class CalculatorController {
             hideSolutionArea();
         } else {
             showSolutionArea();
-            if (solutionWebView != null && (!solutionWebView.isVisible() || solutionWebView.getOpacity() < 0.1)) {
-                loadingBox.setVisible(false);
-                loadingBox.setManaged(false);
-                solutionWebView.setVisible(true);
-                solutionWebView.setManaged(true);
-                solutionWebView.setOpacity(1.0);
-                if (currentLatexExpression.length() > 0) {
-                    renderSolution("\\text{Press '=' or AI to solve: } " + currentLatexExpression.toString());
-                } else {
-                    renderSolution("\\text{Step-by-Step AI Solutions will appear here.}");
-                }
-            }
+            startLoadingAnimation();
         }
     }
 
@@ -1797,14 +1884,7 @@ public class CalculatorController {
         }
 
         showSolutionArea();
-        loadingBox.setOpacity(1.0);
-        loadingBox.setVisible(true);
-        loadingBox.setManaged(true);
-        solutionWebView.setVisible(false);
-        solutionWebView.setManaged(false);
-        if (aiOrbView != null) {
-            aiOrbView.start();
-        }
+        startLoadingAnimation();
 
         aiSolverService.solveMathExpression(expr)
             .thenAccept(solutionLatex -> {
@@ -1813,9 +1893,7 @@ public class CalculatorController {
                     fadeOut.setFromValue(1.0);
                     fadeOut.setToValue(0.0);
                     fadeOut.setOnFinished(ev -> {
-                        if (aiOrbView != null) {
-                            aiOrbView.stop();
-                        }
+                        stopLoadingAnimation();
                         loadingBox.setVisible(false);
                         loadingBox.setManaged(false);
                         solutionWebView.setOpacity(0.0);
@@ -2441,9 +2519,7 @@ public class CalculatorController {
 
     public void renderSolution(String latex) {
         showSolutionArea();
-        if (aiOrbView != null) {
-            aiOrbView.stop();
-        }
+        stopLoadingAnimation();
         loadingBox.setVisible(false);
         loadingBox.setManaged(false);
         solutionWebView.setOpacity(1.0);
@@ -2490,9 +2566,7 @@ public class CalculatorController {
         timeline.setOnFinished(e -> {
             verticalDivider.setVisible(false);
             verticalDivider.setManaged(false);
-            if (aiOrbView != null) {
-                aiOrbView.stop();
-            }
+            stopLoadingAnimation();
         });
         timeline.play();
     }
@@ -3205,14 +3279,7 @@ public class CalculatorController {
 
                         if (result.isSolved && result.solutionLatex != null && !result.solutionLatex.isEmpty()) {
                             showSolutionArea();
-                            loadingBox.setOpacity(1.0);
-                            loadingBox.setVisible(true);
-                            loadingBox.setManaged(true);
-                            solutionWebView.setVisible(false);
-                            solutionWebView.setManaged(false);
-                            if (aiOrbView != null) {
-                                aiOrbView.start();
-                            }
+                            startLoadingAnimation();
 
                             javafx.animation.PauseTransition pt = new javafx.animation.PauseTransition(Duration.millis(500));
                             pt.setOnFinished(ev -> {
@@ -3220,9 +3287,7 @@ public class CalculatorController {
                                 fadeOut.setFromValue(1.0);
                                 fadeOut.setToValue(0.0);
                                 fadeOut.setOnFinished(fEv -> {
-                                    if (aiOrbView != null) {
-                                        aiOrbView.stop();
-                                    }
+                                    stopLoadingAnimation();
                                     loadingBox.setVisible(false);
                                     loadingBox.setManaged(false);
                                     solutionWebView.setOpacity(0.0);
@@ -3289,14 +3354,7 @@ public class CalculatorController {
 
                         if (result.isSolved && result.solutionLatex != null && !result.solutionLatex.isEmpty()) {
                             showSolutionArea();
-                            loadingBox.setOpacity(1.0);
-                            loadingBox.setVisible(true);
-                            loadingBox.setManaged(true);
-                            solutionWebView.setVisible(false);
-                            solutionWebView.setManaged(false);
-                            if (aiOrbView != null) {
-                                aiOrbView.start();
-                            }
+                            startLoadingAnimation();
 
                             javafx.animation.PauseTransition pt = new javafx.animation.PauseTransition(Duration.millis(500));
                             pt.setOnFinished(ev -> {
@@ -3304,9 +3362,7 @@ public class CalculatorController {
                                 fadeOut.setFromValue(1.0);
                                 fadeOut.setToValue(0.0);
                                 fadeOut.setOnFinished(fEv -> {
-                                    if (aiOrbView != null) {
-                                        aiOrbView.stop();
-                                    }
+                                    stopLoadingAnimation();
                                     loadingBox.setVisible(false);
                                     loadingBox.setManaged(false);
                                     solutionWebView.setOpacity(0.0);

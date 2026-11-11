@@ -184,11 +184,11 @@
                             <Label text="Solution" styleClass="area-title" />
                             <StackPane VBox.vgrow="ALWAYS">
                                 <!-- Loading Orb State -->
-                                <VBox fx:id="loadingBox" alignment="CENTER" visible="true">
+                                <VBox fx:id="loadingBox" alignment="CENTER" spacing="8" visible="true">
                                     <Region VBox.vgrow="ALWAYS" />
                                     <StackPane fx:id="orbContainer" minWidth="110" minHeight="110" maxWidth="110" maxHeight="110" />
-                                    <Label text="Generating a&#10;solution..."
-                                        textAlignment="CENTER" styleClass="solution-text" />
+                                    <Label fx:id="loadingTextLabel" text="Generating a solution..."
+                                        textAlignment="CENTER" alignment="CENTER" styleClass="solution-text" />
                                     <Region VBox.vgrow="ALWAYS" />
                                 </VBox>
 
