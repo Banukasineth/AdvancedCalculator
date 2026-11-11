@@ -63,8 +63,7 @@
                                 <Label fx:id="breadcrumbLabel" text="Convert  /  Length"
                                     style="-fx-text-fill: rgba(255,255,255,0.45); -fx-font-size: 12px; -fx-font-weight: bold;" />
                                 <HBox alignment="CENTER_LEFT" spacing="12">
-                                    <Label fx:id="categoryIconLabel" text="📏"
-                                        style="-fx-font-size: 30px;" />
+                                    <Label fx:id="categoryIconLabel" alignment="CENTER" />
                                     <VBox spacing="2">
                                         <Label fx:id="titleLabel" text="Length converter"
                                             style="-fx-text-fill: white; -fx-font-size: 26px; -fx-font-weight: bold;" />
@@ -141,10 +140,10 @@
                                     <!-- View Mode Switcher -->
                                     <HBox spacing="4"
                                         style="-fx-background-color: rgba(255, 255, 255, 0.07); -fx-background-radius: 16; -fx-padding: 3;">
-                                        <Button fx:id="hubModeBtn" text="🧮 Calculation Hub"
+                                        <Button fx:id="hubModeBtn" text="Calculation Hub"
                                             onAction="#switchToHubMode"
                                             styleClass="visualizer-mode-btn, visualizer-mode-active" />
-                                        <Button fx:id="rulerModeBtn" text="📏 Dual Ruler"
+                                        <Button fx:id="rulerModeBtn" text="Dual Ruler"
                                             onAction="#switchToRulerMode"
                                             styleClass="visualizer-mode-btn" />
                                     </HBox>
@@ -172,7 +171,7 @@
                                     styleClass="converter-action-btn" visible="false"
                                     managed="false" />
                                 <Region HBox.hgrow="ALWAYS" />
-                                <Button text="🕒 History" onAction="#showHistory"
+                                <Button fx:id="historyBtn" text="History" onAction="#showHistory"
                                     styleClass="converter-action-btn" />
                                 <Button fx:id="copyResultBtn" text="📋 Copy result"
                                     onAction="#copyResult" styleClass="converter-primary-btn" />

@@ -6,6 +6,7 @@ import javafx.animation.Timeline;
 import javafx.animation.KeyValue;
 import javafx.animation.KeyFrame;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -22,6 +23,7 @@ import javafx.scene.paint.Stop;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.SVGPath;
 import javafx.util.Duration;
 
 import org.json.JSONObject;
@@ -102,6 +104,22 @@ public class UnitConverterController {
     private Button hubModeBtn;
     @FXML
     private Button rulerModeBtn;
+    @FXML
+    private Button historyBtn;
+
+    // High-Resolution Vector SVG Paths for Categories
+    private static final String SVG_LENGTH = "M21.71 6.29l-4-4a1 1 0 0 0-1.42 0l-14 14a1 1 0 0 0 0 1.42l4 4a1 1 0 0 0 1.42 0l14-14a1 1 0 0 0 0-1.42zM7 19.59l-2.59-2.59L16 5.41 18.59 8 7 19.59zM10 13l2-2 1.41 1.41-2 2L10 13zm3-3l2-2 1.41 1.41-2 2L13 10zm3-3l2-2 1.41 1.41-2 2L16 7z";
+    private static final String SVG_AREA = "M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8zm2 2v4h4v-4h-4zm-10 0v4h4v-4H5zm0-10v4h4V5H5zm10 0v4h4V5h-4z";
+    private static final String SVG_VOLUME = "M12 2L3 7v10l9 5 9-5V7l-9-5zm0 2.2l6.5 3.6L12 11.4 5.5 7.8 12 4.2zM4.5 9.1l7 3.9v7.7l-7-3.9V9.1zm8.5 11.6v-7.7l7-3.9v7.7l-7 3.9z";
+    private static final String SVG_MASS = "M13 2h-2v3H3v2l3.5 7A2.5 2.5 0 0 0 9 15.5a2.5 2.5 0 0 0 2.5-1.5L11 9.5V19H7v2h10v-2h-4V9.5l-.5 4.5A2.5 2.5 0 0 0 15 15.5a2.5 2.5 0 0 0 2.5-1.5L21 7V5h-8V2zm-5 11.5L5.5 7h5L8 13.5zm8 0L13.5 7h5L16 13.5z";
+    private static final String SVG_TEMP = "M15 13.5V5a3 3 0 0 0-6 0v8.5a5 5 0 1 0 6 0zM12 4a1 1 0 0 1 1 1v6h-2V5a1 1 0 0 1 1-1zm0 17a3 3 0 0 1-1.5-5.6V13h3v2.4A3 3 0 0 1 12 21z";
+    private static final String SVG_SPEED = "M12 4a9 9 0 0 0-9 9 8.9 8.9 0 0 0 2.7 6.4l1.4-1.4A7 7 0 1 1 18.9 18l1.4 1.4A9 9 0 0 0 21 13a9 9 0 0 0-9-9zm-1 4v5.2l3.2 3.2 1.4-1.4-2.6-2.6V8h-2z";
+    private static final String SVG_TIME = "M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm.5-13H11v6l5.2 3.1.8-1.3-4.5-2.7V7z";
+    private static final String SVG_PRESSURE = "M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm-1-14h2v3h-2V6zm-4.2 1.8l1.4-1.4 2.1 2.1-1.4 1.4-2.1-2.1zm8.4 0l2.1 2.1-1.4 1.4-2.1-2.1 1.4-1.4zM12 10a2 2 0 0 0-2 2c0 .7.4 1.4 1 1.7V17h2v-3.3c.6-.3 1-1 1-1.7a2 2 0 0 0-2-2z";
+    private static final String SVG_ENERGY = "M7 2v11h3v9l7-12h-4l4-8H7z";
+    private static final String SVG_POWER = "M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42A7.92 7.92 0 0 1 20 12a8 8 0 1 1-13.41-5.41L5.17 5.17A9.97 9.97 0 0 0 2 12a10 10 0 1 0 20 0c0-2.76-1.12-5.26-2.93-7.07l-.24.24z";
+    private static final String SVG_DATA = "M12 2C7.58 2 4 3.79 4 6v12c0 2.21 3.58 4 8 4s8-1.79 8-4V6c0-2.21-3.58-4-8-4zm0 2c3.87 0 6 1.46 6 2s-2.13 2-6 2-6-1.46-6-2 2.13-2 6-2zm6 14c0 .54-2.13 2-6 2s-6-1.46-6-2v-2.22c1.61.78 3.72 1.22 6 1.22s4.39-.44 6-1.22V18zm0-4c0 .54-2.13 2-6 2s-6-1.46-6-2v-2.22c1.61.78 3.72 1.22 6 1.22s4.39-.44 6-1.22V14zm0-4c0 .54-2.13 2-6 2s-6-1.46-6-2V7.78c1.61.78 3.72 1.22 6 1.22s4.39-.44 6-1.22V10z";
+    private static final String SVG_CURRENCY = "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 16h-2v-1.12c-1.7-.29-3-1.63-3-3.38h2c0 1.1.9 2 2 2s2-.9 2-2-.9-2-2-2c-2.21 0-4-1.79-4-4 0-1.75 1.3-3.09 3-3.38V5h2v1.12c1.7.29 3 1.63 3 3.38h-2c0-1.1-.9-2-2-2s-2 .9-2 2 .9 2 2 2c2.21 0 4 1.79 4 4 0 1.75-1.3 3.09-3 3.38V18z";
 
     private boolean isDrawingVisualizer = false;
     private double lastDrawnWidth = 0.0;
@@ -157,16 +175,18 @@ public class UnitConverterController {
     public static class CategoryData {
         public final String name;
         public final String icon;
+        public final String svgPath;
         public final String section; // "MEASURE" or "CALCULATE"
         public final String subtitle;
         public final List<UnitItem> units;
         public final String defaultFrom;
         public final String defaultTo;
 
-        public CategoryData(String name, String icon, String section, String subtitle,
+        public CategoryData(String name, String icon, String svgPath, String section, String subtitle,
                 List<UnitItem> units, String defaultFrom, String defaultTo) {
             this.name = name;
             this.icon = icon;
+            this.svgPath = svgPath;
             this.section = section;
             this.subtitle = subtitle;
             this.units = units;
@@ -259,6 +279,52 @@ public class UnitConverterController {
                     resizeDebounce.playFromStart();
                 }
             });
+        }
+
+        // Setup vector SVG icons on switcher and history buttons
+        if (historyBtn != null) {
+            SVGPath hSvg = new SVGPath();
+            hSvg.setContent(SVG_TIME);
+            hSvg.setFill(Color.web("#B8B5C8"));
+            hSvg.setScaleX(0.7);
+            hSvg.setScaleY(0.7);
+            StackPane hBox = new StackPane(hSvg);
+            hBox.setPrefSize(16, 16);
+            hBox.setMinSize(16, 16);
+            hBox.setMaxSize(16, 16);
+            hBox.setAlignment(Pos.CENTER);
+            historyBtn.setGraphic(hBox);
+            historyBtn.setGraphicTextGap(7);
+        }
+
+        if (hubModeBtn != null) {
+            SVGPath hubSvg = new SVGPath();
+            hubSvg.setContent("M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-8 4h2v2h-2V7zm-4 0h2v2H7V7zm0 4h2v2H7v-2zm4 0h2v2h-2v-2zm-4 4h2v2H7v-2zm4 0h2v2h-2v-2zm6 2h-2v-6h2v6zm0-8h-2V7h2v2z");
+            hubSvg.setFill(Color.web("#00D2FF"));
+            hubSvg.setScaleX(0.7);
+            hubSvg.setScaleY(0.7);
+            StackPane hubBox = new StackPane(hubSvg);
+            hubBox.setPrefSize(16, 16);
+            hubBox.setMinSize(16, 16);
+            hubBox.setMaxSize(16, 16);
+            hubBox.setAlignment(Pos.CENTER);
+            hubModeBtn.setGraphic(hubBox);
+            hubModeBtn.setGraphicTextGap(6);
+        }
+
+        if (rulerModeBtn != null) {
+            SVGPath rSvg = new SVGPath();
+            rSvg.setContent(SVG_LENGTH);
+            rSvg.setFill(Color.web("#9E9AA8"));
+            rSvg.setScaleX(0.65);
+            rSvg.setScaleY(0.65);
+            StackPane rBox = new StackPane(rSvg);
+            rBox.setPrefSize(16, 16);
+            rBox.setMinSize(16, 16);
+            rBox.setMaxSize(16, 16);
+            rBox.setAlignment(Pos.CENTER);
+            rulerModeBtn.setGraphic(rBox);
+            rulerModeBtn.setGraphicTextGap(6);
         }
 
         // Fetch live market rates asynchronously on startup
@@ -558,7 +624,7 @@ public class UnitConverterController {
                 new UnitItem("Foot", "ft", 0.3048),
                 new UnitItem("Inch", "in", 0.0254),
                 new UnitItem("Nautical Mile", "NM", 1852.0));
-        allCategories.add(new CategoryData("Length", "📏", "MEASURE",
+        allCategories.add(new CategoryData("Length", "📏", SVG_LENGTH, "MEASURE",
                 "Every unit in its place. Every answer within reach.", lengthUnits, "Meter (m)", "Foot (ft)"));
 
         // 2. Area
@@ -573,7 +639,7 @@ public class UnitConverterController {
                 new UnitItem("Square Yard", "yd²", 0.83612736),
                 new UnitItem("Square Foot", "ft²", 0.09290304),
                 new UnitItem("Square Inch", "in²", 0.00064516));
-        allCategories.add(new CategoryData("Area", "⛶", "MEASURE",
+        allCategories.add(new CategoryData("Area", "⛶", SVG_AREA, "MEASURE",
                 "Convert between square meters, acres, hectares, and square feet.", areaUnits, "Square Meter (m²)",
                 "Square Foot (ft²)"));
 
@@ -591,7 +657,7 @@ public class UnitConverterController {
                 new UnitItem("Imperial Gallon", "imp gal", 4.54609),
                 new UnitItem("Tablespoon", "tbsp", 0.01478676478125),
                 new UnitItem("Teaspoon", "tsp", 0.00492892159375));
-        allCategories.add(new CategoryData("Volume", "🧊", "MEASURE",
+        allCategories.add(new CategoryData("Volume", "🧊", SVG_VOLUME, "MEASURE",
                 "Fluid and solid capacity across metric, US customary, and imperial.", volumeUnits, "Liter (L)",
                 "US Gallon (gal)"));
 
@@ -605,7 +671,7 @@ public class UnitConverterController {
                 new UnitItem("Ounce", "oz", 0.028349523125),
                 new UnitItem("Stone", "st", 6.35029318),
                 new UnitItem("Carat", "ct", 0.0002));
-        allCategories.add(new CategoryData("Mass / Weight", "⚖️", "MEASURE",
+        allCategories.add(new CategoryData("Mass / Weight", "⚖", SVG_MASS, "MEASURE",
                 "Weight and mass conversion with precise multi-unit comparison.", massUnits, "Kilogram (kg)",
                 "Pound (lb)"));
 
@@ -615,7 +681,7 @@ public class UnitConverterController {
                 new UnitItem("Fahrenheit", "°F", 1.0),
                 new UnitItem("Kelvin", "K", 1.0),
                 new UnitItem("Rankine", "°R", 1.0));
-        allCategories.add(new CategoryData("Temperature", "🌡️", "MEASURE",
+        allCategories.add(new CategoryData("Temperature", "🌡", SVG_TEMP, "MEASURE",
                 "Thermal conversion with key landmark reference points.", tempUnits, "Celsius (°C)",
                 "Fahrenheit (°F)"));
 
@@ -626,7 +692,7 @@ public class UnitConverterController {
                 new UnitItem("Mile per hour", "mph", 0.44704),
                 new UnitItem("Knot", "kn", 0.5144444444444445),
                 new UnitItem("Foot per second", "ft/s", 0.3048));
-        allCategories.add(new CategoryData("Speed", "🏃", "MEASURE",
+        allCategories.add(new CategoryData("Speed", "🏃", SVG_SPEED, "MEASURE",
                 "Velocity conversions with real-world motion benchmarks.", speedUnits, "Kilometer per hour (km/h)",
                 "Mile per hour (mph)"));
 
@@ -641,7 +707,7 @@ public class UnitConverterController {
                 new UnitItem("Week", "wk", 604800.0),
                 new UnitItem("Month (30d)", "mo", 2592000.0),
                 new UnitItem("Year (365d)", "yr", 31536000.0));
-        allCategories.add(new CategoryData("Time / Duration", "⏱️", "MEASURE",
+        allCategories.add(new CategoryData("Time / Duration", "⏱", SVG_TIME, "MEASURE",
                 "Time intervals from microseconds to calendar years.", timeUnits, "Hour (h)", "Minute (min)"));
 
         // 8. Pressure
@@ -653,7 +719,7 @@ public class UnitConverterController {
                 new UnitItem("Atmosphere", "atm", 101325.0),
                 new UnitItem("PSI", "psi", 6894.757293),
                 new UnitItem("Torr / mmHg", "Torr", 133.322368));
-        allCategories.add(new CategoryData("Pressure", "🎈", "MEASURE",
+        allCategories.add(new CategoryData("Pressure", "🎈", SVG_PRESSURE, "MEASURE",
                 "Atmospheric, hydraulic, and mechanical pressure comparisons.", pressureUnits, "Bar (bar)",
                 "PSI (psi)"));
 
@@ -667,7 +733,7 @@ public class UnitConverterController {
                 new UnitItem("Kilowatt-hour", "kWh", 3.6e6),
                 new UnitItem("British Thermal Unit", "BTU", 1055.056),
                 new UnitItem("Foot-pound", "ft-lb", 1.355818));
-        allCategories.add(new CategoryData("Energy", "⚡", "CALCULATE",
+        allCategories.add(new CategoryData("Energy", "⚡", SVG_ENERGY, "CALCULATE",
                 "Work, thermal, and electrical energy conversion.", energyUnits, "Kilowatt-hour (kWh)",
                 "Kilojoule (kJ)"));
 
@@ -679,7 +745,7 @@ public class UnitConverterController {
                 new UnitItem("Horsepower", "hp", 745.699872),
                 new UnitItem("Metric Horsepower", "PS", 735.49875),
                 new UnitItem("Foot-pound per min", "ft-lb/min", 0.0225969658));
-        allCategories.add(new CategoryData("Power", "🔋", "CALCULATE",
+        allCategories.add(new CategoryData("Power", "🔋", SVG_POWER, "CALCULATE",
                 "Mechanical and electrical rate of energy transfer.", powerUnits, "Kilowatt (kW)", "Horsepower (hp)"));
 
         // 11. Data
@@ -694,11 +760,10 @@ public class UnitConverterController {
                 new UnitItem("Kilobit", "Kb", 128.0),
                 new UnitItem("Megabit", "Mb", 131072.0),
                 new UnitItem("Gigabit", "Gb", 134217728.0));
-        allCategories.add(new CategoryData("Data", "💾", "CALCULATE",
+        allCategories.add(new CategoryData("Data", "💾", SVG_DATA, "CALCULATE",
                 "Binary digital storage and network bandwidth units.", dataUnits, "Gigabyte (GB)", "Megabyte (MB)"));
 
-        // 12. Currency (22 Major Global Currencies with Country Flags & Real-time
-        // Rates)
+        // 12. Currency (22 Major Global Currencies with Country Flags & Real-time Rates)
         List<UnitItem> currencyUnits = Arrays.asList(
                 new UnitItem("US Dollar", "USD", 1.0),
                 new UnitItem("Euro", "EUR", 1.08),
@@ -722,7 +787,7 @@ public class UnitConverterController {
                 new UnitItem("Swedish Krona", "SEK", 0.093),
                 new UnitItem("Norwegian Krone", "NOK", 0.091),
                 new UnitItem("Mexican Peso", "MXN", 0.050));
-        allCategories.add(new CategoryData("Currency", "💱", "CALCULATE",
+        allCategories.add(new CategoryData("Currency", "💱", SVG_CURRENCY, "CALCULATE",
                 "Global currency reference conversion rates with live country flags.", currencyUnits, "US Dollar (USD)",
                 "Euro (EUR)"));
     }
@@ -735,9 +800,24 @@ public class UnitConverterController {
         categoryButtons.clear();
 
         for (CategoryData cat : allCategories) {
-            Button btn = new Button(cat.icon + "  " + cat.name);
+            Button btn = new Button(cat.name);
             btn.setMaxWidth(Double.MAX_VALUE);
             btn.getStyleClass().add("category-btn");
+            btn.setGraphicTextGap(10);
+
+            SVGPath icon = new SVGPath();
+            icon.setContent(cat.svgPath);
+            icon.setFill(Color.web("#9E9AA8"));
+            icon.setScaleX(0.75);
+            icon.setScaleY(0.75);
+
+            StackPane iconBox = new StackPane(icon);
+            iconBox.setPrefSize(20, 20);
+            iconBox.setMinSize(20, 20);
+            iconBox.setMaxSize(20, 20);
+            iconBox.setAlignment(Pos.CENTER);
+
+            btn.setGraphic(iconBox);
             btn.setOnAction(e -> selectCategory(cat));
             categoryButtons.put(cat.name, btn);
 
@@ -754,23 +834,45 @@ public class UnitConverterController {
     private void selectCategory(CategoryData cat) {
         this.currentCategory = cat;
 
-        // Highlight active category button
+        // Highlight active category button & update icon tinting
         for (Map.Entry<String, Button> entry : categoryButtons.entrySet()) {
             Button b = entry.getValue();
-            if (entry.getKey().equals(cat.name)) {
+            boolean isActive = entry.getKey().equals(cat.name);
+            if (isActive) {
                 if (!b.getStyleClass().contains("category-btn-active")) {
                     b.getStyleClass().add("category-btn-active");
                 }
             } else {
                 b.getStyleClass().remove("category-btn-active");
             }
+            if (b.getGraphic() instanceof StackPane sp && !sp.getChildren().isEmpty()) {
+                if (sp.getChildren().get(0) instanceof SVGPath svg) {
+                    svg.setFill(isActive ? Color.web("#00D2FF") : Color.web("#9E9AA8"));
+                }
+            }
         }
 
         // Update headers
         if (breadcrumbLabel != null)
             breadcrumbLabel.setText("Convert  /  " + cat.name);
-        if (categoryIconLabel != null)
-            categoryIconLabel.setText(cat.icon);
+        if (categoryIconLabel != null) {
+            categoryIconLabel.setText("");
+            SVGPath headerSvg = new SVGPath();
+            headerSvg.setContent(cat.svgPath);
+            headerSvg.setFill(Color.web("#00D2FF"));
+            headerSvg.setScaleX(1.15);
+            headerSvg.setScaleY(1.15);
+
+            StackPane headerIconBadge = new StackPane(headerSvg);
+            headerIconBadge.setPrefSize(38, 38);
+            headerIconBadge.setMinSize(38, 38);
+            headerIconBadge.setMaxSize(38, 38);
+            headerIconBadge.setAlignment(Pos.CENTER);
+            headerIconBadge.setStyle("-fx-background-color: rgba(0, 210, 255, 0.12); " +
+                    "-fx-background-radius: 9; -fx-border-color: rgba(0, 210, 255, 0.35); " +
+                    "-fx-border-radius: 9; -fx-border-width: 1;");
+            categoryIconLabel.setGraphic(headerIconBadge);
+        }
         if (titleLabel != null)
             titleLabel.setText(cat.name + " converter");
 
@@ -952,14 +1054,22 @@ public class UnitConverterController {
     private void updateVisualizerModeButtons() {
         if (hubModeBtn != null) {
             hubModeBtn.getStyleClass().removeAll("visualizer-mode-active");
-            if (visualizerMode == VisualizerMode.CALCULATION_HUB) {
+            boolean isHub = visualizerMode == VisualizerMode.CALCULATION_HUB;
+            if (isHub) {
                 hubModeBtn.getStyleClass().add("visualizer-mode-active");
+            }
+            if (hubModeBtn.getGraphic() instanceof StackPane sp && !sp.getChildren().isEmpty() && sp.getChildren().get(0) instanceof SVGPath svg) {
+                svg.setFill(isHub ? Color.web("#00D2FF") : Color.web("#9E9AA8"));
             }
         }
         if (rulerModeBtn != null) {
             rulerModeBtn.getStyleClass().removeAll("visualizer-mode-active");
-            if (visualizerMode == VisualizerMode.DUAL_RULER) {
+            boolean isRuler = visualizerMode == VisualizerMode.DUAL_RULER;
+            if (isRuler) {
                 rulerModeBtn.getStyleClass().add("visualizer-mode-active");
+            }
+            if (rulerModeBtn.getGraphic() instanceof StackPane sp && !sp.getChildren().isEmpty() && sp.getChildren().get(0) instanceof SVGPath svg) {
+                svg.setFill(isRuler ? Color.web("#00D2FF") : Color.web("#9E9AA8"));
             }
         }
     }
@@ -1427,7 +1537,7 @@ public class UnitConverterController {
         } else if ("Length".equalsIgnoreCase(category)) {
             double meters = inputVal * from.factor;
             list.add(new BenchmarkItem("🚶", formatBenchmark(meters / 0.75) + "×", "Walking Steps", "0.75 m adult stride"));
-            list.add(new BenchmarkItem("🧍", formatBenchmark(meters / 1.75) + "×", "Adult Height", "1.75 m person"));
+            list.add(new BenchmarkItem("📏", formatBenchmark(meters / 1.75) + "×", "Adult Height", "1.75 m person"));
             list.add(new BenchmarkItem("🚗", formatBenchmark(meters / 4.5) + "×", "Family Cars", "4.5 m sedan car"));
             list.add(new BenchmarkItem("⚽", formatBenchmark(meters / 105.0) + "×", "Football Pitches", "105 m pitch"));
         } else if ("Mass / Weight".equalsIgnoreCase(category) || "Weight".equalsIgnoreCase(category)) {
@@ -1438,7 +1548,7 @@ public class UnitConverterController {
             list.add(new BenchmarkItem("🚲", formatBenchmark(kg / 12.0) + "×", "Bicycles", "12 kg commuter bike"));
         } else if ("Area".equalsIgnoreCase(category)) {
             double m2 = inputVal * from.factor;
-            list.add(new BenchmarkItem("🛏️", formatBenchmark(m2 / 14.0) + "×", "Bedrooms", "14 m² room"));
+            list.add(new BenchmarkItem("🛏", formatBenchmark(m2 / 14.0) + "×", "Bedrooms", "14 m² room"));
             list.add(new BenchmarkItem("🎾", formatBenchmark(m2 / 260.7) + "×", "Tennis Courts", "260 m² court"));
             list.add(new BenchmarkItem("🏀", formatBenchmark(m2 / 436.6) + "×", "Basketball Courts", "436 m² court"));
             list.add(new BenchmarkItem("⚽", formatBenchmark(m2 / 7140.0) + "×", "Football Fields", "7,140 m² pitch"));
@@ -1447,14 +1557,14 @@ public class UnitConverterController {
             list.add(new BenchmarkItem("🚶", formatBenchmark(kmh / 5.0) + "×", "Walking Pace", "5 km/h human walk"));
             list.add(new BenchmarkItem("🚴", formatBenchmark(kmh / 20.0) + "×", "City Cycling", "20 km/h bicycle"));
             list.add(new BenchmarkItem("🚗", formatBenchmark(kmh / 100.0) + "×", "Highway Speed", "100 km/h speed limit"));
-            list.add(new BenchmarkItem("✈️", formatBenchmark(kmh / 900.0) + "×", "Passenger Jet", "900 km/h cruising"));
+            list.add(new BenchmarkItem("✈", formatBenchmark(kmh / 900.0) + "×", "Passenger Jet", "900 km/h cruising"));
         } else if ("Data".equalsIgnoreCase(category)) {
             double bytes = inputVal * from.factor;
             list.add(new BenchmarkItem("🎵", formatBenchmark(bytes / 4194304.0) + "×", "MP3 Songs", "4 MB audio track"));
             list.add(new BenchmarkItem("📸", formatBenchmark(bytes / 5242880.0) + "×", "HD Photos", "5 MB jpeg image"));
             list.add(new BenchmarkItem("🎬", formatBenchmark(bytes / 2147483648.0) + "×", "1080p Movies", "2 GB full HD movie"));
             list.add(new BenchmarkItem("💾", formatBenchmark(bytes / 1099511627776.0) + "×", "1 TB Drives", "1,024 GB storage"));
-        } else if ("Time".equalsIgnoreCase(category)) {
+        } else if ("Time".equalsIgnoreCase(category) || "Time / Duration".equalsIgnoreCase(category)) {
             double sec = inputVal * from.factor;
             list.add(new BenchmarkItem("🎵", formatBenchmark(sec / 240.0) + "×", "Pop Songs", "4 minute track"));
             list.add(new BenchmarkItem("🎬", formatBenchmark(sec / 7200.0) + "×", "Feature Films", "2 hour movie"));
@@ -1468,16 +1578,16 @@ public class UnitConverterController {
             list.add(new BenchmarkItem("🌐", "Live Rates", "Global Forex", "Updated exchange data"));
             list.add(new BenchmarkItem("💵", formatNumber(inputVal * rate), to.symbol + " Total", "Market mid-price equivalent"));
         } else if ("Temperature".equalsIgnoreCase(category)) {
-            list.add(new BenchmarkItem("❄️", "0°C", "Freezing Point", "32°F / 273.15 K"));
-            list.add(new BenchmarkItem("🛋️", "20°C", "Room Temp", "68°F / 293.15 K"));
-            list.add(new BenchmarkItem("🌡️", "37°C", "Human Body", "98.6°F / 310.15 K"));
+            list.add(new BenchmarkItem("❄", "0°C", "Freezing Point", "32°F / 273.15 K"));
+            list.add(new BenchmarkItem("🛋", "20°C", "Room Temp", "68°F / 293.15 K"));
+            list.add(new BenchmarkItem("🌡", "37°C", "Human Body", "98.6°F / 310.15 K"));
             list.add(new BenchmarkItem("🔥", "100°C", "Boiling Point", "212°F / 373.15 K"));
         } else if ("Power".equalsIgnoreCase(category)) {
             double watts = inputVal * from.factor;
             list.add(new BenchmarkItem("💡", formatBenchmark(watts / 10.0) + "×", "LED Bulbs", "10 W light"));
             list.add(new BenchmarkItem("💻", formatBenchmark(watts / 65.0) + "×", "Laptops", "65 W charger"));
             list.add(new BenchmarkItem("☕", formatBenchmark(watts / 1500.0) + "×", "Kettles", "1,500 W boiling"));
-            list.add(new BenchmarkItem("🏎️", formatBenchmark(watts / 110000.0) + "×", "Car Engines", "~150 hp output"));
+            list.add(new BenchmarkItem("🏎", formatBenchmark(watts / 110000.0) + "×", "Car Engines", "~150 hp output"));
         } else if ("Energy".equalsIgnoreCase(category)) {
             double joules = inputVal * from.factor;
             list.add(new BenchmarkItem("🍎", formatBenchmark(joules / 400000.0) + "×", "Apples", "95 kcal nutrition"));
@@ -1486,8 +1596,8 @@ public class UnitConverterController {
             list.add(new BenchmarkItem("🚗", formatBenchmark(joules / 130000000.0) + "×", "Gasoline (Gal)", "130 MJ energy"));
         } else { // Pressure or other
             double pa = inputVal * from.factor;
-            list.add(new BenchmarkItem("🎈", formatBenchmark(pa / 103000.0) + "×", "Party Balloons", "103 kPa pressure"));
-            list.add(new BenchmarkItem("🌊", formatBenchmark(pa / 101325.0) + "×", "Sea Atmosphere", "1 atm (101.3 kPa)"));
+            list.add(new BenchmarkItem("💨", formatBenchmark(pa / 100000.0) + "×", "1 Bar Pressure", "100 kPa standard"));
+            list.add(new BenchmarkItem("🌊", formatBenchmark(pa / 101325.0) + "×", "Atmosphere", "1 atm (101.3 kPa)"));
             list.add(new BenchmarkItem("🚗", formatBenchmark(pa / 220000.0) + "×", "Car Tires", "2.2 bar (~32 psi)"));
             list.add(new BenchmarkItem("🤿", formatBenchmark(pa / 20000000.0) + "×", "Scuba Tanks", "200 bar tank"));
         }
@@ -1781,32 +1891,190 @@ public class UnitConverterController {
     public void showHistory() {
         Dialog<Void> dialog = new Dialog<>();
         dialog.setTitle("Conversion History");
-        dialog.setHeaderText("Recent Conversions");
-
-        DialogPane pane = dialog.getDialogPane();
-        pane.getButtonTypes().add(ButtonType.CLOSE);
-        pane.setStyle("-fx-background-color: #1E1C27; -fx-text-fill: white;");
-
-        VBox contentBox = new VBox(8);
-        contentBox.setStyle("-fx-padding: 10;");
-
-        if (conversionHistory.isEmpty()) {
-            Label empty = new Label("No recent conversions.");
-            empty.setStyle("-fx-text-fill: rgba(255,255,255,0.5); -fx-font-size: 13px;");
-            contentBox.getChildren().add(empty);
-        } else {
-            for (int i = conversionHistory.size() - 1; i >= 0; i--) {
-                Label item = new Label("•  " + conversionHistory.get(i));
-                item.setStyle("-fx-text-fill: white; -fx-font-size: 13px;");
-                contentBox.getChildren().add(item);
-            }
+        if (rootPane != null && rootPane.getScene() != null && rootPane.getScene().getWindow() != null) {
+            dialog.initOwner(rootPane.getScene().getWindow());
         }
 
-        ScrollPane sp = new ScrollPane(contentBox);
-        sp.setPrefHeight(250);
-        sp.setPrefWidth(320);
-        sp.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
-        pane.setContent(sp);
+        DialogPane pane = dialog.getDialogPane();
+        pane.setStyle("-fx-background-color: #171522; -fx-padding: 20; -fx-background-radius: 14; " +
+                "-fx-border-color: rgba(255, 255, 255, 0.12); -fx-border-radius: 14; -fx-border-width: 1;");
+
+        VBox root = new VBox(14);
+        root.setPrefWidth(440);
+
+        // Header: History icon + Title + "Clear All" button
+        HBox header = new HBox(12);
+        header.setAlignment(Pos.CENTER_LEFT);
+
+        SVGPath clockSvg = new SVGPath();
+        clockSvg.setContent(SVG_TIME);
+        clockSvg.setFill(Color.web("#00D2FF"));
+        clockSvg.setScaleX(0.95);
+        clockSvg.setScaleY(0.95);
+
+        StackPane clockBadge = new StackPane(clockSvg);
+        clockBadge.setPrefSize(32, 32);
+        clockBadge.setMinSize(32, 32);
+        clockBadge.setMaxSize(32, 32);
+        clockBadge.setAlignment(Pos.CENTER);
+        clockBadge.setStyle("-fx-background-color: rgba(0, 210, 255, 0.12); -fx-background-radius: 8;");
+
+        VBox titleBox = new VBox(2);
+        Label titleLabel = new Label("Conversion History");
+        titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;");
+
+        Label countLabel = new Label();
+        countLabel.setStyle("-fx-text-fill: rgba(255, 255, 255, 0.45); -fx-font-size: 11px;");
+
+        titleBox.getChildren().addAll(titleLabel, countLabel);
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        // Clear History Button
+        Button clearBtn = new Button("Clear All");
+        SVGPath trashSvg = new SVGPath();
+        trashSvg.setContent("M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z");
+        trashSvg.setFill(Color.web("#FF5370"));
+        trashSvg.setScaleX(0.75);
+        trashSvg.setScaleY(0.75);
+        clearBtn.setGraphic(trashSvg);
+        clearBtn.setGraphicTextGap(6);
+        clearBtn.setStyle("-fx-background-color: rgba(255, 83, 112, 0.12); -fx-text-fill: #FF5370; " +
+                "-fx-font-size: 11px; -fx-font-weight: bold; -fx-background-radius: 6; " +
+                "-fx-border-color: rgba(255, 83, 112, 0.35); -fx-border-radius: 6; -fx-border-width: 1; " +
+                "-fx-padding: 6 12; -fx-cursor: hand;");
+        clearBtn.setOnMouseEntered(e -> {
+            if (!clearBtn.isDisabled()) {
+                clearBtn.setStyle("-fx-background-color: rgba(255, 83, 112, 0.25); -fx-text-fill: #FF7590; " +
+                        "-fx-font-size: 11px; -fx-font-weight: bold; -fx-background-radius: 6; " +
+                        "-fx-border-color: #FF5370; -fx-border-radius: 6; -fx-border-width: 1; " +
+                        "-fx-padding: 6 12; -fx-cursor: hand;");
+            }
+        });
+        clearBtn.setOnMouseExited(e -> {
+            if (!clearBtn.isDisabled()) {
+                clearBtn.setStyle("-fx-background-color: rgba(255, 83, 112, 0.12); -fx-text-fill: #FF5370; " +
+                        "-fx-font-size: 11px; -fx-font-weight: bold; -fx-background-radius: 6; " +
+                        "-fx-border-color: rgba(255, 83, 112, 0.35); -fx-border-radius: 6; -fx-border-width: 1; " +
+                        "-fx-padding: 6 12; -fx-cursor: hand;");
+            }
+        });
+
+        header.getChildren().addAll(clockBadge, titleBox, spacer, clearBtn);
+
+        // List Container inside ScrollPane
+        VBox listContainer = new VBox(6);
+        listContainer.setStyle("-fx-padding: 4;");
+
+        // Helper to refresh view
+        Runnable refreshView = () -> {
+            listContainer.getChildren().clear();
+            int count = conversionHistory.size();
+            countLabel.setText(count + (count == 1 ? " saved conversion" : " saved conversions"));
+            clearBtn.setDisable(count == 0);
+            if (count == 0) {
+                clearBtn.setOpacity(0.4);
+            } else {
+                clearBtn.setOpacity(1.0);
+            }
+
+            if (count == 0) {
+                VBox emptyBox = new VBox(6);
+                emptyBox.setAlignment(Pos.CENTER);
+                emptyBox.setPadding(new Insets(30, 10, 30, 10));
+
+                Label emptyLabel = new Label("No recent conversions");
+                emptyLabel.setStyle("-fx-text-fill: rgba(255, 255, 255, 0.7); -fx-font-size: 13px; -fx-font-weight: bold;");
+
+                Label emptySub = new Label("Conversions you calculate will appear here.");
+                emptySub.setStyle("-fx-text-fill: rgba(255, 255, 255, 0.4); -fx-font-size: 11px;");
+
+                emptyBox.getChildren().addAll(emptyLabel, emptySub);
+                listContainer.getChildren().add(emptyBox);
+            } else {
+                for (int i = conversionHistory.size() - 1; i >= 0; i--) {
+                    String record = conversionHistory.get(i);
+                    HBox row = new HBox(8);
+                    row.setAlignment(Pos.CENTER_LEFT);
+                    row.setStyle("-fx-background-color: #201D2D; -fx-background-radius: 8; -fx-padding: 8 12; " +
+                            "-fx-border-color: rgba(255, 255, 255, 0.06); -fx-border-radius: 8; -fx-border-width: 1;");
+
+                    Label dot = new Label("•");
+                    dot.setStyle("-fx-text-fill: #00D2FF; -fx-font-size: 15px; -fx-font-weight: bold;");
+
+                    Label itemText = new Label(record);
+                    itemText.setStyle("-fx-text-fill: #FFFFFF; -fx-font-size: 12px; -fx-font-weight: 500;");
+                    HBox.setHgrow(itemText, Priority.ALWAYS);
+
+                    Button copyBtn = new Button("Copy");
+                    copyBtn.setStyle("-fx-background-color: rgba(255, 255, 255, 0.08); -fx-text-fill: #D8D6E5; " +
+                            "-fx-font-size: 11px; -fx-background-radius: 5; -fx-padding: 3 8; -fx-cursor: hand;");
+                    copyBtn.setOnAction(ev -> {
+                        ClipboardContent content = new ClipboardContent();
+                        content.putString(record);
+                        Clipboard.getSystemClipboard().setContent(content);
+                        copyBtn.setText("Copied!");
+                        copyBtn.setStyle("-fx-background-color: #0E7490; -fx-text-fill: white; -fx-font-size: 11px; -fx-background-radius: 5; -fx-padding: 3 8;");
+                        PauseTransition p = new PauseTransition(Duration.millis(1000));
+                        p.setOnFinished(e -> {
+                            copyBtn.setText("Copy");
+                            copyBtn.setStyle("-fx-background-color: rgba(255, 255, 255, 0.08); -fx-text-fill: #D8D6E5; -fx-font-size: 11px; -fx-background-radius: 5; -fx-padding: 3 8; -fx-cursor: hand;");
+                        });
+                        p.play();
+                    });
+
+                    row.getChildren().addAll(dot, itemText, copyBtn);
+                    listContainer.getChildren().add(row);
+                }
+            }
+        };
+
+        // Wire Clear Action
+        clearBtn.setOnAction(e -> {
+            conversionHistory.clear();
+            refreshView.run();
+        });
+
+        refreshView.run();
+
+        ScrollPane sp = new ScrollPane(listContainer);
+        sp.setFitToWidth(true);
+        sp.setPrefHeight(260);
+        sp.setMaxHeight(340);
+        sp.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        sp.setStyle("-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;");
+
+        // Footer with Close Button
+        HBox footer = new HBox(10);
+        footer.setAlignment(Pos.CENTER_RIGHT);
+        footer.setPadding(new Insets(4, 0, 0, 0));
+
+        Button closeBtn = new Button("Close");
+        closeBtn.setStyle("-fx-background-color: #2C293A; -fx-text-fill: white; -fx-font-size: 12px; " +
+                "-fx-font-weight: bold; -fx-background-radius: 6; -fx-border-color: #5A5474; " +
+                "-fx-border-width: 1; -fx-border-radius: 6; -fx-padding: 7 18; -fx-cursor: hand;");
+        closeBtn.setOnMouseEntered(e -> closeBtn.setStyle("-fx-background-color: #3E3952; -fx-text-fill: white; -fx-font-size: 12px; " +
+                "-fx-font-weight: bold; -fx-background-radius: 6; -fx-border-color: #7D769E; " +
+                "-fx-border-width: 1; -fx-border-radius: 6; -fx-padding: 7 18; -fx-cursor: hand;"));
+        closeBtn.setOnMouseExited(e -> closeBtn.setStyle("-fx-background-color: #2C293A; -fx-text-fill: white; -fx-font-size: 12px; " +
+                "-fx-font-weight: bold; -fx-background-radius: 6; -fx-border-color: #5A5474; " +
+                "-fx-border-width: 1; -fx-border-radius: 6; -fx-padding: 7 18; -fx-cursor: hand;"));
+        closeBtn.setOnAction(e -> dialog.close());
+
+        footer.getChildren().add(closeBtn);
+
+        root.getChildren().addAll(header, sp, footer);
+        pane.setContent(root);
+
+        pane.getButtonTypes().add(ButtonType.CLOSE);
+        dialog.setOnShowing(ev -> {
+            Node bar = pane.lookup(".button-bar");
+            if (bar != null) {
+                bar.setVisible(false);
+                bar.setManaged(false);
+            }
+        });
 
         dialog.showAndWait();
     }
