@@ -1,4 +1,9 @@
 target/
+*.class
+dependency-reduced-pom.xml
+node_modules/
+package*.json
+test_*.js
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
