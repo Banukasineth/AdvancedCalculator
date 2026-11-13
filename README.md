@@ -8,6 +8,10 @@
 
 **NovaCalc** is a next-generation desktop scientific calculator and mathematical workstation engineered with **JavaFX**, **KaTeX typesetting**, and **Google Gemini AI**. Designed with a modern dark glassmorphic interface, NovaCalc combines traditional high-precision algebraic calculation with multimodal math inputs, interactive 2D function graphing, a comprehensive visual unit converter, calculus engines, and real-time step-by-step AI math tutoring.
 
+<p align="center">
+  <img src="docs/images/calculator-main.png" alt="NovaCalc Main Scientific Calculator Interface" width="940"/>
+</p>
+
 ---
 
 ## Table of Contents
@@ -45,6 +49,10 @@
 - **Live Status Stream**: Animated typewriter effect that rotates through calculation steps (`"Generating a solution..."`, `"Analyzing mathematical logic..."`, `"Formulating step-by-step steps..."`) with pulsing animated dots.
 - **Offline Fallback**: Automatically falls back to native calculation when offline or when no API key is configured.
 
+<p align="center">
+  <img src="docs/images/calculator-solution.png" alt="AI Step-by-Step Solution Panel with Animated Orb" width="880"/>
+</p>
+
 ### 3. Visual Unit Converter
 - **12 Comprehensive Measurement Categories**:
   - *Measure:* Length, Area, Volume, Mass / Weight, Temperature, Speed, Time / Duration, Pressure
@@ -59,6 +67,14 @@
 - **Conversion History**:
   - Searchable timestamped conversion log with single-click copy buttons and a quick "Clear All" action.
 
+<p align="center">
+  <img src="docs/images/unit-converter-length.png" alt="Visual Unit Converter & Dual Ruler" width="880"/>
+</p>
+
+<p align="center">
+  <img src="docs/images/unit-converter-currency.png" alt="Real-Time Currency Converter with Flags" width="880"/>
+</p>
+
 ### 4. Multimodal Math Input
 - **Speech-to-Math (Voice Input)**: Dictate formulas naturally via microphone; spoken math expressions are automatically parsed and translated into LaTeX.
 - **Camera & Screenshot OCR**: Scan math problems directly using your webcam, screenshot snipper tool (`ScreenSnipper`), or drag-and-drop image file onto the calculator.
@@ -67,6 +83,10 @@
 - Embedded D3.js & FunctionPlot graphing canvas.
 - Multi-function plotting with customized styles (solid, dashed, dotted lines).
 - Interactive mouse panning, mouse-wheel zooming, coordinate tracing, and domain controls ($[-10, 10]$).
+
+<p align="center">
+  <img src="docs/images/graphing-mode.png" alt="Interactive 2D Function Graphing Mode" width="880"/>
+</p>
 
 ### 6. Calculus & Equation Libraries
 - **Calculus Engine**:
